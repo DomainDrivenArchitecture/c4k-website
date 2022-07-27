@@ -1,5 +1,60 @@
 # c4k-website
 
+# README
+
+## Requirements
+
+Unsere Website soll mit k8s laufen.
+
+Unsere erzeugten images incl. Web-Inhalt sollen nicht öffentlich zugänglich sein.
+
+A.C.:
+ wir haben ein konzept erstellt, wie wir statische Inhalte ausliefern (git-pull & cron // cicid // manueller pybuilder-run).
+
+ wir haben ein c4k modul, das mehrere statische Websites betreiben kann.
+ -> Neues deployment macht neuen webserver mit neuem FQDN
+ -> Neuer FQDN muss über pyb apply eingetragen werden
+
+ c4k holt sich stets die neuesten website-container unterbrechungsfrei.
+
+ unsere website läuft mit dem neuen setup und ist unter ipv4 und ipv6 erreichbar.
+ website ist unter 1 oder 2 fqdns erreichbar.
+
+## Was passiert?
+
+_Frage_ Sollen später Webserver auf den gleichen, laufenden Cluster hinzugefügt werden können?
+
+**Falls ja:**
+
+Ein Cluster, 1 Pod für eine Website (WS)
+-> mehrere FQDNs müssen auf einen Cluster Zeigen
+-> viele Pods für viele WS
+-> Package einen Webserver mit einer Website
+-> DNS Routen so einrichten, dass verschiedene FQDNs auf selbe cluster-id zeigen
+-> Ingress muss die angefragten FQDNS auflösen und weiterleiten
+
+_Frage_ kann pyb apply nur einen FQDN?
+
+Falls ja, wie könnte das Ausschauen?
+Will ich einen Cluster haben, auf dem mit Deployments neue Pods/Webserver installiert werden, die sich dann aus festgelegten pfaden ihren content holen?
+
+**Reading:**
+
+https://stackoverflow.com/questions/55243275/implementing-k8s-cluster-for-multiple-websites-with-unique-domain-name
+
+https://www.reddit.com/r/kubernetes/comments/j8z7tn/hosting_multiple_static_sites_on_k8s/
+
+## Struktur
+
+1. Baue die statische website
+
+2. Schieb die Website auf den Server
+
+3. Liefere die Website mit einem Webserver aus
+
+## Fragen
+
+Soll Cryogen auch in einem container laufen?
 
 
 ## Getting started
