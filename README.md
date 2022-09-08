@@ -24,7 +24,7 @@ A.C.:
 
 _Frage_ Sollen später Webserver auf den gleichen, laufenden Cluster hinzugefügt werden können?
 
-**Falls ja:**
+**Ja:**
 
 Ein Cluster, 1 Pod für eine Website (WS)
 -> mehrere FQDNs müssen auf einen Cluster Zeigen
@@ -33,16 +33,30 @@ Ein Cluster, 1 Pod für eine Website (WS)
 -> DNS Routen so einrichten, dass verschiedene FQDNs auf selbe cluster-id zeigen
 -> Ingress muss die angefragten FQDNS auflösen und weiterleiten
 
+Anforderungen an Website-Container:
+nginx-deployment
+nginx-config -> wie
+serviceType: LoadBalancer
+PVC + volume-mount zeigt auf website-data-vol
+
+
+
 _Frage_ kann pyb apply nur einen FQDN?
 
 Falls ja, wie könnte das Ausschauen?
 Will ich einen Cluster haben, auf dem mit Deployments neue Pods/Webserver installiert werden, die sich dann aus festgelegten pfaden ihren content holen?
 
-**Reading:**
+### Reading:
 
 https://stackoverflow.com/questions/55243275/implementing-k8s-cluster-for-multiple-websites-with-unique-domain-name
 
 https://www.reddit.com/r/kubernetes/comments/j8z7tn/hosting_multiple_static_sites_on_k8s/
+
+Deploying Nginx:  
+https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/  
+https://www.tecmint.com/deploy-nginx-on-a-kubernetes-cluster/
+
+
 
 ## Struktur
 
