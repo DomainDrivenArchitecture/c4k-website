@@ -1,14 +1,14 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: website-server-service
+  name: nginx-service
   namespace: default
   annotations: 
     metallb.universe.tf/allow-shared-ip: "shared-ip-service-group"
 spec:
   type: LoadBalancer
   selector:
-    app: website-server
+    app: nginx
   ports:
     - port: 80
       targetPort: 80

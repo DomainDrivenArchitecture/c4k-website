@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-conf
+  name: nginx-env
   namespace: default
 data:
   nginx.conf: |
@@ -52,7 +52,7 @@ data:
       # it might be a good idea to set a common reverse proxy 
       # which points to the ingress?
 
-      include /etc/nginx/conf.d/FQDN.conf # should be replaced by c4k
+      include /etc/nginx/conf.d/repo.test.meissa.de.conf # should be replaced by c4k
     }
     
   mime.types: |
@@ -104,14 +104,14 @@ data:
       video/x-ms-asf                        asx asf;
       video/x-mng                           mng;
     }
-  FQDN.conf: | 
+  repo.test.meissa.de.conf: | 
     server {
 
       listen 80 default_server;
 
       listen [::]:80 default_server;
 
-      server_name FQDN www.FQDN;
+      server_name repo.test.meissa.de www.repo.test.meissa.de;
 
       # security headers
       add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';
@@ -123,11 +123,93 @@ data:
       # maybe need to add:
       # add_header Permissions-Policy "permissions here";
 
-      root WEBSITECONTENTPATH;
+      root /var/www/html/repo.test.meissa.de;
 
       index index.html;
 
       try_files $uri /index.html;
 
     }
-
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /etc/nginx # mount nginx volume to /etc/nginx
+          readOnly: true
+          name: nginx-conf
+        - mountPath: /var/log/nginx
+          name: log                    
+        - mountPath: /var/www/html/repo.test.meissa.de
+          name: website-content-volume
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: conf.d/nginx.conf
+              - key: repo.test.meissa.de.conf
+                path: conf.d/repo.test.meissa.de.conf
+              - key: mime.types
+                path: mime.d/mime.types # dig directory
+        - name: log
+          emptyDir: {}
+        - name: website-content-volume
+          persistentVolumeClaim:
+            claimName: website-content-pvc
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd    
+spec:
+  tls:
+    - hosts:
+        - repo.test.meissa.de
+      secretName: website-cert
+  rules:
+    - host: repo.test.meissa.de
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-service
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
