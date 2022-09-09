@@ -1,6 +1,7 @@
 # ToDo: 
 # content-pfad für nginx server definieren
 # sinnvolle security policies konfigurieren
+# link nginx.conv und virtualhost.conv verstehen
 
 apiVersion: v1
 kind: ConfigMap
@@ -40,17 +41,20 @@ data:
       include /etc/nginx/virtualhost/virtualhost.conf;
     }
   virtualhost.conf: |
-    upstream app {
-      server localhost:8080;
+    upstream NAME {
+      server FQDN;
       keepalive 1024;
     }
+
     server {
       listen 80 default_server;
-      root /usr/local/app;
-      access_log /var/log/nginx/app.access_log main;
-      error_log /var/log/nginx/app.error_log;
+      root WEBSITECONTENTPATH;
+
+      access_log /var/log/nginx/NAME.access_log main; #ToDo: change this
+      error_log /var/log/nginx/NAME.error_log;
+
       location / {
-        proxy_pass http://app/;
+        proxy_pass http://NAME/; #ToDo: change this, how does proxy_pass work?
         proxy_http_version 1.1;
       }
     }

@@ -39,12 +39,12 @@ nginx-config -> wie
 serviceType: LoadBalancer
 PVC + volume-mount zeigt auf website-data-vol
 
+**Terraform:**
+FQDNs für verschiedene Websites hinzufügen?
+Verbindung mit c4k?
+c4k-Modulname als Teil des FQDNs wird später noch problematisch. 
 
 
-_Frage_ kann pyb apply nur einen FQDN?
-
-Falls ja, wie könnte das Ausschauen?
-Will ich einen Cluster haben, auf dem mit Deployments neue Pods/Webserver installiert werden, die sich dann aus festgelegten pfaden ihren content holen?
 
 ### Reading:
 
