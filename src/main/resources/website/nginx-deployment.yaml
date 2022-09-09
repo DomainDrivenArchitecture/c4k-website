@@ -15,7 +15,7 @@ spec:
       containers:
       - name: nginx
         image: nginx:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 80
         volumeMounts:
@@ -24,7 +24,7 @@ spec:
           name: nginx-conf
         - mountPath: /var/log/nginx
           name: log                    
-        - mountPath: /var/www/html/FQDN
+        - mountPath: /var/www/html/repo.test.meissa.de
           name: website-content-volume
       volumes:
         - name: nginx-conf
@@ -32,14 +32,14 @@ spec:
             name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
             items:
               - key: nginx.conf
-                path: conf.d/nginx.conf
-              - key: FQDN.conf
-                path: conf.d/nginx.conf
+                path: nginx.conf
+              - key: repo.test.meissa.de.conf
+                path: conf.d/repo.test.meissa.de.conf
               - key: mime.types
-                path: mime.d/mime.types # dig directory
+                path: mime.types # dig directory
         - name: log
           emptyDir: {}
         - name: website-content-volume
           persistentVolumeClaim:
             claimName: website-content-pvc
-
+---

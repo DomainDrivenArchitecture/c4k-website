@@ -1,16 +1,52 @@
-# ToDo: 
-# Roadmap aufsetzen
-#   Minigoal: run nginx server, serving a simple static site
-#     get correct config for static website
-#       security
-#       paths to rootfolder correctly defined
-#     volumes correctly defined
-#     nginx can access volumes
-#     
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        imagePullPolicy: "Always"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /etc/nginx # mount nginx volume to /etc/nginx
+          readOnly: true
+          name: nginx-conf
+        - mountPath: /var/log/nginx
+          name: log                    
+        - mountPath: /var/www/html/repo.test.meissa.de
+          name: website-content-volume
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+              - key: repo.test.meissa.de.conf
+                path: conf.d/repo.test.meissa.de.conf
+              - key: mime.types
+                path: mime.types # dig directory
+        - name: log
+          emptyDir: {}
+        - name: website-content-volume
+          persistentVolumeClaim:
+            claimName: website-content-pvc
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-env
+  name: nginx-conf
   namespace: default
 data:
   nginx.conf: |
@@ -20,7 +56,7 @@ data:
 
     error_log  /var/log/nginx/error.log;
 
-    pid        logs/nginx.pid;
+    pid        /var/log/nginx/nginx.pid;
 
     worker_rlimit_nofile 8192;
 
@@ -28,10 +64,11 @@ data:
       worker_connections  4096;  ## Default: 1024
     }
 
-    daemon off; # run in foreground
+    # daemon off; # run in foreground
 
     http {
-      include    conf/mime.types;      
+        
+      include /etc/nginx/mime.types; # should be replaced by c4k
 
       default_type application/octet-stream;
 
@@ -39,7 +76,7 @@ data:
         '"$request" $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for"';
 
-      access_log   logs/access.log  main;
+      access_log   /var/log/nginx/access.log  main;
 
       sendfile     on;
 
@@ -52,7 +89,7 @@ data:
       # it might be a good idea to set a common reverse proxy 
       # which points to the ingress?
 
-      include /etc/nginx/conf.d/repo.test.meissa.de.conf # should be replaced by c4k
+      include /etc/nginx/conf.d/repo.test.meissa.de.conf; # should be replaced by c4k
     }
     
   mime.types: |
@@ -131,75 +168,6 @@ data:
 
     }
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - mountPath: /etc/nginx # mount nginx volume to /etc/nginx
-          readOnly: true
-          name: nginx-conf
-        - mountPath: /var/log/nginx
-          name: log                    
-        - mountPath: /var/www/html/repo.test.meissa.de
-          name: website-content-volume
-      volumes:
-        - name: nginx-conf
-          configMap:
-            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
-            items:
-              - key: nginx.conf
-                path: conf.d/nginx.conf
-              - key: repo.test.meissa.de.conf
-                path: conf.d/repo.test.meissa.de.conf
-              - key: mime.types
-                path: mime.d/mime.types # dig directory
-        - name: log
-          emptyDir: {}
-        - name: website-content-volume
-          persistentVolumeClaim:
-            claimName: website-content-pvc
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-  namespace: default
-  annotations:
-    ingress.kubernetes.io/ssl-redirect: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd    
-spec:
-  tls:
-    - hosts:
-        - repo.test.meissa.de
-      secretName: website-cert
-  rules:
-    - host: repo.test.meissa.de
-      http:
-        paths:
-          - pathType: Prefix
-            path: "/"
-            backend:
-              service:
-                name: nginx-service
-                port:
-                  number: 3000
----
 kind: Service
 apiVersion: v1
 metadata:
@@ -210,6 +178,20 @@ spec:
   selector:
     app: nginx
   ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
+     - name: websie 
+       port: 80
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: website-content-pvc
+  namespace: default
+  labels:
+    app: nginx
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,12 +1,3 @@
-# ToDo: 
-# Roadmap aufsetzen
-#   Minigoal: run nginx server, serving a simple static site
-#     get correct config for static website
-#       security
-#       paths to rootfolder correctly defined
-#     volumes correctly defined
-#     nginx can access volumes
-#     
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,7 +11,7 @@ data:
 
     error_log  /var/log/nginx/error.log;
 
-    pid        logs/nginx.pid;
+    pid        /var/log/nginx/nginx.pid;
 
     worker_rlimit_nofile 8192;
 
@@ -28,10 +19,11 @@ data:
       worker_connections  4096;  ## Default: 1024
     }
 
-    daemon off; # run in foreground
+    # daemon off; # run in foreground
 
     http {
-      include    conf/mime.types;      
+        
+      include /etc/nginx/mime.types; # should be replaced by c4k
 
       default_type application/octet-stream;
 
@@ -39,7 +31,7 @@ data:
         '"$request" $body_bytes_sent "$http_referer" '
         '"$http_user_agent" "$http_x_forwarded_for"';
 
-      access_log   logs/access.log  main;
+      access_log   /var/log/nginx/access.log  main;
 
       sendfile     on;
 
@@ -52,7 +44,7 @@ data:
       # it might be a good idea to set a common reverse proxy 
       # which points to the ingress?
 
-      include /etc/nginx/conf.d/FQDN.conf # should be replaced by c4k
+      include /etc/nginx/conf.d/repo.test.meissa.de.conf; # should be replaced by c4k
     }
     
   mime.types: |
@@ -104,14 +96,14 @@ data:
       video/x-ms-asf                        asx asf;
       video/x-mng                           mng;
     }
-  FQDN.conf: | 
+  repo.test.meissa.de.conf: | 
     server {
 
       listen 80 default_server;
 
       listen [::]:80 default_server;
 
-      server_name FQDN www.FQDN;
+      server_name repo.test.meissa.de www.repo.test.meissa.de;
 
       # security headers
       add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';
@@ -123,11 +115,10 @@ data:
       # maybe need to add:
       # add_header Permissions-Policy "permissions here";
 
-      root WEBSITECONTENTPATH;
+      root /var/www/html/repo.test.meissa.de;
 
       index index.html;
 
       try_files $uri /index.html;
 
     }
-
