@@ -21,15 +21,11 @@
 (s/def ::fqdn pred/fqdn-string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::volume-total-storage-size (partial pred/int-gt-n? 5))
-(s/def ::mailer-user pred/bash-env-string?)
-(s/def ::mailer-pw pred/bash-env-string?)
 
 (def config-defaults {:issuer "staging"})
 
 (def config? (s/keys :req-un [::fqdn]
                      :opt-un [::issuer]))
-
-(def auth? (s/keys :opt-un [::mailer-user ::mailer-pw]))
 
 (def vol? (s/keys :req-un [::volume-total-storage-size
                            ::number-of-websites]))
