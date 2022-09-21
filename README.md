@@ -1,6 +1,4 @@
-# c4k-website
-
-# README
+# c4k-website README
 
 ## Requirements
 

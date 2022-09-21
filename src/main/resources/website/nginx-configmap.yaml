@@ -44,7 +44,7 @@ data:
       # it might be a good idea to set a common reverse proxy 
       # which points to the ingress?
 
-      include /etc/nginx/conf.d/repo.test.meissa.de.conf; # should be replaced by c4k
+      include /etc/nginx/conf.d/FQDN.conf; # should be replaced by c4k
     }
     
   mime.types: |
@@ -96,14 +96,18 @@ data:
       video/x-ms-asf                        asx asf;
       video/x-mng                           mng;
     }
-  repo.test.meissa.de.conf: | 
+  FQDN.conf: | 
     server {
 
       listen 80 default_server;
-
       listen [::]:80 default_server;
 
-      server_name repo.test.meissa.de www.repo.test.meissa.de;
+      listen 443 ssl;
+
+      ssl_certificate /etc/certs/tls.crt;
+      ssl_certificate_key /etc/certs/tls.key;
+
+      server_name FQDN;
 
       # security headers
       add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';
@@ -115,7 +119,8 @@ data:
       # maybe need to add:
       # add_header Permissions-Policy "permissions here";
 
-      root /var/www/html/repo.test.meissa.de;
+      root /var/www/html/FQDN;
+      # root /usr/share/nginx/html/; # testing purposes
 
       index index.html;
 

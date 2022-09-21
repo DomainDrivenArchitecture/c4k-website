@@ -24,8 +24,11 @@ spec:
           name: nginx-conf
         - mountPath: /var/log/nginx
           name: log                    
-        - mountPath: /var/www/html/repo.test.meissa.de
+        - mountPath: /var/www/html/FQDN
           name: website-content-volume
+        - mountPath: /etc/certs
+          name: website-cert
+          readOnly: true
       volumes:
         - name: nginx-conf
           configMap:
@@ -33,8 +36,8 @@ spec:
             items:
               - key: nginx.conf
                 path: nginx.conf
-              - key: repo.test.meissa.de.conf
-                path: conf.d/repo.test.meissa.de.conf
+              - key: FQDN.conf
+                path: conf.d/FQDN.conf
               - key: mime.types
                 path: mime.types # dig directory
         - name: log
@@ -42,4 +45,11 @@ spec:
         - name: website-content-volume
           persistentVolumeClaim:
             claimName: website-content-pvc
----
+        - name: website-cert
+          secret: 
+            secretName: website-cert
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key

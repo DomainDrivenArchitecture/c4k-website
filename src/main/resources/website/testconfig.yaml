@@ -26,6 +26,9 @@ spec:
           name: log                    
         - mountPath: /var/www/html/repo.test.meissa.de
           name: website-content-volume
+        - mountPath: /etc/certs
+          name: website-cert
+          readOnly: true
       volumes:
         - name: nginx-conf
           configMap:
@@ -42,6 +45,14 @@ spec:
         - name: website-content-volume
           persistentVolumeClaim:
             claimName: website-content-pvc
+        - name: website-cert
+          secret: 
+            secretName: website-cert
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -145,8 +156,12 @@ data:
     server {
 
       listen 80 default_server;
-
       listen [::]:80 default_server;
+
+      listen 443 ssl;
+
+      ssl_certificate /etc/certs/tls.crt;
+      ssl_certificate_key /etc/certs/tls.key;
 
       server_name repo.test.meissa.de www.repo.test.meissa.de;
 
@@ -160,7 +175,8 @@ data:
       # maybe need to add:
       # add_header Permissions-Policy "permissions here";
 
-      root /var/www/html/repo.test.meissa.de;
+      # root /var/www/html/repo.test.meissa.de;
+      root /usr/share/nginx/html/;
 
       index index.html;
 
@@ -172,14 +188,22 @@ kind: Service
 apiVersion: v1
 metadata:
   name: nginx-service
+  labels:
+    app: nginx
   namespace: default
 spec:
   type: LoadBalancer
+  ipFamilyPolicy: PreferDualStack
   selector:
     app: nginx
   ports:
-     - name: websie 
-       port: 80
+    - port: 80       
+      targetPort: 80
+      name: http
+    - port: 443
+      targetPort: 443
+      name: https
+      
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -195,3 +219,44 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-website
+  namespace: default
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd    
+spec:
+  tls:
+    - hosts:
+        - repo.test.meissa.de
+      secretName: website-cert
+  rules:
+    - host: repo.test.meissa.de
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: website-service
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: website-cert
+  namespace: default
+spec:
+  secretName: website-cert
+  commonName: repo.test.meissa.de
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  dnsNames:
+  - repo.test.meissa.de
+  issuerRef:
+    name: staging
+    kind: ClusterIssuer
