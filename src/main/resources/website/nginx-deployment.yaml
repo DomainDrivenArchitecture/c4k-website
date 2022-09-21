@@ -24,7 +24,7 @@ spec:
           name: nginx-conf
         - mountPath: /var/log/nginx
           name: log                    
-        - mountPath: /var/www/html/FQDN
+        - mountPath: /var/www/html/website
           name: website-content-volume
         - mountPath: /etc/certs
           name: website-cert
@@ -32,14 +32,14 @@ spec:
       volumes:
         - name: nginx-conf
           configMap:
-            name: nginx-conf # place ConfigMap `nginx-conf` on /etc/nginx
+            name: nginx-conf 
             items:
               - key: nginx.conf
                 path: nginx.conf
-              - key: FQDN.conf
-                path: conf.d/FQDN.conf
+              - key: website.conf
+                path: conf.d/website.conf
               - key: mime.types
-                path: mime.types # dig directory
+                path: mime.types 
         - name: log
           emptyDir: {}
         - name: website-content-volume

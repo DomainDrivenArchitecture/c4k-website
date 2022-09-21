@@ -22,4 +22,3 @@ spec:
                 name: website-service
                 port:
                   number: 80
-                  
