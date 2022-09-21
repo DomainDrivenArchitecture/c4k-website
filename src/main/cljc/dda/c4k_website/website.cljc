@@ -1,7 +1,7 @@
 (ns dda.c4k-website.website
   (:require
    [clojure.spec.alpha :as s]
-   [clojure.math :as m]
+   [clojure.math.numeric-tower :as m]
    [clojure.string :as st]
    #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]
@@ -21,11 +21,15 @@
 (s/def ::fqdn pred/fqdn-string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::volume-total-storage-size (partial pred/int-gt-n? 5))
+(s/def ::mailer-user pred/bash-env-string?)
+(s/def ::mailer-pw pred/bash-env-string?)
 
 (def config-defaults {:issuer "staging"})
 
 (def config? (s/keys :req-un [::fqdn]
                      :opt-un [::issuer]))
+
+(def auth? (s/keys :opt-un [::mailer-user ::mailer-pw]))
 
 (def vol? (s/keys :req-un [::volume-total-storage-size
                            ::number-of-websites]))
@@ -68,11 +72,13 @@
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?  
   [config config?]
-  (let [{:keys [fqdn]} config]
-    (->
-     (yaml/load-as-edn "website/nginx-configmap.yaml")     
-     (cm/replace-all-matching-values-by-new-value "FQDN" (str fqdn ";"))     
-     )))
+  (let [{:keys [fqdn]} config
+        configmap (yaml/load-as-edn "website/nginx-configmap.yaml")]         
+    (-> 
+     configmap
+     (assoc-in [:data :website.conf] (st/replace (-> configmap :data :website.conf) #"FQDN" fqdn))
+     )
+  ))     
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
   []

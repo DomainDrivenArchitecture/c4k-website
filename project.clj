@@ -5,6 +5,7 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/tools.reader "1.3.6"]
+                 [org.clojure/math.numeric-tower "0.0.5"]
                  [org.domaindrivenarchitecture/c4k-common-clj "3.0.1"]
                  [hickory "0.7.1"]]
   :target-path "target/%s/"

@@ -30,11 +30,11 @@
                                              })))))
 
 (deftest should-generate-nginx-configmap
-  (is (= {:server_name-c1 "test.de",
-          :server_name-c2 "test.com"}
-         (th/map-diff (cut/generate-appini-env {:fqdn "test.de"                                                
+  (is (= {:website.conf-c1 "server {\n\n  listen 80 default_server;\n  listen [::]:80 default_server;\n\n  listen 443 ssl;\n\n  ssl_certificate /etc/certs/tls.crt;\n  ssl_certificate_key /etc/certs/tls.key;\n\n  server_name test.de\n\n  # security headers\n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';\n  add_header Content-Security-Policy \"default-src 'self'; font-src *;img-src * data:; script-src *; style-src *\";\n  add_header X-XSS-Protection \"1; mode=block\";\n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # maybe need to add:\n  # add_header Permissions-Policy \"permissions here\";\n\n  root /var/www/html/website/;\n  # root /usr/share/nginx/html/; # testing purposes\n\n  index index.html;\n\n  try_files $uri /index.html;\n\n}",
+          :website.conf-c2 "server {\n\n  listen 80 default_server;\n  listen [::]:80 default_server;\n\n  listen 443 ssl;\n\n  ssl_certificate /etc/certs/tls.crt;\n  ssl_certificate_key /etc/certs/tls.key;\n\n  server_name test.com\n\n  # security headers\n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';\n  add_header Content-Security-Policy \"default-src 'self'; font-src *;img-src * data:; script-src *; style-src *\";\n  add_header X-XSS-Protection \"1; mode=block\";\n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # maybe need to add:\n  # add_header Permissions-Policy \"permissions here\";\n\n  root /var/www/html/website/;\n  # root /usr/share/nginx/html/; # testing purposes\n\n  index index.html;\n\n  try_files $uri /index.html;\n\n}"}
+         (th/map-diff (cut/generate-nginx-configmap {:fqdn "test.de"                                                
                                                 })
-                      (cut/generate-appini-env {:fqdn "test.com"                                                
+                      (cut/generate-nginx-configmap {:fqdn "test.com"                                                
                                                 })))))
 
 (deftest should-generate-website-content-volume

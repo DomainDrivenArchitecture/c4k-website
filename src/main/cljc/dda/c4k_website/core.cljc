@@ -4,8 +4,7 @@
   [dda.c4k-common.common :as cm]
   [dda.c4k-website.website :as website]))
 
-(defn k8s-objects [config]
-  (let [storage-class (if (contains? config :postgres-data-volume-path) :manual :local-path)]
+(defn k8s-objects [config]  
     (cm/concat-vec
      (map yaml/to-string
           (filter #(not (nil? %))
@@ -14,4 +13,4 @@
                    (website/generate-nginx-configmap config)
                    (website/generate-nginx-deployment)
                    (website/generate-nginx-service)                                  
-                   (website/generate-website-content-volume config)])))))
+                   (website/generate-website-content-volume config)]))))
