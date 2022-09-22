@@ -27,6 +27,8 @@
 (def config? (s/keys :req-un [::fqdn]
                      :opt-un [::issuer]))
 
+(def auth? (s/keys  :req-un [::none]))
+
 (def vol? (s/keys :req-un [::volume-total-storage-size
                            ::number-of-websites]))
 
@@ -61,7 +63,7 @@
 
 (defn-spec generate-ingress pred/map-or-seq?
   [config config?]
-  (let [{:keys [fqdn issuer]} config]
+  (let [{:keys [fqdn]} config]
     (->
      (yaml/load-as-edn "website/ingress.yaml")
      (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
@@ -72,7 +74,7 @@
         configmap (yaml/load-as-edn "website/nginx-configmap.yaml")]         
     (-> 
      configmap
-     (assoc-in [:data :website.conf] (st/replace (-> configmap :data :website.conf) #"FQDN" fqdn))
+     (assoc-in [:data :website.conf] (st/replace (-> configmap :data :website.conf) #"FQDN" (str fqdn ";")))
      )
   ))     
 

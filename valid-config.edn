@@ -1,0 +1,5 @@
+{:fqdn "repo.test.meissa.de"  
+ :issuer "staging"
+ :volume-total-storage-size 20
+ :number-of-websites 5
+ }

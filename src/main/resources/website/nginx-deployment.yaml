@@ -19,9 +19,9 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-        - mountPath: /etc/nginx # mount nginx volume to /etc/nginx
+        - mountPath: /etc/nginx 
           readOnly: true
-          name: nginx-conf
+          name: nginxconfigvol
         - mountPath: /var/log/nginx
           name: log                    
         - mountPath: /var/www/html/website
@@ -30,9 +30,9 @@ spec:
           name: website-cert
           readOnly: true
       volumes:
-        - name: nginx-conf
+        - name: nginxconfigvol
           configMap:
-            name: nginx-conf 
+            name: nginxconf 
             items:
               - key: nginx.conf
                 path: nginx.conf
