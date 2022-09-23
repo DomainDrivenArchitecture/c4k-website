@@ -95,5 +95,7 @@ data:
       root /var/www/html/website/;
       # root /usr/share/nginx/html/; # testing purposes
       index index.html;
-      try_files $uri /index.html;
+      location / {                              
+        try_files $uri $uri/ /index.html =404;      
+      }
     }

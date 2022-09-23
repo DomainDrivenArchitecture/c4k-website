@@ -2,10 +2,6 @@
 
 ## Requirements
 
-Unsere Website soll mit k8s laufen.
-
-Unsere erzeugten images incl. Web-Inhalt sollen nicht öffentlich zugänglich sein.
-
 A.C.:
  wir haben ein konzept erstellt, wie wir statische Inhalte ausliefern (git-pull & cron // cicid // manueller pybuilder-run).
 
@@ -15,33 +11,18 @@ A.C.:
 
  c4k holt sich stets die neuesten website-container unterbrechungsfrei.
 
- unsere website läuft mit dem neuen setup und ist unter ipv4 und ipv6 erreichbar.
- website ist unter 1 oder 2 fqdns erreichbar.
+ Unsere website läuft mit dem neuen Setup, ist unter ipv4/v6 und unter 1 oder 2 FQDNs erreichbar.
 
 ## Was passiert?
 
-_Frage_ Sollen später Webserver auf den gleichen, laufenden Cluster hinzugefügt werden können?
+Webserver sollen auf den gleichen, laufenden Cluster hinzugefügt werden können.
 
-**Ja:**
-
-Ein Cluster, 1 Pod für eine Website (WS)
--> mehrere FQDNs müssen auf einen Cluster Zeigen
--> viele Pods für viele WS
--> Package einen Webserver mit einer Website
--> DNS Routen so einrichten, dass verschiedene FQDNs auf selbe cluster-id zeigen
--> Ingress muss die angefragten FQDNS auflösen und weiterleiten
-
-Anforderungen an Website-Container:
-nginx-deployment
-nginx-config -> wie
-serviceType: LoadBalancer
-PVC + volume-mount zeigt auf website-data-vol
+**c4k**
+Pro Website je: Ingress -> Service -> Webserver Pod -> Volume Mount -> PVC.
+Ingress muss die angefragten FQDNS auflösen und weiterleiten.
 
 **Terraform:**
-FQDNs für verschiedene Websites hinzufügen?
-Verbindung mit c4k?
-c4k-Modulname als Teil des FQDNs wird später noch problematisch. 
-
+Mehrere DNS Einträge auf Terraform Seite für einen Cluster.
 
 
 ### Reading:
@@ -54,20 +35,14 @@ Deploying Nginx:
 https://kubernetes.io/docs/tasks/run-application/run-stateless-application-deployment/  
 https://www.tecmint.com/deploy-nginx-on-a-kubernetes-cluster/
 
+## 
 
+Definition von Env-Vars im Deployment:
+AUTHTOKEN - muss konfigurierbar sein
+REPOZIPURL - muss konfigurierbar sein
+TARGETDIR - wird aus dem FQDN zusammengesetzt
 
-## Struktur
-
-1. Baue die statische website
-
-2. Schieb die Website auf den Server
-
-3. Liefere die Website mit einem Webserver aus
-
-## Fragen
-
-Soll Cryogen auch in einem container laufen?
-
+Ingress, Service, Certificate, Deployment, Configmap und Volume Mount sollen durch eindeutige, auf FQDN basierenden Namen verbunden sein.
 
 ## Getting started
 
