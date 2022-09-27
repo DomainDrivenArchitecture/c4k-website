@@ -10,6 +10,7 @@
       :cljs [cljs.reader :as edn])
    [dda.c4k-common.yaml :as yaml]
    [dda.c4k-common.common :as cm]
+   [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]))
 
 (defn domain-list?
@@ -135,9 +136,11 @@
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth auth?]
-  (let [{:keys [fqdn token url]} config]
+  (let [{:keys [fqdn 
+                token 
+                url]} auth]
     (->
-     (yaml/load-as-edn "website/website-build-secrets.yaml")
+     (yaml/load-as-edn "website/website-build-secret.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode token))
      (cm/replace-all-matching-values-by-new-value "URL" (b64/encode url)))))
