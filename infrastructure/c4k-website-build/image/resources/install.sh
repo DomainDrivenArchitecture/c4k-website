@@ -2,8 +2,13 @@
 
 apt update > /dev/null;
 
+apt install -y unzip rsync
+
+mkdir /etc/lein/
+
 install -m 0700 /tmp/entrypoint.sh /
 install -m 0700 /tmp/functions.sh /usr/local/bin/
-install -m 0700 /tmp/exclude.pattern /home/$USER
-install -m 0700 /tmp/project.clj /home/$USER/.lein/
-(cd /home/$USER/.lein; lein deps)
+install -m 0700 /tmp/exclude.pattern /etc/
+install -m 0700 /tmp/project.clj /etc/lein/
+cd /etc/lein; 
+lein deps;

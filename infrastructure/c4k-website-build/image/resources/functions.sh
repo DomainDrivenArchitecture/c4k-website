@@ -13,5 +13,5 @@ function build-and-extract-website() {
 # set variables from environment
 # read write zugriff sicherstellen
 function move-website-files-to-target() {
-    rsync -ru --exclude-from "/home/$USER/exclude.pattern" --delete WEB-INF/classes/public/* $TARGETDIR
+    rsync -ru --exclude-from "/etc/exclude.pattern" --delete WEB-INF/classes/public/* $TARGETDIR
 }

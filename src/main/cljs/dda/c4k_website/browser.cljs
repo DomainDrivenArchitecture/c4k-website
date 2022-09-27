@@ -57,7 +57,7 @@
        {:issuer issuer})          
      )))
 
-(defn validate-all! []
+(defn validate-all! [] ; ToDo: Add all necessary inputs and auth
   (br/validate! "fqdn" ::website/fqdn)  
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "volume-total-storage-size" ::website/volume-total-storage-size :deserializer js/parseInt)
