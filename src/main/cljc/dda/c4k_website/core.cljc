@@ -7,10 +7,14 @@
 (defn k8s-objects [config]  
     (cm/concat-vec
      (map yaml/to-string
-          [(website/generate-nginx-deployment)
+          [(website/generate-nginx-deployment config)
            (website/generate-nginx-configmap config)
-           (website/generate-nginx-service)
+           (website/generate-nginx-service config)
            (website/generate-website-content-volume config)
            (website/generate-ingress config)
            (website/generate-certificate config)
+           (website/generate-website-build-cron config)
+           (website/generate-website-build-deployment config)
+           (website/generate-website-build-secret config)
+
            ])))

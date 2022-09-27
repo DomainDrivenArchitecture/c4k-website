@@ -1,13 +1,13 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: nginx-service
+  name: NAME-service
   labels:
-    app: nginx
+    app: NAME-nginx
   namespace: default
 spec:    
   selector:
-    app: nginx
+    app: NAME-nginx
   ports:
     - name: nginx-http
       port: 80             

@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: NAME-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
+      app: NAME-nginx
   template:
     metadata:
       labels:
-        app: nginx
+        app: NAME-nginx
     spec:
       containers:
-      - name: nginx
+      - name: NAME-nginx
         image: nginx:latest
         imagePullPolicy: "Always"
         ports:
@@ -21,7 +21,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/nginx 
           readOnly: true
-          name: nginxconfigvol
+          name: nginx-config-volume
         - mountPath: /var/log/nginx
           name: log                    
         - mountPath: /var/www/html/website
@@ -30,9 +30,9 @@ spec:
           name: website-cert
           readOnly: true
       volumes:
-        - name: nginxconfigvol
+        - name: nginx-config-volume
           configMap:
-            name: nginxconf 
+            name: NAME-configmap
             items:
               - key: nginx.conf
                 path: nginx.conf
@@ -44,10 +44,10 @@ spec:
           emptyDir: {}
         - name: website-content-volume
           persistentVolumeClaim:
-            claimName: website-content-pvc
+            claimName: NAME-content-pvc
         - name: website-cert
           secret: 
-            secretName: website-cert
+            secretName: NAME-cert
             items:
               - key: tls.crt
                 path: tls.crt

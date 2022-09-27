@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: website-builder
+  name: NAME-build-cron
   labels:
     app.kubernetes.part-of: website # correct name?
 spec:
@@ -13,35 +13,18 @@ spec:
       template:
         spec:
           containers:
-          - name: backup-app
-            image: domaindrivenarchitecture/c4k-gitea-backup
+          - image: domaindrivenarchitecture/c4k-website-build
+            name: NAME-build-app
             imagePullPolicy: IfNotPresent
             command: ["/entrypoint.sh"]
-            env:
-            - name: AWS_DEFAULT_REGION
-              value: eu-central-1
-            - name: AWS_ACCESS_KEY_ID_FILE
-              value: /var/run/secrets/backup-secrets/aws-access-key-id
-            - name: AWS_SECRET_ACCESS_KEY_FILE
-              value: /var/run/secrets/backup-secrets/aws-secret-access-key
-            - name: RESTIC_REPOSITORY
-              valueFrom:
-                configMapKeyRef:
-                  name: backup-config
-                  key: restic-repository
-            - name: RESTIC_PASSWORD_FILE
-              value: /var/run/secrets/backup-secrets/restic-password
+            envFrom:
+            - secretRef:
+                name: NAME-secret                   
             volumeMounts:
-            - name: gitea-data-volume
-              mountPath: /var/backups
-            - name: backup-secret-volume
-              mountPath: /var/run/secrets/backup-secrets
-              readOnly: true
+            - name: content-volume
+              mountPath: /var/www/html/website
           volumes:
-          - name: gitea-data-volume
+          - name: content-volume
             persistentVolumeClaim:
-              claimName: gitea-data-pvc
-          - name: backup-secret-volume
-            secret:
-              secretName: backup-secret
+              claimName: NAME-content-pvc
           restartPolicy: OnFailure

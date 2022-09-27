@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: website-content-pvc
+  name: NAME-content-volume
   namespace: default
   labels:
-    app: nginx
+    app: NAME-nginx
 spec:
   storageClassName: local-path
   accessModes:
@@ -12,3 +12,4 @@ spec:
   resources:
     requests:
       storage: WEBSITESTORAGESIZE
+      

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-website
+  name: NAME-ingress
   namespace: default
   annotations:
     ingress.kubernetes.io/ssl-redirect: "true"
@@ -10,7 +10,7 @@ spec:
   tls:
     - hosts:
         - FQDN
-      secretName: website-cert
+      secretName: NAME-cert
   rules:
     - host: FQDN
       http:
@@ -19,6 +19,6 @@ spec:
             path: "/"
             backend:
               service:
-                name: nginx-service
+                name: NAME-service
                 port:
                   number: 80

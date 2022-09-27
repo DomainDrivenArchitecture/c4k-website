@@ -40,9 +40,9 @@ https://www.tecmint.com/deploy-nginx-on-a-kubernetes-cluster/
 Definition von Env-Vars im Deployment:
 AUTHTOKEN - muss konfigurierbar sein
 REPOZIPURL - muss konfigurierbar sein
-TARGETDIR - wird aus dem FQDN zusammengesetzt
+WEBSITEROOT - hardcoded, da containerspezifisch
 
-Ingress, Service, Certificate, Deployment, Configmap und Volume Mount sollen durch eindeutige, auf FQDN basierenden Namen verbunden sein.
+Certificate, Ingress, Configmap, Deployment, Service, Volume Claim, Website-deployment sollen durch eindeutige, auf FQDN basierenden Namen verbunden sein.
 
 ## Getting started
 
