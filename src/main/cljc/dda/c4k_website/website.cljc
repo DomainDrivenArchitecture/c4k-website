@@ -1,7 +1,8 @@
 (ns dda.c4k-website.website
   (:require
    [clojure.spec.alpha :as s]
-   [clojure.math.numeric-tower :as m]
+   #?(:clj [clojure.math.numeric-tower :as m]
+      :cljs [cljs.math :as m])
    [clojure.string :as st]
    #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]

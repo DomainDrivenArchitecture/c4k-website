@@ -13,8 +13,5 @@
            (website/generate-website-content-volume config)
            (website/generate-ingress config)
            (website/generate-certificate config)
-           (website/generate-website-build-cron config)
-           (website/generate-website-build-deployment config)
-           (website/generate-website-build-secret config)
-
-           ])))
+           (website/generate-website-build-cron config)           
+           (website/generate-website-build-secret config)])))

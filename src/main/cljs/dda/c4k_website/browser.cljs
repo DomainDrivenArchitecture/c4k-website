@@ -36,6 +36,14 @@
        (cm/concat-vec
         (br/generate-input-field "volume-total-storage-size" "Your website volume-total-storage-size:" "20")
         (br/generate-input-field "number-of-websites" "The Number of websites running on your cluster" "5")))
+      (generate-group
+       "credentials"
+       (br/generate-text-area
+        "auth" "Your auth.edn:"
+        "{:gitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branchname>.zip\"
+         :authtoken \"yourgiteaauthtoken\"        
+         }"
+        "3"))
       [(br/generate-br)]
       (br/generate-button "generate-button" "Generate c4k yaml")))]
    (br/generate-output "c4k-website-output" "Your c4k deployment.yaml:" "25")))
@@ -61,7 +69,8 @@
   (br/validate! "fqdn" ::website/fqdn)  
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "volume-total-storage-size" ::website/volume-total-storage-size :deserializer js/parseInt)
-  (br/validate! "number-of-websites" ::website/number-of-websites :deserializer js/parseInt)  
+  (br/validate! "number-of-websites" ::website/number-of-websites :deserializer js/parseInt)
+  (br/validate! "auth" core/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
 
 (defn add-validate-listener [name]
@@ -84,4 +93,5 @@
   (add-validate-listener "fqdn")  
   (add-validate-listener "volume-total-storage-size")
   (add-validate-listener "issuer")
-  (add-validate-listener "number-of-websites"))
+  (add-validate-listener "number-of-websites")
+  (add-validate-listener "auth"))

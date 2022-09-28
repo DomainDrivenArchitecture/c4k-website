@@ -1,1 +1,2 @@
-{:none "none"}
+{:authtoken "asdfasdfe"
+ :gitrepourl "https://some.de/path/to/repo.zip"}
