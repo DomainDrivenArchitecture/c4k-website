@@ -28,7 +28,7 @@
 (def config? (s/keys :req-un [::fqdn]
                      :opt-un [::issuer]))
 
-(def auth? (s/keys  :req-un [::token ::url]))
+(def auth? (s/keys  :req-un [::authtoken ::gitrepourl]))
 
 (def vol? (s/keys :req-un [::volume-total-storage-size
                            ::number-of-websites]))
@@ -125,14 +125,16 @@
   (let [{:keys [fqdn]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
   [config config?]
   (let [{:keys [fqdn]} config]
     (->
      (yaml/load-as-edn "website/website-build-deployment.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth auth?]

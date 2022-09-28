@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.part-of: website # correct name?
 spec:
-  schedule: "10 23 * * *"
+  schedule: "1,7,14,21,28,35,42,49,54,59 * * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
@@ -17,6 +17,9 @@ spec:
             name: NAME-build-app
             imagePullPolicy: IfNotPresent
             command: ["/entrypoint.sh"]
+            env:
+            - name: HOSTADRESS
+              value: FQDN
             envFrom:
             - secretRef:
                 name: NAME-secret                   
@@ -26,5 +29,5 @@ spec:
           volumes:
           - name: content-volume
             persistentVolumeClaim:
-              claimName: NAME-content-pvc
+              claimName: NAME-content-volume
           restartPolicy: OnFailure

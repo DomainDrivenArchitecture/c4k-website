@@ -74,7 +74,7 @@
                  {:key "website.conf", :path "conf.d/website.conf"}
                  {:key "mime.types", :path "mime.types"}]}}
               {:name "log", :emptyDir {}}
-              {:name "website-content-volume", :persistentVolumeClaim {:claimName "test-de-content-pvc"}}
+              {:name "website-content-volume", :persistentVolumeClaim {:claimName "test-de-content-volume"}}
               {:name "website-cert",
                :secret
                {:secretName "test-de-cert", :items [{:key "tls.crt", :path "tls.crt"} {:key "tls.key", :path "tls.key"}]}}]}}}}
@@ -94,7 +94,7 @@
           :kind "CronJob",
           :metadata {:name "test-de-build-cron", :labels {:app.kubernetes.part-of "website"}},
           :spec
-          {:schedule "10 23 * * *",
+          {:schedule "1,7,14,21,28,35,42,49,54,59 * * * *",
            :successfulJobsHistoryLimit 1,
            :failedJobsHistoryLimit 1,
            :jobTemplate
@@ -106,9 +106,10 @@
                  :name "test-de-build-app",
                  :imagePullPolicy "IfNotPresent",
                  :command ["/entrypoint.sh"],
+                 :env [{:name "HOSTADRESS", :value "test.de"}],
                  :envFrom [{:secretRef {:name "test-de-secret"}}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-de-content-pvc"}}],
+               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-de-content-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
          (cut/generate-website-build-cron {:fqdn "test.de"}))))
 
@@ -129,9 +130,10 @@
                :name "test-de-build-app",
                :imagePullPolicy "IfNotPresent",
                :command ["/entrypoint.sh"],
+               :env [{:name "HOSTADRESS", :value "test.de"}],
                :envFrom [{:secretRef {:name "test-de-secret"}}],
                :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-de-content-pvc"}}]}}}}
+             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-de-content-volume"}}]}}}}
          (cut/generate-website-build-deployment {:fqdn "test.de"}))))
 
 (deftest should-generate-website-build-secret

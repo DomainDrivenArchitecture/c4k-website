@@ -21,6 +21,9 @@ spec:
         name: NAME-build-app
         imagePullPolicy: IfNotPresent
         command: ["/entrypoint.sh"]
+        env:
+        - name: HOSTADRESS
+          value: FQDN
         envFrom:
         - secretRef:
             name: NAME-secret                   
@@ -30,4 +33,4 @@ spec:
       volumes:
       - name: content-volume
         persistentVolumeClaim:
-          claimName: NAME-content-pvc
+          claimName: NAME-content-volume

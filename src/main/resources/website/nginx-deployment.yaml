@@ -44,7 +44,7 @@ spec:
           emptyDir: {}
         - name: website-content-volume
           persistentVolumeClaim:
-            claimName: NAME-content-pvc
+            claimName: NAME-content-volume
         - name: website-cert
           secret: 
             secretName: NAME-cert
