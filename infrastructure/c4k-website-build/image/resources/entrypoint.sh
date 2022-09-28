@@ -15,7 +15,3 @@ echo "Building website"
 build-and-extract-website
 echo "Moving files"
 move-website-files-to-target    
-
-while true; do
-    sleep 1m
-done
