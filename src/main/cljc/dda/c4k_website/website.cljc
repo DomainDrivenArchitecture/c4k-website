@@ -137,10 +137,10 @@
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth auth?]
   (let [{:keys [fqdn 
-                token 
-                url]} auth]
+                authtoken 
+                gitrepourl]} auth]
     (->
      (yaml/load-as-edn "website/website-build-secret.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode token))
-     (cm/replace-all-matching-values-by-new-value "URL" (b64/encode url)))))
+     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
+     (cm/replace-all-matching-values-by-new-value "URL" (b64/encode gitrepourl)))))

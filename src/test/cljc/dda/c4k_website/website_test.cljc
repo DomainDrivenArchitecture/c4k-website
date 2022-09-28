@@ -139,14 +139,14 @@
           :name-c2 "test-com-secret",
           :AUTHTOKEN-c1 (b64/encode "token1"), 
           :AUTHTOKEN-c2 (b64/encode "token2"),
-          :REPOZIPURL-c1 (b64/encode "test.de/user/repo.git"),
-          :REPOZIPURL-c2 (b64/encode "test.com/user/repo.git")}
+          :GITREPOURL-c1 (b64/encode "test.de/user/repo.git"),
+          :GITREPOURL-c2 (b64/encode "test.com/user/repo.git")}
          (th/map-diff (cut/generate-website-build-secret {:fqdn "test.de" 
-                                                          :token "token1" 
-                                                          :url "test.de/user/repo.git"})
+                                                          :authtoken "token1" 
+                                                          :gitrepourl "test.de/user/repo.git"})
                       (cut/generate-website-build-secret {:fqdn "test.com"
-                                                          :token "token2"
-                                                          :url "test.com/user/repo.git"})))))
+                                                          :authtoken "token2"
+                                                          :gitrepourl "test.com/user/repo.git"})))))
 
 
 (deftest should-generate-website-content-volume
