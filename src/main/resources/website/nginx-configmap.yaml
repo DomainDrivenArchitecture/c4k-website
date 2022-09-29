@@ -82,20 +82,18 @@ data:
       listen 443 ssl;
       ssl_certificate /etc/certs/tls.crt;
       ssl_certificate_key /etc/certs/tls.key;
-      server_name FQDN
-      # security headers
+      server_name FQDN 
       add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';
       add_header Content-Security-Policy "default-src 'self'; font-src *;img-src * data:; script-src *; style-src *";
       add_header X-XSS-Protection "1; mode=block";
       add_header X-Frame-Options "SAMEORIGIN";
       add_header X-Content-Type-Options nosniff;
       add_header Referrer-Policy "strict-origin";
-      # maybe need to add:
       # add_header Permissions-Policy "permissions here";
       root /var/www/html/website/;
-      # root /usr/share/nginx/html/; # testing purposes
       index index.html;
-      location / {                              
-        try_files $uri $uri/ /index.html =404;      
+      location / {
+        try_files $uri $uri/ /index.html =404;
       }
     }
+    
