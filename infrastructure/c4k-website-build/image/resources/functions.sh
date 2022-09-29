@@ -2,7 +2,7 @@
 
 function get-and-unzip-website-data() {
     filename="website.zip"
-    curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$filename $GITREPOURL # GITREPURL = https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip        
+    curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$filename $GITREPOURL
     unzip $SOURCEDIR/$filename -d $BUILDDIR
 }
 

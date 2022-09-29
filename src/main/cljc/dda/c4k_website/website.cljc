@@ -14,15 +14,12 @@
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]))
 
-(defn domain-list?
-  [input]
-  (or
-   (st/blank? input)
-   (pred/string-of-separated-by? pred/fqdn-string? #"," input)))
-
 (s/def ::fqdn pred/fqdn-string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
-(s/def ::volume-total-storage-size (partial pred/int-gt-n? 5))
+(s/def ::volume-total-storage-size int?)
+(s/def ::number-of-websites int?)
+(s/def ::authtoken pred/bash-env-string?)
+(s/def ::gitrepourl pred/bash-env-string?)
 
 (def config-defaults {:issuer "staging"})
 
