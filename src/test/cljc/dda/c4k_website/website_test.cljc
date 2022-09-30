@@ -7,7 +7,6 @@
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-website.website :as cut]))
 
-
 (st/instrument `cut/generate-certificate)
 (st/instrument `cut/generate-ingress)
 (st/instrument `cut/generate-nginx-configmap)
@@ -148,17 +147,10 @@
                                                           :authtoken "token2"
                                                           :gitrepourl "test.com/user/repo.git"})))))
 
-
 (deftest should-generate-website-content-volume
-  (is (= {:storage-c1 "2Gi",
-          :storage-c2 "10Gi",
-          :name-c1 "test-de-content-volume",
+  (is (= {:name-c1 "test-de-content-volume",
           :name-c2 "test-com-content-volume",
           :app-c1 "test-de-nginx",
           :app-c2 "test-com-nginx"}
-         (th/map-diff (cut/generate-website-content-volume {:fqdn "test.de"
-                                                            :volume-total-storage-size 10
-                                                            :number-of-websites 5})
-                      (cut/generate-website-content-volume {:fqdn "test.com"
-                                                            :volume-total-storage-size 50
-                                                            :number-of-websites 5})))))
+         (th/map-diff (cut/generate-website-content-volume {:fqdn "test.de"})
+                      (cut/generate-website-content-volume {:fqdn "test.com"})))))

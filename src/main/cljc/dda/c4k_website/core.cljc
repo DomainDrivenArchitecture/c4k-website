@@ -13,9 +13,6 @@
 (def auth? (s/keys  :req-un [::website/authtoken 
                              ::website/gitrepourl]))
 
-(def vol? (s/keys :req-un [::website/volume-total-storage-size
-                           ::website/number-of-websites]))
-
 (defn k8s-objects [config]
   (cm/concat-vec
    (map yaml/to-string

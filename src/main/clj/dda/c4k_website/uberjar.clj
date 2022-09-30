@@ -7,4 +7,4 @@
 
 
 (defn -main [& cmd-args]
-  (uberjar/main-common "c4k-website" website/config? website/auth? website/config-defaults core/k8s-objects cmd-args))
+  (uberjar/main-common "c4k-website" website/config? website/auth? core/config-defaults core/k8s-objects cmd-args))

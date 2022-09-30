@@ -1,8 +1,6 @@
 (ns dda.c4k-website.website
   (:require
-   [clojure.spec.alpha :as s]
-   #?(:clj [clojure.math.numeric-tower :as m]
-      :cljs [cljs.math :as m])
+   [clojure.spec.alpha :as s]   
    [clojure.string :as st]
    #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]
@@ -16,24 +14,15 @@
 
 (s/def ::fqdn pred/fqdn-string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
-(s/def ::volume-total-storage-size int?)
-(s/def ::number-of-websites int?)
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::gitrepourl pred/bash-env-string?)
-
-(def config-defaults {:issuer "staging"})
 
 (def config? (s/keys :req-un [::fqdn]
                      :opt-un [::issuer]))
 
 (def auth? (s/keys  :req-un [::authtoken ::gitrepourl]))
 
-(def vol? (s/keys :req-un [::volume-total-storage-size
-                           ::number-of-websites]))
-
-(defn volume-size-by-total-available-space
-  [total number-of-websites-on-node]
-  (m/floor (/ total number-of-websites-on-node))) ; ToDo: This might be a terrible idea
+(def volume-size 3) 
 
 (defn unique-name-from-fqdn
   [fqdn]
@@ -41,7 +30,7 @@
 
 ; ToDo: Move to common?
 (defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
-  [col string?
+  [col string? ;ToDo richtig spec-en
    value-to-partly-match string?
    value-to-inplace string?]
   (clojure.walk/postwalk #(if (and (= (type value-to-partly-match) (type %))
@@ -110,13 +99,12 @@
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn)))))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
-  [config vol?]
-  (let [{:keys [volume-total-storage-size number-of-websites fqdn]} config
-        data-storage-size (volume-size-by-total-available-space volume-total-storage-size number-of-websites)]
+  [config config?]
+  (let [{:keys [fqdn]} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str (str data-storage-size) "Gi")))))
+     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str (str volume-size) "Gi")))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config config?]
