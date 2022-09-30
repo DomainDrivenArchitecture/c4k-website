@@ -1,5 +1,6 @@
-{:fqdn "repo.test.meissa.de"  
- :issuer "staging"
- :volume-total-storage-size 20
- :number-of-websites 5
- }
+{:fqdn "meissa.de"
+ :fqdn1 "meissa-gmbh.de"
+ :fqdn2 "domaindrivenarchitecture.org"
+ :multi ["fqdn", "fqdn1"]
+ :single "fqdn2"
+ :issuer "staging"}

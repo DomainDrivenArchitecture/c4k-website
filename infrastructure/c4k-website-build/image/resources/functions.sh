@@ -7,6 +7,10 @@ function get-and-unzip-website-data() {
 }
 
 function build-and-extract-website() {
-    (cd $BUILDDIR; dir=$(ls); cd $dir; timeout -s SIGKILL 35s lein ring server-headless;)
+    (cd $BUILDDIR; dir=$(ls); cd $dir; lein run;)
     # websiteartifactname=$(ls target/ | grep -Eo "*.+\.war"); unzip target/$websiteartifactname
+}
+
+function move-website-files-to-target() {
+    (cd $BUILDDIR; dir=$(ls); cd $dir; rsync -ru --exclude-from "/etc/exclude.pattern" --delete resources/public/* $WEBSITEROOT;)
 }

@@ -29,14 +29,19 @@
       (generate-group
        "domain"
        (cm/concat-vec
-        (br/generate-input-field "fqdn" "Your fqdn:" "deineWebsite.de")
+        (br/generate-input-field "fqdn" "Your first fqdn:" "deineWebsite.de")
+        (br/generate-input-field "fqdn1" "Your second fqdn:" "deineWebsite.com")
+        (br/generate-input-field "fqdn2" "Your third fqdn:" "meineWebsite.org")
+        (br/generate-input-field "multi" "Holds fqdns pointing to same ingress" "[\"fqdn\", \"fqdn1\"]")
+        (br/generate-input-field "single" "Holds fqdn pointing to another ingress" "fqdn")
         (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")))      
       (generate-group
        "credentials"
        (br/generate-text-area
         "auth" "Your auth.edn:"
-        "{:gitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branchname>.zip\"
-         :authtoken \"yourgiteaauthtoken\"        
+        "{:authtoken \"yourgiteaauthtoken\"        
+         :gitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branchname>.zip\"
+         :singlegitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<otherRepo>/archive/<branchname>.zip\"
          }"
         "3"))
       [(br/generate-br)]
@@ -59,6 +64,10 @@
 
 (defn validate-all! []
   (br/validate! "fqdn" ::website/fqdn)
+  (br/validate! "fqdn1" ::website/fqdn1)
+  (br/validate! "fqdn2" ::website/fqdn2)
+  (br/validate! "single" ::website/single)
+  (br/validate! "multi" ::website/multi)
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "auth" core/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
@@ -81,5 +90,9 @@
                                    core/k8s-objects)
                                   (br/set-output!)))))
   (add-validate-listener "fqdn")
+  (add-validate-listener "fqdn1")
+  (add-validate-listener "fqdn2")
+  (add-validate-listener "single")
+  (add-validate-listener "multi")
   (add-validate-listener "issuer")
   (add-validate-listener "auth"))
