@@ -28,6 +28,7 @@
   [config]
   (assoc config :fqdn ((keyword (:single config)) config)))
 
+
 (defn k8s-objects [config]
   (cm/concat-vec
    (map yaml/to-string
@@ -49,7 +50,7 @@
                  (website/generate-single-ingress config)
                  (website/generate-single-certificate config)
                  (website/generate-website-build-cron (set-single-repo-url (set-single-fqdn config)))
-                 (website/generate-website-build-secret (set-single-fqdn config))]))))
+                 (website/generate-website-build-secret (set-single-repo-url (set-single-fqdn config)))]))))
 
 ; read config, 
 ; 
