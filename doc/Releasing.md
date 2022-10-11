@@ -1,14 +1,21 @@
-# stable release (should be done from master)
+# Release process for stable release
 
+``` bash
+git checkout main # for old projects replace main with master
 ```
-#adjust [version]
-vi package.json
 
+Open package.json, find ":version" keyword and remove "-SNAPSHOT" from version number.
+
+``` bash
 lein release
 git push --follow-tags
+```
 
-# bump version - increase version and add -SNAPSHOT
-vi package.json
+Open package.json again, increase version increment by one and add "-SNAPSHOT".
+
+``` bash
 git commit -am "version bump"
 git push
 ```
+
+Done.

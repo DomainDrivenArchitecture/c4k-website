@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: https-ingress-gitea
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"    
+spec:
+  tls:
+    - hosts:
+        - FQDN
+      secretName: CERTNAME
+  rules:
+    - host: FQDN
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: SERVICENAME
+                port:
+                  number: 80

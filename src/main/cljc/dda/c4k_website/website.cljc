@@ -41,6 +41,14 @@
   [fqdn]
   (st/replace fqdn #"\." "-"))
 
+(defn generate-service-name
+  [name]
+  (str (unique-name-from-fqdn name) "-service"))
+
+(defn generate-cert-name
+  [name]
+  (str (unique-name-from-fqdn name) "-cert"))
+
 ; ToDo: Move to common?
 (defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
   [col string? ;ToDo richtig spec-en
@@ -71,6 +79,103 @@
 #?(:cljs
    (defmethod yaml/load-as-edn :website [resource-name]
      (yaml/from-string (yaml/load-resource resource-name))))
+
+; ability extend input map (e.g. ingress or cert) with additional values (e.g. FQDNs)
+; use for website-ingress generation
+(defn add-to-col-within-map [inmap keywordlist value]
+  (-> inmap
+      (get-in keywordlist)
+      (conj value)
+      (#(assoc-in inmap keywordlist %))))
+
+; generate a list of host-rules from a list of fqdns
+(defn make-host-rules-from-fqdns
+  [rule fqdns]
+  ;function that creates a rule from host names
+  (map #(assoc-in rule [:host] %) fqdns))
+
+;create working ingress
+(defn generate-common-http-ingress [config]
+  (let [{:keys [fqdn service-name]} config]
+    (->
+     (yaml/load-as-edn "website/http-ingress.yaml")
+     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+
+(defn generate-website-http-ingress [config]
+  (let [{:keys [uname fqdns]} config
+        fqdn (first fqdns)
+        spec-rules [:spec :rules]
+        service-name (generate-service-name uname)]
+    (->
+     (generate-common-http-ingress
+      {:fqdn fqdn :service-name service-name})
+     (assoc-in
+      [:metadata :name]
+      (str (unique-name-from-fqdn uname) "-http-ingress"))
+     (#(assoc-in %
+                 spec-rules
+                 (make-host-rules-from-fqdns
+                  (-> % :spec :rules first) ;get first ingress rule
+                  fqdns))))))
+
+;create working ingress
+(defn generate-common-https-ingress [config]
+  (let [{:keys [fqdn service-name cert-name]} config]
+    (->
+     (yaml/load-as-edn "website/https-ingress.yaml")
+     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)
+     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+
+(defn generate-website-https-ingress [config]
+  (let [{:keys [uname fqdns]} config
+        fqdn (first fqdns)
+        spec-rules [:spec :rules]
+        spec-tls-hosts [:spec :tls 0 :hosts]
+        service-name (generate-service-name uname)
+        cert-name (generate-cert-name uname)]
+    (->
+     (generate-common-https-ingress
+      {:fqdn fqdn :service-name service-name :cert-name cert-name})
+     (assoc-in
+      [:metadata :name]
+      (str (unique-name-from-fqdn uname) "-https-ingress"))
+     (#(assoc-in %
+                 spec-tls-hosts
+                 fqdns))
+     (#(add-to-col-within-map %
+                              spec-rules
+                              (make-host-rules-from-fqdns
+                               (-> % :spec :rules first) ;get first ingress rule
+                               fqdns))))))
+
+(defn generate-common-certificate
+  [config]
+  (let [{:keys [uname fqdns issuer]
+         :or {issuer "staging"}} config
+        fqdn (first fqdns)        
+        letsencrypt-issuer (name issuer)
+        cert-name (generate-cert-name uname)]
+    (->
+     (yaml/load-as-edn "website/certificate.yaml")
+     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
+     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+
+(defn generate-website-certificate
+  [config]
+  (let [{:keys [uname fqdns issuer]
+         :or {issuer "staging"}} config
+        fqdn (first fqdns)
+        spec-dnsNames [:spec :dnsNames]
+        letsencrypt-issuer (name issuer)
+        cert-name (generate-cert-name uname)]
+    (->
+     (yaml/load-as-edn "website/certificate.yaml")
+     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
+     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-single-certificate pred/map-or-seq?
   [config config?]

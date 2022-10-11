@@ -2,4 +2,10 @@
  :gitrepourl "https://some.de/path/to/repo.zip"
  :singlegitrepourl "https://someother.de/path/to/repo.zip"}
 
-{:auth [{:name "meissa.io" :username "" :auth-token ""}]}
+{:auth
+ [{:name "meissa.io"
+   :username ""
+   :authtoken ""}
+  {:name "dda.io"
+   :username ""
+   :authtoken ""}]}
