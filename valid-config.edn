@@ -4,3 +4,17 @@
  :multi ["fqdn", "fqdn1"]
  :single "fqdn2"
  :issuer "staging"}
+
+{:issuer "staging"
+ :websites
+ [{:name "meissa.io"
+   :fqdns ["meissa.de", "meissa-gmbh.de", "www.meissa-gmbh.de",
+           "www.meissa.de", "www.prod.meissa-gmbh.de", "www.prod.meissa.de"]
+   :gitea-host "repo.prod.meissa.de"
+   :gitea-repo "repo"}
+  ; -> "https://" + git-host + "/api/v1/" + user + "/" + git-repo
+  {:fqdns ["domaindrivenarchitecture.org", "www.domaindrivenarchitecture.org", 
+           "www.prod.domaindrivenarchitecture.org"]
+   :git-url ""}
+  ]
+ }
