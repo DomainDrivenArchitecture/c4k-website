@@ -16,10 +16,7 @@ spec:
           - image: domaindrivenarchitecture/c4k-website-build
             name: NAME-build-app
             imagePullPolicy: IfNotPresent
-            command: ["/entrypoint.sh"]
-            env:
-            - name: HOSTADRESS
-              value: FQDN
+            command: ["/entrypoint.sh"]            
             envFrom:
             - secretRef:
                 name: NAME-secret                   

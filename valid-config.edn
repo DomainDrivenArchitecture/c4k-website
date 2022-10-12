@@ -1,20 +1,14 @@
-{:fqdn "meissa.de"
- :fqdn1 "meissa-gmbh.de"
- :fqdn2 "domaindrivenarchitecture.org"
- :multi ["fqdn" "fqdn1"]
- :single "fqdn2"
- :issuer "staging"}
-
 {:issuer "staging"
  :websites
  [{:uname "meissa.io"
    :fqdns ["meissa.de" "meissa-gmbh.de" "www.meissa-gmbh.de"
            "www.meissa.de" "www.prod.meissa-gmbh.de" "www.prod.meissa.de"]
    :gitea-host "repo.prod.meissa.de"
-   :gitea-repo "repo"}
-  ; -> "https://" + git-host + "/api/v1/" + user + "/" + git-repo
-  {:name "dda.io"
+   :gitea-repo "repo"
+   :branchname "main"}
+  {:uname "dda.io"
    :fqdns ["domaindrivenarchitecture.org", "www.domaindrivenarchitecture.org",
            "www.prod.domaindrivenarchitecture.org"]
    :gitea-host "repo.prod.meissa.de"
-   :gitea-repo "repo"}]}
+   :gitea-repo "repo"
+   :branchname "main"}]}

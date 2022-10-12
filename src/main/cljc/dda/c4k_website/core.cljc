@@ -7,56 +7,62 @@
 
 (def config-defaults {:issuer "staging"})
 
-(def config? (s/keys :req-un [::website/fqdn
-                              ::website/single
-                              ::website/multi
-                              ::website/fqdn1
-                              ::website/fqdn2]
+(s/def ::websites vector?)
+(s/def ::auth vector?)
+
+(def config? (s/keys :req-un [::websites]
                      :opt-un [::website/issuer]))
 
-(def auth? (s/keys  :req-un [::website/authtoken 
-                             ::website/gitrepourl]))
-(defn set-single-repo-url
+(def auth? (s/keys  :req-un [::auth]))
+
+(defn flatten-and-reduce-config
   [config]
-  (assoc config :gitrepourl (:singlegitrepourl config)))
+  (merge (-> config :websites first) (-> config :auth first) {:issuer (config :issuer)}))
 
-(defn set-multi-fqdn ; Sets the first value of :multi to be the name giving fqdn
-  [config]  
-  (assoc config :fqdn (keyword ((keyword (first (:multi config))) config))) config)
+(defn find-needle [needle haystack]
+  ;loop binds initial values once,
+  ;then binds values from each recursion call
+  (loop [needle needle
+         maybe-here haystack
+         not-here '()]
 
-(defn set-single-fqdn ; Sets the value of :single to be the name giving fqdn
-  [config]
-  (assoc config :fqdn ((keyword (:single config)) config)))
+    (let [needle? (first maybe-here)]
 
+      ;test for return or recur
+      (if (or (= (str needle?) (str needle))
+              (empty? maybe-here))
+
+        ;return results
+        [needle? maybe-here not-here]
+
+        ;recur calls loop with new values
+        (recur needle
+               (rest maybe-here)
+               (concat not-here (list (first maybe-here))))))))
+
+(defn generate-configs [config]
+  (loop [config config
+         result []]
+
+    (if (and (empty? (config :auth)) (empty? (config :websites)))
+      result
+      (recur (->
+              config
+              (assoc-in  [:websites] (rest (config :websites)))
+              (assoc-in  [:auth] (rest (config :auth))))
+             (merge result
+                     (website/generate-nginx-deployment (flatten-and-reduce-config config))
+                     (website/generate-nginx-configmap (flatten-and-reduce-config config))
+                     (website/generate-nginx-service (flatten-and-reduce-config config))
+                     (website/generate-website-content-volume (flatten-and-reduce-config config))
+                     (website/generate-website-http-ingress (flatten-and-reduce-config config))
+                     (website/generate-website-https-ingress (flatten-and-reduce-config config))
+                     (website/generate-website-certificate (flatten-and-reduce-config config))
+                     (website/generate-website-build-cron (flatten-and-reduce-config config))
+                     (website/generate-website-build-secret (flatten-and-reduce-config config)))))))
 
 (defn k8s-objects [config]
   (cm/concat-vec
    (map yaml/to-string
         (filter #(not (nil? %))
-                [; multi-case
-                 (website/generate-nginx-deployment (set-multi-fqdn config))
-                 (website/generate-multi-nginx-configmap config)
-                 (website/generate-nginx-service (set-multi-fqdn config))
-                 (website/generate-website-content-volume (set-multi-fqdn config))
-                 (website/generate-multi-ingress config)
-                 (website/generate-multi-certificate config)
-                 (website/generate-website-build-cron (set-multi-fqdn config))
-                 (website/generate-website-build-secret (set-multi-fqdn config))
-                 ; single case
-                 (website/generate-nginx-deployment (set-single-fqdn config))
-                 (website/generate-single-nginx-configmap config)
-                 (website/generate-nginx-service (set-single-fqdn config))
-                 (website/generate-website-content-volume (set-single-fqdn config))
-                 (website/generate-single-ingress config)
-                 (website/generate-single-certificate config)
-                 (website/generate-website-build-cron (set-single-repo-url (set-single-fqdn config)))
-                 (website/generate-website-build-secret (set-single-repo-url (set-single-fqdn config)))]))))
-
-; read config, 
-; 
-; when multi not empty
-; call multi-functions and set value of key :fqdn to first value of key of list of :multi
-; then call general functions with modified input
-; if single empty, return nil for any single function
-; else call single-functions and set value of key :fqdn to value of key of key :single
-; then call general functions with modified input
+                [(generate-configs config)]))))
