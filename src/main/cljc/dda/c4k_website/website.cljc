@@ -1,7 +1,6 @@
 (ns dda.c4k-website.website
   (:require
-   [clojure.spec.alpha :as s]
-   [clojure.string :as st]
+   [clojure.spec.alpha :as s]   
    #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]
       :cljs [orchestra.core :refer-macros [defn-spec]])
@@ -39,7 +38,7 @@
 
 (defn unique-name-from-fqdn
   [fqdn]
-  (st/replace fqdn #"\." "-"))
+  (str/replace fqdn #"\." "-"))
 
 (defn generate-service-name
   [uname]
@@ -49,6 +48,10 @@
   [uname]
   (str (unique-name-from-fqdn uname) "-cert"))
 
+(defn generate-configmap-name
+  [uname]
+  (str (unique-name-from-fqdn uname) "-configmap"))
+
 ; ToDo: Move to common?
 (defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
   [col string? ;ToDo richtig spec-en
@@ -56,7 +59,7 @@
    value-to-inplace string?]
   (clojure.walk/postwalk #(if (and (= (type value-to-partly-match) (type %))
                                    (re-matches (re-pattern (str value-to-partly-match ".*")) %))
-                            (st/replace % value-to-partly-match value-to-inplace) %)
+                            (str/replace % value-to-partly-match value-to-inplace) %)
                          col))
 
 #?(:cljs
@@ -171,72 +174,16 @@
      (generate-common-certificate config)
      (assoc-in spec-dnsNames fqdns))))
 
-(defn-spec generate-single-certificate pred/map-or-seq?
+(defn-spec generate-nginx-configmap pred/map-or-seq?
   [config config?]
-  (let [{:keys [issuer single]
-         :or {issuer "staging"}} config
-        fqdn ((keyword single) config)
-        letsencrypt-issuer (name issuer)]
+  (let [{:keys [uname fqdns]} config]
     (->
-     (yaml/load-as-edn "website/single-certificate.yaml")
-     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
-
-(defn-spec generate-single-ingress pred/map-or-seq?
-  [config config?]
-  (let [{:keys [single]} config
-        fqdn ((keyword single) config)]
-    (->
-     (yaml/load-as-edn "website/single-ingress.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
-
-(defn-spec generate-single-nginx-configmap pred/map-or-seq?
-  [config config?]
-  (let [{:keys [single]} config
-        fqdn ((keyword single) config)
-        configmap (yaml/load-as-edn "website/single-nginx-configmap.yaml")]
-    (->
-     configmap
-     (assoc-in [:data :website.conf] (st/replace (-> configmap :data :website.conf) #"FQDN" (str fqdn ";")))
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn)))))
-
-(defn-spec generate-multi-certificate pred/map-or-seq?
-  [config config?]
-  (let [{:keys [issuer multi]
-         :or {issuer "staging"}} config
-        fqdn ((keyword (first multi)) config)
-        fqdn1 ((keyword (second multi)) config)
-        letsencrypt-issuer (name issuer)]
-    (->
-     (yaml/load-as-edn "website/multi-certificate.yaml")
-     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn)
-     (cm/replace-all-matching-values-by-new-value "FQDN1" fqdn1))))
-
-(defn-spec generate-multi-ingress pred/map-or-seq?
-  [config config?]
-  (let [{:keys [multi]} config
-        fqdn ((keyword (first multi)) config)
-        fqdn1 ((keyword (second multi)) config)]
-    (->
-     (yaml/load-as-edn "website/multi-ingress.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn))
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn)
-     (cm/replace-all-matching-values-by-new-value "FQDN1" fqdn1))))
-
-(defn-spec generate-multi-nginx-configmap pred/map-or-seq?
-  [config config?]
-  (let [{:keys [multi]} config
-        fqdn ((keyword (first multi)) config)
-        fqdn1 ((keyword (second multi)) config)
-        configmap (yaml/load-as-edn "website/multi-nginx-configmap.yaml")]
-    (->
-     configmap
-     (assoc-in [:data :website.conf] (st/replace (-> configmap :data :website.conf) #"FQDN\ FQDN1" (str fqdn " " fqdn1 ";")))     
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn fqdn)))))
+     (yaml/load-as-edn "website/nginx-configmap.yaml")
+     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn uname))
+     (#(assoc-in %
+                 [:data :website.conf]
+                 (str/replace
+                  (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
   [config config?]
