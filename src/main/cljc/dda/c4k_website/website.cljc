@@ -42,12 +42,12 @@
   (st/replace fqdn #"\." "-"))
 
 (defn generate-service-name
-  [name]
-  (str (unique-name-from-fqdn name) "-service"))
+  [uname]
+  (str (unique-name-from-fqdn uname) "-service"))
 
 (defn generate-cert-name
-  [name]
-  (str (unique-name-from-fqdn name) "-cert"))
+  [uname]
+  (str (unique-name-from-fqdn uname) "-cert"))
 
 ; ToDo: Move to common?
 (defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
@@ -165,17 +165,11 @@
 
 (defn generate-website-certificate
   [config]
-  (let [{:keys [uname fqdns issuer]
-         :or {issuer "staging"}} config
-        fqdn (first fqdns)
-        spec-dnsNames [:spec :dnsNames]
-        letsencrypt-issuer (name issuer)
-        cert-name (generate-cert-name uname)]
+  (let [{:keys [fqdns]} config
+        spec-dnsNames [:spec :dnsNames]]
     (->
-     (yaml/load-as-edn "website/certificate.yaml")
-     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
-     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+     (generate-common-certificate config)
+     (assoc-in spec-dnsNames fqdns))))
 
 (defn-spec generate-single-certificate pred/map-or-seq?
   [config config?]

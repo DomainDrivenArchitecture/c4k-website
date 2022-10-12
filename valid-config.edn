@@ -7,7 +7,7 @@
 
 {:issuer "staging"
  :websites
- [{:name "meissa.io"
+ [{:uname "meissa.io"
    :fqdns ["meissa.de" "meissa-gmbh.de" "www.meissa-gmbh.de"
            "www.meissa.de" "www.prod.meissa-gmbh.de" "www.prod.meissa.de"]
    :gitea-host "repo.prod.meissa.de"
