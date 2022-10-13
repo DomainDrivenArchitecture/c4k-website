@@ -12,39 +12,53 @@
    [dda.c4k-common.predicate :as pred]
    [clojure.string :as str]))
 
-(defn keyword-string? 
-  [input]
-  (str/starts-with? input "fqdn"))
-
-(defn keyword-string-list?
-  [input]
-  (every? true? (map keyword-string? input)))
-
 (defn fqdn-list?
   [input]
   (every? true? (map pred/fqdn-string? input)))
 
-;(s/def ::uname pred/fqdn-string?)
-;(s/def ::issuer pred/letsencrypt-issuer?)
-;(s/def ::authtoken pred/bash-env-string?)
-;(s/def ::fqdns fqdn-list?)
-;(s/def ::gitea-host pred/fqdn-string?)
-;(s/def ::gitea-repo string?)
-;(s/def ::branchname string?)
-;(s/def ::username string?)
+(s/def ::uname pred/fqdn-string?)
+(s/def ::issuer pred/letsencrypt-issuer?)
+(s/def ::authtoken pred/bash-env-string?)
+(s/def ::fqdns fqdn-list?)
+(s/def ::gitea-host pred/fqdn-string?)
+(s/def ::gitea-repo string?)
+(s/def ::branchname string?)
+(s/def ::username string?)
 
-;(def config? (s/keys :req-un [::uname ::fqdns ::gitea-host ::gitea-repo ::branchname]
-;                     :opt-un [::issuer]))
+(def websitedata? (s/keys :req-un [::uname ::fqdns ::gitea-host ::gitea-repo ::branchname]
+                     :opt-un [::issuer]))
 
-;(def auth? (s/keys  :req-un [::authtoken ::username]))
+(def websiteauth? (s/keys  :req-un [::authtoken ::username]))
 
-(s/def ::websites vector?)
-(s/def ::auth vector?)
+(defn auth-data-list?
+  [input]
+  (every? #(and
+            (map? %)
+            (and (s/valid? ::uname (% :uname)) (contains? % :uname))
+            (and (s/valid? ::username (% :username)) (contains? % :username))
+            (and (s/valid? ::authtoken (% :authtoken)) (contains? % :authtoken))) input))
+
+(s/def ::auth auth-data-list?)
+
+(def auth? (s/keys  :req-un [::auth]))
+
+(defn website-data-list?
+  [input]
+  (every? #(and
+            (map? %)
+            (and (s/valid? ::uname (% :uname)) (contains? % :uname))
+            (and (s/valid? ::fqdns (% :fqdns)) (contains? % :fqdns))
+            (and (s/valid? ::gitea-host (% :gitea-host)) (contains? % :gitea-host))
+            (and (s/valid? ::gitea-repo (% :gitea-repo)) (contains? % :gitea-repo))
+            (and (s/valid? ::branchname (% :branchname)) (contains? % :branchname))) input))
+
+(defn websites? [input]
+ (and (contains? input :websites) (website-data-list? (input :websites))) )
+
+(s/def ::websites website-data-list?)
 
 (def config? (s/keys :req-un [::websites]
                      :opt-un [::issuer]))
-
-(def auth? (s/keys  :req-un [::auth]))
 
 (def volume-size 3)
 
@@ -59,6 +73,14 @@
 (defn generate-cert-name
   [uname]
   (str (unique-name-from-fqdn uname) "-cert"))
+
+(defn generate-http-ingress-name
+  [uname]
+  (str (unique-name-from-fqdn uname) "-http-ingress"))
+
+(defn generate-https-ingress-name
+  [uname]
+  (str (unique-name-from-fqdn uname) "-https-ingress"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
 (defn make-gitrepourl 
@@ -101,8 +123,8 @@
   (mapv #(assoc-in rule [:host] %) fqdns))
 
 ;create working ingress
-(defn-spec generate-common-http-ingress pred/map-or-seq?
-  [config config?]
+(defn generate-common-http-ingress
+  [config]
   (let [{:keys [fqdn service-name]} config]
     (->
      (yaml/load-as-edn "website/http-ingress.yaml")
@@ -110,17 +132,13 @@
      (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-website-http-ingress pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname fqdns]} config
-        fqdn (first fqdns)
-        spec-rules [:spec :rules]
-        service-name (generate-service-name uname)]
+        spec-rules [:spec :rules]]
     (->
      (generate-common-http-ingress
-      {:fqdn fqdn :service-name service-name})
-     (assoc-in
-      [:metadata :name]
-      (str (unique-name-from-fqdn uname) "-http-ingress"))
+      {:fqdn (first fqdns) :service-name (generate-service-name uname)})
+     (cm/replace-all-matching-values-by-new-value "c4k-common-http-ingress" (generate-http-ingress-name uname))
      (#(assoc-in %
                  spec-rules
                  (make-host-rules-from-fqdns
@@ -128,61 +146,49 @@
                   fqdns))))))
 
 ;create working ingress
-(defn-spec generate-common-https-ingress pred/map-or-seq?
-  [config config?]
-  (let [{:keys [fqdn service-name cert-name]} config]
+(defn generate-common-https-ingress 
+  [config]
+  (let [{:keys [fqdn service-name]} config]
     (->
      (yaml/load-as-edn "website/https-ingress.yaml")
-     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)
-     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
+     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)     
      (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-website-https-ingress pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname fqdns]} config
-        fqdn (first fqdns)
         spec-rules [:spec :rules]
-        spec-tls-hosts [:spec :tls 0 :hosts]
-        service-name (generate-service-name uname)
-        cert-name (generate-cert-name uname)]
+        spec-tls-hosts [:spec :tls 0 :hosts]]
     (->
      (generate-common-https-ingress
-      {:fqdn fqdn :service-name service-name :cert-name cert-name})
-     (assoc-in
-      [:metadata :name]
-      (str (unique-name-from-fqdn uname) "-https-ingress"))
-     (#(assoc-in %
-                 spec-tls-hosts
-                 fqdns))
-     (#(assoc-in %
-                  spec-rules
-                  (make-host-rules-from-fqdns
-                   (-> % :spec :rules first) ;get first ingress rule
-                   fqdns))))))
+      {:fqdn (first fqdns) :service-name (generate-service-name uname)})
+     (cm/replace-all-matching-values-by-new-value "c4k-common-https-ingress" (generate-https-ingress-name uname))
+     (cm/replace-all-matching-values-by-new-value "c4k-common-cert" (generate-cert-name uname))
+     (#(assoc-in % spec-tls-hosts fqdns))
+     (#(assoc-in % spec-rules (make-host-rules-from-fqdns (-> % :spec :rules first) fqdns))))))
 
-(defn-spec generate-common-certificate pred/map-or-seq?
-  [config config?]
-  (let [{:keys [uname fqdns issuer]
+(defn generate-common-certificate
+  [config]
+  (let [{:keys [fqdn issuer]
          :or {issuer "staging"}} config
-        fqdn (first fqdns)        
-        letsencrypt-issuer (name issuer)
-        cert-name (generate-cert-name uname)]
+        letsencrypt-issuer (name issuer)]
     (->
      (yaml/load-as-edn "website/certificate.yaml")
-     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)
-     (cm/replace-all-matching-values-by-new-value "CERTNAME" cert-name)
+     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)     
      (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
 
 (defn-spec generate-website-certificate pred/map-or-seq?
-  [config config?]
-  (let [{:keys [fqdns]} config
+  [config websitedata?]
+  (let [{:keys [uname issuer fqdns]} config
         spec-dnsNames [:spec :dnsNames]]
     (->
-     (generate-common-certificate config)
+     (generate-common-certificate 
+      {:issuer issuer, :fqdn (first fqdns)})
+     (cm/replace-all-matching-values-by-new-value "c4k-common-cert" (generate-cert-name uname))
      (assoc-in spec-dnsNames fqdns))))
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname fqdns]} config]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
@@ -193,21 +199,21 @@
                   (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname]} config]
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn uname)))))
 
 (defn-spec generate-nginx-service pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname]} config]
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn uname)))))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname]} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
@@ -215,21 +221,21 @@
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str (str volume-size) "Gi")))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn uname)))))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
-  [config config?]
+  [config websitedata?]
   (let [{:keys [uname]} config]
     (->
      (yaml/load-as-edn "website/website-build-deployment.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn uname)))))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
-  [auth auth?]
+  [auth websiteauth?]
   (let [{:keys [uname
                 authtoken
                 gitea-host

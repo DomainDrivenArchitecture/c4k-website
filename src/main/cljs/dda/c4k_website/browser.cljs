@@ -29,21 +29,32 @@
       (generate-group
        "domain"
        (cm/concat-vec
-        (br/generate-input-field "fqdn" "Your first fqdn:" "deineWebsite.de")
-        (br/generate-input-field "fqdn1" "Your second fqdn:" "deineWebsite.com")
-        (br/generate-input-field "fqdn2" "Your third fqdn:" "meineWebsite.org")
-        (br/generate-input-field "multi" "Holds fqdns pointing to same ingress" "[\"fqdn\", \"fqdn1\"]")
-        (br/generate-input-field "single" "Holds fqdn pointing to another ingress" "fqdn")
-        (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")))      
+        (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
+        (br/generate-text-area
+         "websites" "A map containing fqdns and repo infos for each website:"
+         "[{:uname \"test.io \",
+            :fqdns [\"test.de \" \"www.test.de \"],
+            :gitea-host \"githost.de \",
+            :gitea-repo \"repo \",
+            :branchname \"main \"}
+           {:uname \"example.io \",
+            :fqdns [\"example.org \" \"www.example.org \"],
+            :gitea-host \"githost.org \",
+            :gitea-repo \"repo \",
+            :branchname \"main \"}]"
+         "10")))
       (generate-group
        "credentials"
        (br/generate-text-area
-        "auth" "Your auth.edn:"
-        "{:authtoken \"yourgiteaauthtoken\"        
-         :gitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branchname>.zip\"
-         :singlegitrepourl \"https://your.gitea.host/api/v1/repos/<owner>/<otherRepo>/archive/<branchname>.zip\"
-         }"
-        "3"))
+        "auth" "Your authentication data for each website/ git repo:"
+        "{:auth
+           [{:uname \"test.io\",
+             :username \"someuser\",
+             :authtoken \"abedjgbasdodj\"}
+            {:uname \"example.io\",
+             :username \"someuser\",
+             :authtoken \"abedjgbasdodj\"}]}"
+        "7"))
       [(br/generate-br)]
       (br/generate-button "generate-button" "Generate c4k yaml")))]
    (br/generate-output "c4k-website-output" "Your c4k deployment.yaml:" "15")))
@@ -58,24 +69,19 @@
 (defn config-from-document []
   (let [issuer (br/get-content-from-element "issuer" :optional true)]
     (merge
-     {:fqdn (br/get-content-from-element "fqdn")}
+     {:websites (br/get-content-from-element "websites" :deserializer edn/read-string)}
      (when (not (st/blank? issuer))
        {:issuer issuer}))))
 
 (defn validate-all! []
-  (br/validate! "fqdn" ::website/fqdn)
-  (br/validate! "fqdn1" ::website/fqdn1)
-  (br/validate! "fqdn2" ::website/fqdn2)
-  (br/validate! "single" ::website/single)
-  (br/validate! "multi" ::website/multi)
+  (br/validate! "websites" ::website/websites)  
   (br/validate! "issuer" ::website/issuer :optional true)
-  (br/validate! "auth" core/auth? :deserializer edn/read-string)
+  (br/validate! "auth" website/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
 
 (defn add-validate-listener [name]
   (-> (br/get-element-by-id name)
       (.addEventListener "blur" #(do (validate-all!)))))
-
 
 (defn init []
   (br/append-hickory (generate-content-div))
@@ -89,10 +95,6 @@
                                    core/config-defaults
                                    core/k8s-objects)
                                   (br/set-output!)))))
-  (add-validate-listener "fqdn")
-  (add-validate-listener "fqdn1")
-  (add-validate-listener "fqdn2")
-  (add-validate-listener "single")
-  (add-validate-listener "multi")
+  (add-validate-listener "websites")
   (add-validate-listener "issuer")
   (add-validate-listener "auth"))
