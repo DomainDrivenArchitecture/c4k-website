@@ -76,6 +76,12 @@
                             (str/replace % value-to-partly-match value-to-inplace) %)
                          col))
 
+; generate a list of host-rules from a list of fqdns
+(defn make-host-rules-from-fqdns
+  [rule fqdns]
+  ;function that creates a rule from host names
+  (mapv #(assoc-in rule [:host] %) fqdns))
+
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
      (case resource-name
@@ -116,8 +122,6 @@
   (let [{:keys [unique-name fqdns]} config
         spec-rules [:spec :rules]]
     (->
-     (generate-http-ingress (merge {:service "xy" :port 80 :issuer issuer} 
-                                   config))
      (generate-common-http-ingress
       {:fqdn (first fqdns) :service-name (generate-service-name unique-name)})
      (cm/replace-all-matching-values-by-new-value "c4k-common-http-ingress" (generate-http-ingress-name unique-name))
