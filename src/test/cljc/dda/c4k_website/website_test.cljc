@@ -42,23 +42,6 @@
                                       :gitea-repo "repo"
                                       :branchname "main"}]}))))
 
-
-
-(deftest should-generate-website-certificate
-  (is (= {:name-c1 "prod", :name-c2 "staging"}
-         (th/map-diff (cut/generate-website-certificate {:unique-name "test.io"
-                                                         :gitea-host "gitea.evilorg"
-                                                         :gitea-repo "none"
-                                                         :branchname "mablain"
-                                                         :issuer "prod"
-                                                         :fqdns ["test.org" "test.de"]})
-                      (cut/generate-website-certificate {:unique-name "test.io"
-                                                         :gitea-host "gitea.evilorg"
-                                                         :gitea-repo "none"
-                                                         :branchname "mablain"
-                                                         :issuer "staging"
-                                                         :fqdns ["test.org" "test.de"]})))))
-
 (deftest should-generate-nginx-configmap
   (is (= {:website.conf-c1 "server {\n  listen 80 default_server;\n  listen [::]:80 default_server;\n  listen 443 ssl;\n  ssl_certificate /etc/certs/tls.crt;\n  ssl_certificate_key /etc/certs/tls.key;\n  server_name test.de www.test.de test-it.de www.test-it.de; \n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';\n  add_header Content-Security-Policy \"default-src 'self'; font-src *;img-src * data:; script-src *; style-src *\";\n  add_header X-XSS-Protection \"1; mode=block\";\n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # add_header Permissions-Policy \"permissions here\";\n  root /var/www/html/website/;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html =404;\n  }\n}\n",
           :website.conf-c2 "server {\n  listen 80 default_server;\n  listen [::]:80 default_server;\n  listen 443 ssl;\n  ssl_certificate /etc/certs/tls.crt;\n  ssl_certificate_key /etc/certs/tls.key;\n  server_name example.de www.example.de example-by.de www.example-by.de; \n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';\n  add_header Content-Security-Policy \"default-src 'self'; font-src *;img-src * data:; script-src *; style-src *\";\n  add_header X-XSS-Protection \"1; mode=block\";\n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # add_header Permissions-Policy \"permissions here\";\n  root /var/www/html/website/;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html =404;\n  }\n}\n",

@@ -7,23 +7,42 @@
    #?(:clj [clojure.edn :as edn]
       :cljs [cljs.reader :as edn])
    [dda.c4k-common.yaml :as yaml]
-   [dda.c4k-common.common :as cm]
-   [dda.c4k-common.base64 :as b64]
+   [dda.c4k-common.common :as cm]   
    [dda.c4k-common.predicate :as pred]
    [clojure.string :as str]))
 
-
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::service-name string?)
+(s/def ::ingress-name string?)
+(s/def ::cert-name string?)
 (s/def ::service-port pos-int?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 
-(def ingress? (s/keys :req-un [::fqdns ::service-name ::service-port]
-                      :opt-un [::issuer]))
+(def ingress? (s/keys :req-un [::fqdns ::ingress-name ::service-name ::service-port]
+                      :opt-un [::issuer ::cert-name]))
+
+(def certificate? (s/keys :req-un [::fqdns ::cert-name]
+                          :opt-un [::issuer]))
+
+(defn replace-dots-by-minus
+  [fqdn]
+  (str/replace fqdn #"\." "-"))
+
+(defn generate-cert-name
+  [unique-name]
+  (str (replace-dots-by-minus unique-name) "-cert"))
+
+(defn generate-http-ingress-name
+  [unique-name]
+  (str (replace-dots-by-minus unique-name) "-http-ingress"))
+
+(defn generate-https-ingress-name
+  [unique-name]
+  (str (replace-dots-by-minus unique-name) "-https-ingress"))
 
 (defn-spec generate-rule  pred/map-or-seq?
   [service-name ::service-name
-   service-port ::service-port
+   service-port ::service-port   
    fqdn pred/fqdn-string?]
     (->
      (yaml/load-as-edn "ingress/rule.yaml")
@@ -33,8 +52,32 @@
 
 (defn-spec generate-http-ingress pred/map-or-seq?
   [config ingress?]
-  (let [{:keys [service-name service-port fqdns]} config]
+  (let [{:keys [ingress-name service-name service-port fqdns]} config]
     (->
      (yaml/load-as-edn "ingress/http-ingress.yaml")
-     (assoc-in [:metadata :name] (str service-name "-http-ingress"))
+     (assoc-in [:metadata :name] ingress-name)     
      (assoc-in [:spec :rules] (mapv (partial generate-rule service-name service-port) fqdns)))))
+
+(defn-spec generate-https-ingress pred/map-or-seq?
+  [config ingress?]
+  (let [{:keys [ingress-name cert-name service-name service-port fqdns]} config]
+    (->
+     (yaml/load-as-edn "ingress/https-ingress.yaml")
+     (assoc-in [:metadata :name] ingress-name)
+     (assoc-in [:spec :tls 0 :secretName] cert-name)
+     (assoc-in [:spec :tls 0 :hosts] fqdns)
+     (assoc-in [:spec :rules] (mapv (partial generate-rule service-name service-port) fqdns)))))
+
+(defn-spec generate-certificate pred/map-or-seq?
+  [config certificate?]
+  (let [{:keys [cert-name issuer fqdns]
+         :or {issuer "staging"}} config
+        letsencrypt-issuer (name issuer)]
+    (->
+     (yaml/load-as-edn "ingress/certificate.yaml")     
+     (assoc-in [:metadata :name] cert-name)
+     (assoc-in [:spec :secretName] cert-name)
+     (assoc-in [:spec :commonName] (first fqdns))
+     (assoc-in [:spec :dnsNames] fqdns)
+     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer))))
+ 

@@ -161,7 +161,7 @@
     (->
      (yaml/load-as-edn "website/certificate.yaml")
      (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)     
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn)))) 
 
 (defn-spec generate-website-certificate pred/map-or-seq?
   [config websitedata?]

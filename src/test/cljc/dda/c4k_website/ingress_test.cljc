@@ -10,8 +10,11 @@
 
 (st/instrument `cut/generate-rule)
 (st/instrument `cut/generate-http-ingress)
+(st/instrument `cut/generate-https-ingress)
+(st/instrument `cut/generate-certificate)
 
-(deftest should-genereate-rule
+
+(deftest should-generate-rule
   (is (= {:host "test.com",
           :http
           {:paths
@@ -27,7 +30,7 @@
   (is (= {:apiVersion "networking.k8s.io/v1",
           :kind "Ingress",
           :metadata
-          {:name "myservice-http-ingress",
+          {:name "test-io-http-ingress",
            :namespace "default",
            :annotations
            #:traefik.ingress.kubernetes.io{:router.entrypoints "web",
@@ -36,6 +39,7 @@
                   {:issuer "prod"
                    :service-name "myservice"
                    :service-port 3000
+                   :ingress-name "test-io-http-ingress"
                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :spec)))
   (is (= {:rules
           [{:host "test.de",
@@ -54,33 +58,57 @@
                  {:issuer "prod"
                   :service-name "myservice"
                   :service-port 3000
+                  :ingress-name "test-io-http-ingress"
                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
 
-;; (deftest should-generate-https-ingress
-;;   (is (= {:apiVersion "networking.k8s.io/v1",
-;;           :kind "Ingress",
-;;           :metadata
-;;           {:name "test-io-https-ingress",
-;;            :namespace "default",
-;;            :annotations #:traefik.ingress.kubernetes.io{:router.entrypoints "websecure", :router.tls "true"}},
-;;           :spec
-;;           {:tls [{:hosts ["test.de" "www.test.de" "test-it.de" "www.test-it.de"], :secretName "test-io-cert"}],
-;;            :rules
-;;            [{:host "test.de",
-;;              :http
-;;              {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
-;;             {:host "www.test.de",
-;;              :http
-;;              {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
-;;             {:host "test-it.de",
-;;              :http
-;;              {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
-;;             {:host "www.test-it.de",
-;;              :http
-;;              {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}]}}
-;;          (cut/generate-https-ingress {:unique-name "test.io"
-;;                                       :gitea-host "gitea.evilorg"
-;;                                       :gitea-repo "none"
-;;                                       :branchname "mablain"
-;;                                       :issuer "prod"
-;;                                       :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+(deftest should-generate-https-ingress
+  (is (= {:apiVersion "networking.k8s.io/v1",
+          :kind "Ingress",
+          :metadata
+          {:name "test-io-https-ingress",
+           :namespace "default",
+           :annotations #:traefik.ingress.kubernetes.io{:router.entrypoints "websecure", :router.tls "true"}}}
+         (dissoc (cut/generate-https-ingress
+                  {:issuer "prod"
+                   :service-name "test-io-service"
+                   :service-port 80
+                   :ingress-name "test-io-https-ingress"
+                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :spec)))
+  (is (= {:tls
+          [{:hosts
+            ["test.de" "www.test.de" "test-it.de" "www.test-it.de"],
+            :secretName "test-io-cert"}]
+          :rules
+          [{:host "test.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
+           {:host "www.test.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
+           {:host "test-it.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}
+           {:host "www.test-it.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}]}
+         (:spec (cut/generate-https-ingress {:issuer "prod"
+                                             :service-name "test-io-service"
+                                             :service-port 80
+                                             :ingress-name "test-io-http-ingress"
+                                             :cert-name "test-io-cert"
+                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+
+(deftest should-generate-certificate
+  (is (= {:apiVersion "cert-manager.io/v1",
+          :kind "Certificate",
+          :metadata {:name "test-io-cert", :namespace "default"},
+          :spec
+          {:secretName "test-io-cert",
+           :commonName "test.de",
+           :duration "2160h",
+           :renewBefore "360h",
+           :dnsNames ["test.de" "test.org" "www.test.de" "www.test.org"],
+           :issuerRef {:name "prod", :kind "ClusterIssuer"}}}
+          (cut/generate-certificate {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
+                                     :cert-name "test-io-cert"
+                                     :issuer "prod"}))))
