@@ -32,12 +32,12 @@
         (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
         (br/generate-text-area
          "websites" "A map containing fqdns and repo infos for each website:"
-         "[{:uname \"test.io \",
+         "[{:unique-name \"test.io \",
             :fqdns [\"test.de \" \"www.test.de \"],
             :gitea-host \"githost.de \",
             :gitea-repo \"repo \",
             :branchname \"main \"}
-           {:uname \"example.io \",
+           {:unique-name \"example.io \",
             :fqdns [\"example.org \" \"www.example.org \"],
             :gitea-host \"githost.org \",
             :gitea-repo \"repo \",
@@ -48,10 +48,10 @@
        (br/generate-text-area
         "auth" "Your authentication data for each website/ git repo:"
         "{:auth
-           [{:uname \"test.io\",
+           [{:unique-name \"test.io\",
              :username \"someuser\",
              :authtoken \"abedjgbasdodj\"}
-            {:uname \"example.io\",
+            {:unique-name \"example.io\",
              :username \"someuser\",
              :authtoken \"abedjgbasdodj\"}]}"
         "7"))

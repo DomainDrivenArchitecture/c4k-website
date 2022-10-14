@@ -1,14 +1,12 @@
 {:issuer "staging"
  :websites
- [{:uname "meissa.io"
-   :fqdns ["meissa.de" "meissa-gmbh.de" "www.meissa-gmbh.de"
-           "www.meissa.de" "www.prod.meissa-gmbh.de" "www.prod.meissa.de"]
-   :gitea-host "repo.prod.meissa.de"
+ [{:unique-name "test.io" ; todo: call this unique-name
+   :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
+   :gitea-host "gitlab.de"
    :gitea-repo "repo"
    :branchname "main"}
-  {:uname "dda.io"
-   :fqdns ["domaindrivenarchitecture.org", "www.domaindrivenarchitecture.org",
-           "www.prod.domaindrivenarchitecture.org"]
-   :gitea-host "repo.prod.meissa.de"
+  {:unique-name "example.io"
+   :fqdns ["example.org", "www.example.com"]
+   :gitea-host "finegitehost.net"
    :gitea-repo "repo"
    :branchname "main"}]}

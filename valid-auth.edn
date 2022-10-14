@@ -1,7 +1,7 @@
 {:auth
- [{:uname "meissa.io"
+ [{:unique-name "test.io"
    :username "someuser"
    :authtoken "abedjgbasdodj"}
-  {:uname "dda.io"
+  {:unique-name "example.io"
    :username "someuser"
    :authtoken "abedjgbasdodj"}]}
