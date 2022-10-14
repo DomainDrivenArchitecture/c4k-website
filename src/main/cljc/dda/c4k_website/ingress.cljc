@@ -14,21 +14,27 @@
 
 
 (s/def ::issuer pred/letsencrypt-issuer?)
+(s/def ::service-name string?)
+(s/def ::service-port pos-int?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 
-(def ingress? (s/keys :req-un [::fqdns ::service-name ::port]
+(def ingress? (s/keys :req-un [::fqdns ::service-name ::service-port]
                       :opt-un [::issuer]))
 
-; generate a list of host-rules from a list of fqdns
-(defn make-host-rules-from-fqdns
-  [rule fqdns]
-  ;function that creates a rule from host names
-  (mapv #(assoc-in rule [:host] %) fqdns))
+(defn-spec generate-rule  pred/map-or-seq?
+  [service-name ::service-name
+   service-port ::service-port
+   fqdn pred/fqdn-string?]
+    (->
+     (yaml/load-as-edn "ingress/rule.yaml")
+     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn)
+     (cm/replace-all-matching-values-by-new-value "SERVICE_PORT" service-port)
+     (cm/replace-all-matching-values-by-new-value "SERVICE_NAME" service-name)))
 
-(defn generate-http-ingress
-  [config]
-  (let [{:keys [fqdn service-name]} config]
+(defn-spec generate-http-ingress pred/map-or-seq?
+  [config ingress?]
+  (let [{:keys [service-name service-port fqdns]} config]
     (->
      (yaml/load-as-edn "ingress/http-ingress.yaml")
-     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+     (assoc-in [:metadata :name] (str service-name "-http-ingress"))
+     (assoc-in [:spec :rules] (mapv (partial generate-rule service-name service-port) fqdns)))))

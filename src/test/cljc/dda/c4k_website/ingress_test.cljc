@@ -8,6 +8,21 @@
    [dda.c4k-website.ingress :as cut]
    [clojure.spec.alpha :as s]))
 
+(st/instrument `cut/generate-rule)
+(st/instrument `cut/generate-http-ingress)
+
+(deftest should-genereate-rule
+  (is (= {:host "test.com",
+          :http
+          {:paths
+           [{:pathType "Prefix",
+             :path "/",
+             :backend
+             {:service {:name "myservice", :port {:number 3000}}}}]}}
+
+         (cut/generate-rule "myservice" 3000 "test.com"))))
+
+
 (deftest should-generate-http-ingress
   (is (= {:apiVersion "networking.k8s.io/v1",
           :kind "Ingress",
@@ -16,25 +31,30 @@
            :namespace "default",
            :annotations
            #:traefik.ingress.kubernetes.io{:router.entrypoints "web",
-                                           :router.middlewares "default-redirect-https@kubernetescrd"}},
-          :spec
-          {:rules
-           [{:host "test.de",
-             :http
-             {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
-            {:host "www.test.de",
-             :http
-             {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
-            {:host "test-it.de",
-             :http
-             {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
-            {:host "www.test-it.de",
-             :http
-             {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}]}}
-         (cut/generate-http-ingress {:issuer "prod"
-                                     :service "myservice"
-                                     :port 3000
-                                     :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                           :router.middlewares "default-redirect-https@kubernetescrd"}}}
+         (dissoc (cut/generate-http-ingress
+                  {:issuer "prod"
+                   :service-name "myservice"
+                   :service-port 3000
+                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :spec)))
+  (is (= {:rules
+          [{:host "test.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
+           {:host "www.test.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
+           {:host "test-it.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}
+           {:host "www.test-it.de",
+            :http
+            {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "myservice", :port {:number 3000}}}}]}}]}
+         (:spec (cut/generate-http-ingress
+                 {:issuer "prod"
+                  :service-name "myservice"
+                  :service-port 3000
+                  :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
 
 ;; (deftest should-generate-https-ingress
 ;;   (is (= {:apiVersion "networking.k8s.io/v1",
