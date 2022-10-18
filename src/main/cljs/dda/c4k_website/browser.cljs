@@ -46,7 +46,7 @@
       (generate-group
        "credentials"
        (br/generate-text-area
-        "auth" "Your authentication data for each website/ git repo:"
+        "auth" "Your authentication data for each website or git repo:"
         "{:auth
            [{:unique-name \"test.io\",
              :username \"someuser\",

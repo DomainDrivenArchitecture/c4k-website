@@ -36,18 +36,18 @@
 
 (defn-spec generate-http-ingress pred/map-or-seq?
   [config ingress?]
-  (let [{:keys [http-ingress-name service-name service-port fqdns]} config]
+  (let [{:keys [ingress-name service-name service-port fqdns]} config]
     (->
      (yaml/load-as-edn "ingress/http-ingress.yaml")
-     (assoc-in [:metadata :name] http-ingress-name)     
+     (assoc-in [:metadata :name] ingress-name)     
      (assoc-in [:spec :rules] (mapv (partial generate-host-rule service-name service-port) fqdns)))))
 
 (defn-spec generate-https-ingress pred/map-or-seq?
   [config ingress?]
-  (let [{:keys [https-ingress-name cert-name service-name service-port fqdns]} config]
+  (let [{:keys [ingress-name cert-name service-name service-port fqdns]} config]
     (->
      (yaml/load-as-edn "ingress/https-ingress.yaml")
-     (assoc-in [:metadata :name] https-ingress-name)
+     (assoc-in [:metadata :name] ingress-name)
      (assoc-in [:spec :tls 0 :secretName] cert-name)
      (assoc-in [:spec :tls 0 :hosts] fqdns)
      (assoc-in [:spec :rules] (mapv (partial generate-host-rule service-name service-port) fqdns)))))

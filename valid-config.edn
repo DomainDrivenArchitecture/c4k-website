@@ -1,6 +1,6 @@
 {:issuer "staging"
  :websites
- [{:unique-name "test.io" ; todo: call this unique-name
+ [{:unique-name "test.io" 
    :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
    :gitea-host "gitlab.de"
    :gitea-repo "repo"

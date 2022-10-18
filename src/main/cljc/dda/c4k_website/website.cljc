@@ -86,9 +86,9 @@
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
      (case resource-name
-       "website/certificate.yaml" (rc/inline "website/certificate.yaml")       
-       "website/http-ingress.yaml" (rc/inline "website/http-ingress.yaml")
-       "website/https-ingress.yaml" (rc/inline "website/https-ingress.yaml")       
+       "ingress/certificate.yaml" (rc/inline "ingress/certificate.yaml")       
+       "ingress/http-ingress.yaml" (rc/inline "ingress/http-ingress.yaml")
+       "ingress/https-ingress.yaml" (rc/inline "ingress/https-ingress.yaml")       
        "website/nginx-configmap.yaml" (rc/inline "website/nginx-configmap.yaml")
        "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
        "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")
@@ -101,12 +101,6 @@
 #?(:cljs
    (defmethod yaml/load-as-edn :website [resource-name]
      (yaml/from-string (yaml/load-resource resource-name))))
-
-; generate a list of host-rules from a list of fqdns
-(defn make-host-rules-from-fqdns
-  [rule fqdns]
-  ;function that creates a rule from host names
-  (mapv #(assoc-in rule [:host] %) fqdns))
 
 (defn-spec generate-website-http-ingress pred/map-or-seq?
   [config websitedata?]
@@ -138,7 +132,7 @@
   (let [{:keys [unique-name fqdns]} config]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (#(assoc-in %
                  [:data :website.conf]
                  (str/replace
@@ -149,21 +143,21 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-nginx-service pred/map-or-seq?
   [config websitedata?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
   [config websitedata?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str (str volume-size) "Gi")))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
@@ -171,14 +165,14 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
   [config websitedata?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-deployment.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name)))))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth websiteauth?]
@@ -190,7 +184,7 @@
                 branchname]} auth]
     (->
      (yaml/load-as-edn "website/website-build-secret.yaml")
-     (replace-all-matching-subvalues-in-string-start "NAME" (unique-name-from-fqdn unique-name))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "URL" (b64/encode
                                                          (make-gitrepourl
