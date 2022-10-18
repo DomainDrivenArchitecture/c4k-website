@@ -17,7 +17,7 @@
   [input]
   (every? true? (map pred/fqdn-string? input)))
 
-(s/def ::unique-name pred/fqdn-string?)
+(s/def ::unique-name string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns fqdn-list?)
@@ -77,12 +77,6 @@
                             (str/replace % value-to-partly-match value-to-inplace) %)
                          col))
 
-; generate a list of host-rules from a list of fqdns
-(defn make-host-rules-from-fqdns
-  [rule fqdns]
-  ;function that creates a rule from host names
-  (mapv #(assoc-in rule [:host] %) fqdns))
-
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
      (case resource-name
@@ -115,7 +109,7 @@
   (let [{:keys [unique-name fqdns]} config]
     (ing/generate-https-ingress {:fqdns fqdns
                                  :cert-name (generate-cert-name unique-name)
-                                 :ingress-name (generate-http-ingress-name unique-name)
+                                 :ingress-name (generate-https-ingress-name unique-name)
                                  :service-name (generate-service-name unique-name)
                                  :service-port 80})))
 
@@ -123,9 +117,9 @@
   [config websitedata?]
   (let [{:keys [unique-name issuer fqdns]
          :or {issuer "staging"}} config]
-    (ing/generate-https-ingress {:fqdns fqdns
-                                 :cert-name (generate-cert-name unique-name)
-                                 :issuer issuer})))
+    (ing/generate-certificate {:fqdns fqdns
+                               :cert-name (generate-cert-name unique-name)
+                               :issuer issuer})))
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
   [config websitedata?]

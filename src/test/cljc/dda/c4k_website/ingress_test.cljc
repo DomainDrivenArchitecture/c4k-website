@@ -22,7 +22,6 @@
              :path "/",
              :backend
              {:service {:name "myservice", :port {:number 3000}}}}]}}
-
          (cut/generate-host-rule "myservice" 3000 "test.com"))))
 
 
@@ -94,7 +93,7 @@
          (:spec (cut/generate-https-ingress {:issuer "prod"
                                              :service-name "test-io-service"
                                              :service-port 80
-                                             :ingress-name "test-io-http-ingress"
+                                             :ingress-name "test-io-https-ingress"
                                              :cert-name "test-io-cert"
                                              :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
 
