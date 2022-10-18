@@ -20,7 +20,7 @@
 (s/def ::unique-name string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::authtoken pred/bash-env-string?)
-(s/def ::fqdns fqdn-list?)
+(s/def ::fqdns (s/coll-of pred/fqdn-string?))
 (s/def ::gitea-host pred/fqdn-string?)
 (s/def ::gitea-repo string?)
 (s/def ::branchname string?)
@@ -79,10 +79,7 @@
 
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
-     (case resource-name
-       "ingress/certificate.yaml" (rc/inline "ingress/certificate.yaml")       
-       "ingress/http-ingress.yaml" (rc/inline "ingress/http-ingress.yaml")
-       "ingress/https-ingress.yaml" (rc/inline "ingress/https-ingress.yaml")       
+     (case resource-name       
        "website/nginx-configmap.yaml" (rc/inline "website/nginx-configmap.yaml")
        "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
        "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")

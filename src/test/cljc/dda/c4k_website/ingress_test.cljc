@@ -3,10 +3,7 @@
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.test.alpha :as st]
-   [dda.c4k-common.test-helper :as th]
-   [dda.c4k-common.base64 :as b64]
-   [dda.c4k-website.ingress :as cut]
-   [clojure.spec.alpha :as s]))
+   [dda.c4k-website.ingress :as cut]))
 
 (st/instrument `cut/generate-host-rule)
 (st/instrument `cut/generate-http-ingress)

@@ -24,6 +24,19 @@
 (def certificate? (s/keys :req-un [::fqdns ::cert-name]
                           :opt-un [::issuer]))
 
+#?(:cljs
+   (defmethod yaml/load-resource :ingress [resource-name]
+     (case resource-name
+       "ingress/host-rule.yaml" (rc/inline "ingress/host-rule.yaml")
+       "ingress/certificate.yaml" (rc/inline "ingress/certificate.yaml")
+       "ingress/http-ingress.yaml" (rc/inline "ingress/http-ingress.yaml")
+       "ingress/https-ingress.yaml" (rc/inline "ingress/https-ingress.yaml")
+       (throw (js/Error. "Undefined Resource!")))))
+
+#?(:cljs
+   (defmethod yaml/load-as-edn :ingress [resource-name]
+     (yaml/from-string (yaml/load-resource resource-name))))
+
 (defn-spec generate-host-rule  pred/map-or-seq?
   [service-name ::service-name
    service-port ::service-port   

@@ -3,7 +3,7 @@
    [clojure.string :as st]
    [clojure.tools.reader.edn :as edn]
    [dda.c4k-website.core :as core]
-   [dda.c4k-website.website :as website]
+   [dda.c4k-website.website :as website]   
    [dda.c4k-common.browser :as br]   
    [dda.c4k-common.common :as cm]))
 
@@ -31,17 +31,18 @@
        (cm/concat-vec
         (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
         (br/generate-text-area
-         "websites" "A map containing fqdns and repo infos for each website:"
-         "[{:unique-name \"test.io \",
-            :fqdns [\"test.de \" \"www.test.de \"],
-            :gitea-host \"githost.de \",
-            :gitea-repo \"repo \",
-            :branchname \"main \"}
+         "websites" "A collection containing fqdns and repo infos for each website:"
+         "{:websites
+          [{:unique-name \"test.io\",
+            :fqdns [\"test.de\" \"www.test.de\"],
+            :gitea-host \"githost.de\",
+            :gitea-repo \"repo\",
+            :branchname \"main\"}
            {:unique-name \"example.io \",
-            :fqdns [\"example.org \" \"www.example.org \"],
-            :gitea-host \"githost.org \",
-            :gitea-repo \"repo \",
-            :branchname \"main \"}]"
+            :fqdns [\"example.org\" \"www.example.org\"],
+            :gitea-host \"githost.org\",
+            :gitea-repo \"repo\",
+            :branchname \"main\"}]}"
          "10")))
       (generate-group
        "credentials"
@@ -74,7 +75,7 @@
        {:issuer issuer}))))
 
 (defn validate-all! []
-  (br/validate! "websites" ::website/websites)  
+  (br/validate! "websites" website/config? :deserializer edn/read-string)  
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "auth" website/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
