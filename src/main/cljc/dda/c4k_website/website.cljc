@@ -10,6 +10,7 @@
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]
+   [dda.c4k-website.ingress :as ing]
    [clojure.string :as str]))
 
 (defn fqdn-list?
@@ -41,25 +42,25 @@
 
 (def volume-size 3)
 
-(defn unique-name-from-fqdn
+(defn replace-dots-by-minus
   [fqdn]
   (str/replace fqdn #"\." "-"))
 
 (defn generate-service-name
   [unique-name]
-  (str (unique-name-from-fqdn unique-name) "-service"))
+  (str (replace-dots-by-minus unique-name) "-service"))
 
 (defn generate-cert-name
   [unique-name]
-  (str (unique-name-from-fqdn unique-name) "-cert"))
+  (str (replace-dots-by-minus unique-name) "-cert"))
 
 (defn generate-http-ingress-name
   [unique-name]
-  (str (unique-name-from-fqdn unique-name) "-http-ingress"))
+  (str (replace-dots-by-minus unique-name) "-http-ingress"))
 
 (defn generate-https-ingress-name
   [unique-name]
-  (str (unique-name-from-fqdn unique-name) "-https-ingress"))
+  (str (replace-dots-by-minus unique-name) "-https-ingress"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
 (defn make-gitrepourl 
@@ -107,71 +108,30 @@
   ;function that creates a rule from host names
   (mapv #(assoc-in rule [:host] %) fqdns))
 
-;create working ingress
-; todo: move to common/ingress
-(defn generate-common-http-ingress
-  [config]
-  (let [{:keys [fqdn service-name]} config]
-    (->
-     (yaml/load-as-edn "website/http-ingress.yaml")
-     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
-
 (defn-spec generate-website-http-ingress pred/map-or-seq?
   [config websitedata?]
-  (let [{:keys [unique-name fqdns]} config
-        spec-rules [:spec :rules]]
-    (->
-     (generate-common-http-ingress
-      {:fqdn (first fqdns) :service-name (generate-service-name unique-name)})
-     (cm/replace-all-matching-values-by-new-value "c4k-common-http-ingress" (generate-http-ingress-name unique-name))
-     (#(assoc-in %
-                 spec-rules
-                 (make-host-rules-from-fqdns
-                  (-> % :spec :rules first) ;get first ingress rule
-                  fqdns))))))
-
-;create working ingress
-(defn generate-common-https-ingress 
-  [config]
-  (let [{:keys [fqdn service-name]} config]
-    (->
-     (yaml/load-as-edn "website/https-ingress.yaml")
-     (cm/replace-all-matching-values-by-new-value "SERVICENAME" service-name)     
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn))))
+  (let [{:keys [unique-name fqdns]} config]
+    (ing/generate-http-ingress {:fqdns fqdns 
+                                :ingress-name (generate-http-ingress-name unique-name)
+                                :service-name (generate-service-name unique-name)
+                                :service-port 80})))
 
 (defn-spec generate-website-https-ingress pred/map-or-seq?
   [config websitedata?]
-  (let [{:keys [unique-name fqdns]} config
-        spec-rules [:spec :rules]
-        spec-tls-hosts [:spec :tls 0 :hosts]]
-    (->
-     (generate-common-https-ingress
-      {:fqdn (first fqdns) :service-name (generate-service-name unique-name)})
-     (cm/replace-all-matching-values-by-new-value "c4k-common-https-ingress" (generate-https-ingress-name unique-name))
-     (cm/replace-all-matching-values-by-new-value "c4k-common-cert" (generate-cert-name unique-name))
-     (#(assoc-in % spec-tls-hosts fqdns))
-     (#(assoc-in % spec-rules (make-host-rules-from-fqdns (-> % :spec :rules first) fqdns))))))
-
-(defn generate-common-certificate
-  [config]
-  (let [{:keys [fqdn issuer]
-         :or {issuer "staging"}} config
-        letsencrypt-issuer (name issuer)]
-    (->
-     (yaml/load-as-edn "website/certificate.yaml")
-     (assoc-in [:spec :issuerRef :name] letsencrypt-issuer)     
-     (cm/replace-all-matching-values-by-new-value "FQDN" fqdn)))) 
+  (let [{:keys [unique-name fqdns]} config]
+    (ing/generate-https-ingress {:fqdns fqdns
+                                 :cert-name (generate-cert-name unique-name)
+                                 :ingress-name (generate-http-ingress-name unique-name)
+                                 :service-name (generate-service-name unique-name)
+                                 :service-port 80})))
 
 (defn-spec generate-website-certificate pred/map-or-seq?
   [config websitedata?]
-  (let [{:keys [unique-name issuer fqdns]} config
-        spec-dnsNames [:spec :dnsNames]]
-    (->
-     (generate-common-certificate 
-      {:issuer issuer, :fqdn (first fqdns)})
-     (cm/replace-all-matching-values-by-new-value "c4k-common-cert" (generate-cert-name unique-name))
-     (assoc-in spec-dnsNames fqdns))))
+  (let [{:keys [unique-name issuer fqdns]
+         :or {issuer "staging"}} config]
+    (ing/generate-https-ingress {:fqdns fqdns
+                                 :cert-name (generate-cert-name unique-name)
+                                 :issuer issuer})))
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
   [config websitedata?]

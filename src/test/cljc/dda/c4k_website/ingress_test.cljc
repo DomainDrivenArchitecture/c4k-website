@@ -8,7 +8,7 @@
    [dda.c4k-website.ingress :as cut]
    [clojure.spec.alpha :as s]))
 
-(st/instrument `cut/generate-rule)
+(st/instrument `cut/generate-host-rule)
 (st/instrument `cut/generate-http-ingress)
 (st/instrument `cut/generate-https-ingress)
 (st/instrument `cut/generate-certificate)
@@ -23,7 +23,7 @@
              :backend
              {:service {:name "myservice", :port {:number 3000}}}}]}}
 
-         (cut/generate-rule "myservice" 3000 "test.com"))))
+         (cut/generate-host-rule "myservice" 3000 "test.com"))))
 
 
 (deftest should-generate-http-ingress
