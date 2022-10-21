@@ -15,6 +15,9 @@ lein deploy # or lein deploy clojars
 
 ## ... for stable release
 
+Make sure tags are protected in gitlab:
+Repository Settings -> Protected Tags -> set \*.\*.\* as tag and save.
+
 ``` bash
 git checkout main # for old projects replace main with master
 git add .
