@@ -1,4 +1,19 @@
-# Release process for stable release
+# Release process 
+
+## ... for testing (snapshots)
+
+Make sure your clojars.org credentials are correctly set in your ~/.lein/profiles.clj file.
+
+``` bash
+git add .
+git commit
+```
+
+``` bash
+lein deploy # or lein deploy clojars
+```
+
+## ... for stable release
 
 ``` bash
 git checkout main # for old projects replace main with master
@@ -19,3 +34,4 @@ git push
 ```
 
 Done.
+
