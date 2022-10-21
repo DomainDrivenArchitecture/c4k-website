@@ -17,6 +17,8 @@ lein deploy # or lein deploy clojars
 
 ``` bash
 git checkout main # for old projects replace main with master
+git add .
+git commit 
 ```
 
 Open package.json, find ":version" keyword and remove "-SNAPSHOT" from version number.
