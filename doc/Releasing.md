@@ -22,6 +22,8 @@ git checkout main # for old projects replace main with master
 Open package.json, find ":version" keyword and remove "-SNAPSHOT" from version number.
 
 ``` bash
+git add .
+git commit -m "Release [version]"
 lein release
 git push --follow-tags
 ```
