@@ -7,15 +7,17 @@
 
 Delivering cryogen generated static sites with the push of a few buttons.
 
-c4k-website generates configuration files for an nginx webserver, and
-a cryogen static site build container. It automatically downloads a branch.zip from a specified
+c4k-website generates configuration files for nginx webservers, and
+a cryogen static site generator build container. It automatically downloads a branch.zip from a specified
 gitea API url. You need an authorization token to access the specified gitea user account.
-The build container is based on clojure:lein. Webserver and build pods are uniquely named by fqdn, so 
-adding multiple websites shouldn't be a problem.
+The build container is based on clojure:lein. 
 
-c4k-website has the following modules:
+Following the example in valid-config.edn and valid-auth.edn you can add as many websites as you like (provided you have the DNS Routes set up).
+One set of configmaps, deployment, services etc will be created for each element in the :websites and :auth list.  
+
+c4k-website consists of the following parts:
 * unique nginx webserver + service + ingress + certificate
-* unique build container cron job
+* unique build container cron job and build secret
 * unique volume claim for both
 
 ## Try out
@@ -30,6 +32,7 @@ Your input will stay in your browser. No server interaction is required.
 
 You need:
 
+* DNS routes matching the fqdns in the lists
 * cryogen as a static site generator
 * a cryogen project ready to build
 * and a gitea account which holds the buildable project
