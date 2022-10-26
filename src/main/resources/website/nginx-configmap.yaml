@@ -79,9 +79,6 @@ data:
     server {
       listen 80 default_server;
       listen [::]:80 default_server;
-      listen 443 ssl;
-      ssl_certificate /etc/certs/tls.crt;
-      ssl_certificate_key /etc/certs/tls.key;
       server_name FQDN
       add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';
       add_header X-XSS-Protection "1; mode=block";
