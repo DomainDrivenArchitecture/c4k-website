@@ -11,6 +11,6 @@ spec:
   ports:
     - name: nginx-http
       port: 80             
-    - name: nginx-https
+    - name: nginx-https # TODO: Review jem 2022/10/26: we terminate ssl in ingress, do not pass thru
       port: 443      
       

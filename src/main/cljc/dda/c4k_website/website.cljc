@@ -40,8 +40,10 @@
 (def config? (s/keys :req-un [::websites]
                      :opt-un [::issuer]))
 
+; TODO: Review jem 2022/10/26: move default to core/default
 (def volume-size 3)
 
+; TODO: Review jem 2022/10/26: spec the following funktions?
 (defn replace-dots-by-minus
   [fqdn]
   (str/replace fqdn #"\." "-"))
@@ -79,16 +81,17 @@
 
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
-     (case resource-name       
+     (case resource-name
        "website/nginx-configmap.yaml" (rc/inline "website/nginx-configmap.yaml")
        "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
        "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")
-       "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
        "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
        "website/website-build-deployment.yaml" (rc/inline "website/website-build-deployment.yaml")
        "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
+       "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
+; TODO: Review jem 2022/10/26: move this fkt. to a more general place
 #?(:cljs
    (defmethod yaml/load-as-edn :website [resource-name]
      (yaml/from-string (yaml/load-resource resource-name))))

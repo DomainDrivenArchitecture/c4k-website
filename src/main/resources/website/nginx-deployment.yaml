@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: NAME-deployment
+  name: NAME-deployment #TODO: Review jem 2022/10/26: why mixed case? either calculate the whole name in cljc or use UPPERCASE
 spec:
   replicas: 1
   selector:

@@ -3,9 +3,9 @@ kind: CronJob
 metadata:
   name: NAME-build-cron
   labels:
-    app.kubernetes.part-of: website # correct name?
+    app.kubernetes.part-of: website # TODO: Review jem 2022/10/26: adjust name, add part of to all
 spec:
-  schedule: "1,7,14,21,28,35,42,49,54,59 * * * *"
+  schedule: "1,7,14,21,28,35,42,49,54,59 * * * *" # TODO: Review jem 2022/10/26: */7 ?
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
