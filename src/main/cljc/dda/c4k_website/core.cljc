@@ -7,6 +7,8 @@
 
 (def config-defaults {:issuer "staging"})
 
+; TODO: gec 2022/10/28: That does only work if the :websites and :auth collections have the same order regarding :unique-name!
+;       There must be a check or the config must be sorted first!
 (defn flatten-and-reduce-config
   [config]
   (merge (-> config :websites first) (-> config :auth first) {:issuer (config :issuer)}))

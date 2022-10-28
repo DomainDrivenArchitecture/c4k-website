@@ -171,6 +171,7 @@
      (yaml/load-as-edn "website/website-build-deployment.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
+; TODO: gec 2022/10/28: gitea-host, gitea-repo, branchname are not in "websiteauth?"
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth websiteauth?]
   (let [{:keys [unique-name
