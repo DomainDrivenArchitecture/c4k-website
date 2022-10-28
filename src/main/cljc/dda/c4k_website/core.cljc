@@ -12,8 +12,9 @@
 ;       There must be a check or the config must be sorted first!
 (defn flatten-and-reduce-config
   [config]
-  (merge (-> config :websites first) (-> config :auth first) (dissoc config :issuer :volume-size)))
+  (merge (-> config :websites first) (-> config :auth first) (dissoc config :websites :auth)))
 
+; TODO: Find a better readable expression.
 (defn generate-configs [config]
   (loop [config config
          result []]
