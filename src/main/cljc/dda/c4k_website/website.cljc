@@ -1,6 +1,6 @@
 (ns dda.c4k-website.website
   (:require
-   [clojure.spec.alpha :as s]   
+   [clojure.spec.alpha :as s]
    #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]
       :cljs [orchestra.core :refer-macros [defn-spec]])
@@ -19,6 +19,7 @@
 
 (s/def ::unique-name string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
+(s/def ::volume-size pred/integer-string?)
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 (s/def ::gitea-host pred/fqdn-string?)
@@ -38,10 +39,7 @@
 (def auth? (s/keys  :req-un [::auth]))
 
 (def config? (s/keys :req-un [::websites]
-                     :opt-un [::issuer]))
-
-; TODO: Review jem 2022/10/26: move default to core/default
-(def volume-size 3)
+                     :opt-un [::issuer ::volume-size]))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]
@@ -73,8 +71,8 @@
 
 ; ToDo: Move to common?
 ; ToDo richtig spec-en
-(defn replace-all-matching-subvalues-in-string-start 
-  [col 
+(defn replace-all-matching-subvalues-in-string-start
+  [col
    value-to-partly-match
    value-to-inplace]
   (clojure.walk/postwalk #(if (and (= (type value-to-partly-match) (type %))
@@ -99,10 +97,13 @@
    (defmethod yaml/load-as-edn :website [resource-name]
      (yaml/from-string (yaml/load-resource resource-name))))
 
+; TODO: gec 2022/10/28: The specs for config in the following functions are not correct, 
+;                       since config is the result of "flatten-and-reduce-config".
+;                       Use correct specs!
 (defn-spec generate-website-http-ingress pred/map-or-seq?
   [config websitedata?]
   (let [{:keys [unique-name fqdns]} config]
-    (ing/generate-http-ingress {:fqdns fqdns 
+    (ing/generate-http-ingress {:fqdns fqdns
                                 :ingress-name (generate-http-ingress-name unique-name)
                                 :service-name (generate-service-name unique-name)
                                 :service-port 80})))
@@ -151,11 +152,11 @@
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
   [config websitedata?]
-  (let [{:keys [unique-name]} config]
+  (let [{:keys [unique-name volume-size]} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
-     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str (str volume-size) "Gi")))))
+     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config websitedata?]

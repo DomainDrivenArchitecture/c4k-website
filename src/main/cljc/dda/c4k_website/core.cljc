@@ -5,13 +5,14 @@
    [dda.c4k-common.common :as cm]
    [dda.c4k-website.website :as website]))
 
-(def config-defaults {:issuer "staging"})
+(def config-defaults {:issuer "staging"
+                      :volume-size "3"})
 
 ; TODO: gec 2022/10/28: That does only work if the :websites and :auth collections have the same order regarding :unique-name!
 ;       There must be a check or the config must be sorted first!
 (defn flatten-and-reduce-config
   [config]
-  (merge (-> config :websites first) (-> config :auth first) {:issuer (config :issuer)}))
+  (merge (-> config :websites first) (-> config :auth first) (dissoc config :issuer :volume-size)))
 
 (defn generate-configs [config]
   (loop [config config
