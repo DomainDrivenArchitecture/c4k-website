@@ -43,35 +43,38 @@
 ; TODO: Review jem 2022/10/26: move default to core/default
 (def volume-size 3)
 
-; TODO: Review jem 2022/10/26: spec the following funktions?
-(defn replace-dots-by-minus
-  [fqdn]
+(defn-spec replace-dots-by-minus string?
+  [fqdn pred/fqdn-string?]
   (str/replace fqdn #"\." "-"))
 
-(defn generate-service-name
-  [unique-name]
+(defn-spec generate-service-name string?
+  [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-service"))
 
-(defn generate-cert-name
-  [unique-name]
+(defn-spec generate-cert-name string?
+  [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-cert"))
 
-(defn generate-http-ingress-name
-  [unique-name]
+(defn-spec generate-http-ingress-name string?
+  [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-http-ingress"))
 
-(defn generate-https-ingress-name
-  [unique-name]
+(defn-spec generate-https-ingress-name string?
+  [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-https-ingress"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
-(defn make-gitrepourl 
-  [host repo user branch]
+(defn-spec make-gitrepourl string?
+  [host pred/fqdn-string?
+   repo string?
+   user string?
+   branch string?]
   (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
 
 ; ToDo: Move to common?
+; ToDo richtig spec-en
 (defn replace-all-matching-subvalues-in-string-start 
-  [col ;ToDo richtig spec-en
+  [col 
    value-to-partly-match
    value-to-inplace]
   (clojure.walk/postwalk #(if (and (= (type value-to-partly-match) (type %))
