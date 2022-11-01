@@ -30,7 +30,6 @@
          (when (contains? config :volume-size)
            {:volume-size (config :volume-size)})))
 
-; TODO: Find a better readable expression.
 (defn generate-configs [config]
   (loop [config (sort-config config)
          result []]
