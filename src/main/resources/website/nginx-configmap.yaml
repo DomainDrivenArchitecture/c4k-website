@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: NAME-configmap
   namespace: default
+  labels:
+    app.kubernetes.part-of: NAME-website
 data:
   nginx.conf: |
     user nginx;

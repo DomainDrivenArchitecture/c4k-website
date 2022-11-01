@@ -47,6 +47,10 @@
   [fqdn pred/fqdn-string?]
   (str/replace fqdn #"\." "-"))
 
+(defn-spec generate-app-name string?
+  [unique-name pred/fqdn-string?]
+  (str (replace-dots-by-minus unique-name) "-website"))
+
 (defn-spec generate-service-name string?
   [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-service"))
@@ -101,6 +105,7 @@
   [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
     (ing/generate-http-ingress {:fqdns fqdns
+                                :app-name (generate-app-name unique-name)
                                 :ingress-name (generate-http-ingress-name unique-name)
                                 :service-name (generate-service-name unique-name)
                                 :service-port 80})))
@@ -110,6 +115,7 @@
   (let [{:keys [unique-name fqdns]} config]
     (ing/generate-https-ingress {:fqdns fqdns
                                  :cert-name (generate-cert-name unique-name)
+                                 :app-name (generate-app-name unique-name)
                                  :ingress-name (generate-https-ingress-name unique-name)
                                  :service-name (generate-service-name unique-name)
                                  :service-port 80})))
@@ -119,6 +125,7 @@
   (let [{:keys [unique-name issuer fqdns]
          :or {issuer "staging"}} config]
     (ing/generate-certificate {:fqdns fqdns
+                               :app-name (generate-app-name unique-name)
                                :cert-name (generate-cert-name unique-name)
                                :issuer issuer})))
 
@@ -127,6 +134,7 @@
   (let [{:keys [unique-name fqdns]} config]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (#(assoc-in %
                  [:data :website.conf]
@@ -138,6 +146,7 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-nginx-service pred/map-or-seq?
@@ -145,6 +154,7 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
@@ -153,6 +163,7 @@
          :or {volume-size "3"}} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
@@ -161,6 +172,7 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
@@ -168,6 +180,7 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-deployment.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
@@ -180,6 +193,7 @@
                 branchname]} auth]
     (->
      (yaml/load-as-edn "website/website-build-secret.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "URL" (b64/encode

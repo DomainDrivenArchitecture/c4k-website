@@ -13,15 +13,16 @@
 
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::service-name string?)
+(s/def ::app-name string?)
 (s/def ::ingress-name string?)
 (s/def ::cert-name string?)
 (s/def ::service-port pos-int?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 
-(def ingress? (s/keys :req-un [::fqdns ::ingress-name ::service-name ::service-port]
+(def ingress? (s/keys :req-un [::fqdns ::app-name ::ingress-name ::service-name ::service-port]
                       :opt-un [::issuer ::cert-name]))
 
-(def certificate? (s/keys :req-un [::fqdns ::cert-name]
+(def certificate? (s/keys :req-un [::fqdns ::app-name ::cert-name]
                           :opt-un [::issuer]))
 
 #?(:cljs
@@ -50,30 +51,33 @@
 
 (defn-spec generate-http-ingress pred/map-or-seq?
   [config ingress?]
-  (let [{:keys [ingress-name service-name service-port fqdns]} config]
+  (let [{:keys [ingress-name service-name service-port fqdns app-name]} config]
     (->
      (yaml/load-as-edn "ingress/http-ingress.yaml")
-     (assoc-in [:metadata :name] ingress-name)     
+     (assoc-in [:metadata :name] ingress-name)
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] app-name)
      (assoc-in [:spec :rules] (mapv (partial generate-host-rule service-name service-port) fqdns)))))
 
 (defn-spec generate-https-ingress pred/map-or-seq?
   [config ingress?]
-  (let [{:keys [ingress-name cert-name service-name service-port fqdns]} config]
+  (let [{:keys [ingress-name cert-name service-name service-port fqdns app-name]} config]
     (->
      (yaml/load-as-edn "ingress/https-ingress.yaml")
      (assoc-in [:metadata :name] ingress-name)
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] app-name)
      (assoc-in [:spec :tls 0 :secretName] cert-name)
      (assoc-in [:spec :tls 0 :hosts] fqdns)
      (assoc-in [:spec :rules] (mapv (partial generate-host-rule service-name service-port) fqdns)))))
 
 (defn-spec generate-certificate pred/map-or-seq?
   [config certificate?]
-  (let [{:keys [cert-name issuer fqdns]
+  (let [{:keys [cert-name issuer fqdns app-name]
          :or {issuer "staging"}} config
         letsencrypt-issuer (name issuer)]
     (->
      (yaml/load-as-edn "ingress/certificate.yaml")     
      (assoc-in [:metadata :name] cert-name)
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] app-name)
      (assoc-in [:spec :secretName] cert-name)
      (assoc-in [:spec :commonName] (first fqdns))
      (assoc-in [:spec :dnsNames] fqdns)

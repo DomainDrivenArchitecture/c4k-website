@@ -69,7 +69,9 @@
                                                             :authtoken "abedjgbasdodj"})))))
   (is (= {:apiVersion "v1",
           :kind "ConfigMap",
-          :metadata {:name "test-io-configmap", :namespace "default"}}
+          :metadata {:name "test-io-configmap",
+                     :labels {:app.kubernetes.part-of "test-io-website"},
+                     :namespace "default"}}
          (dissoc (cut/generate-nginx-configmap {:unique-name "test.io",
                                                 :gitea-host "gitea.evilorg",
                                                 :gitea-repo "none",
@@ -81,7 +83,8 @@
 (deftest should-generate-nginx-deployment
   (is (= {:apiVersion "apps/v1",
           :kind "Deployment",
-          :metadata {:name "test-io-deployment"},
+          :metadata {:name "test-io-deployment",
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:replicas 1,
            :selector {:matchLabels {:app "test-io-nginx"}},
@@ -123,7 +126,9 @@
   (is (= {:name-c1 "test-io-service",
           :name-c2 "test-org-service",
           :app-c1 "test-io-nginx",
-          :app-c2 "test-org-nginx"}
+          :app-c2 "test-org-nginx",
+          :app.kubernetes.part-of-c1 "test-io-website",
+          :app.kubernetes.part-of-c2 "test-org-website"}
          (th/map-diff (cut/generate-nginx-service {:unique-name "test.io",
                                                    :gitea-host "gitea.evilorg",
                                                    :gitea-repo "none",
@@ -142,9 +147,11 @@
 (deftest should-generate-website-build-cron
   (is (= {:apiVersion "batch/v1beta1",
           :kind "CronJob",
-          :metadata {:name "test-io-build-cron", :labels {:app.kubernetes.part-of "website"}},
+          :metadata {
+                     :name "test-io-build-cron", 
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
-          {:schedule "1,7,14,21,28,35,42,49,54,59 * * * *",
+          {:schedule "0/7 * * * *",
            :successfulJobsHistoryLimit 1,
            :failedJobsHistoryLimit 1,
            :jobTemplate
@@ -171,7 +178,8 @@
 (deftest should-generate-website-build-deployment
   (is (= {:apiVersion "apps/v1",
           :kind "Deployment",
-          :metadata {:name "test-io-build-deployment"},
+          :metadata {:name "test-io-build-deployment",
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:replicas 0,
            :selector {:matchLabels {:app "test-io-builder"}},
@@ -202,7 +210,9 @@
           :AUTHTOKEN-c1 (b64/encode "token1"),
           :AUTHTOKEN-c2 (b64/encode "token2"),
           :GITREPOURL-c1 (b64/encode "https://gitlab.org/api/v1/repos/dumpty/websitebau/archive/testname.zip"),
-          :GITREPOURL-c2 (b64/encode "https://github.com/api/v1/repos/humpty/websitedachs/archive/testname.zip")}
+          :GITREPOURL-c2 (b64/encode "https://github.com/api/v1/repos/humpty/websitedachs/archive/testname.zip"),
+          :app.kubernetes.part-of-c1 "test-io-website", 
+          :app.kubernetes.part-of-c2 "test-org-website"}
          (th/map-diff (cut/generate-website-build-secret {:unique-name "test.io",
                                                           :authtoken "token1",
                                                           :gitea-host "gitlab.org",
@@ -223,7 +233,9 @@
   (is (= {:name-c1 "test-io-content-volume",
           :name-c2 "test-org-content-volume",
           :app-c1 "test-io-nginx",
-          :app-c2 "test-org-nginx"}
+          :app-c2 "test-org-nginx",
+          :app.kubernetes.part-of-c1 "test-io-website", 
+          :app.kubernetes.part-of-c2 "test-org-website"}
          (th/map-diff (cut/generate-website-content-volume {:unique-name "test.io",
                                                             :gitea-host "gitea.evilorg",
                                                             :gitea-repo "none",

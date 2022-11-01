@@ -10,6 +10,7 @@
 (st/instrument `cut/generate-https-ingress)
 (st/instrument `cut/generate-certificate)
 
+; ToDo: Refactor to ingress-cert-test
 
 (deftest should-generate-rule
   (is (= {:host "test.com",
@@ -28,11 +29,13 @@
           :metadata
           {:name "test-io-http-ingress",
            :namespace "default",
+           :labels {:app.kubernetes.part-of "c4k-common-app"},
            :annotations
            #:traefik.ingress.kubernetes.io{:router.entrypoints "web",
                                            :router.middlewares "default-redirect-https@kubernetescrd"}}}
          (dissoc (cut/generate-http-ingress
                   {:issuer "prod"
+                   :app-name "c4k-common-app"
                    :service-name "myservice"
                    :service-port 3000
                    :ingress-name "test-io-http-ingress"
@@ -53,6 +56,7 @@
          (:spec (cut/generate-http-ingress
                  {:issuer "prod"
                   :service-name "myservice"
+                  :app-name "c4k-common-app"
                   :service-port 3000
                   :ingress-name "test-io-http-ingress"
                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
@@ -63,10 +67,12 @@
           :metadata
           {:name "test-io-https-ingress",
            :namespace "default",
+           :labels {:app.kubernetes.part-of "c4k-common-app"},
            :annotations #:traefik.ingress.kubernetes.io{:router.entrypoints "websecure", :router.tls "true"}}}
          (dissoc (cut/generate-https-ingress
                   {:issuer "prod"
                    :service-name "test-io-service"
+                   :app-name "c4k-common-app"
                    :service-port 80
                    :ingress-name "test-io-https-ingress"
                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :spec)))
@@ -88,6 +94,7 @@
             :http
             {:paths [{:pathType "Prefix", :path "/", :backend {:service {:name "test-io-service", :port {:number 80}}}}]}}]}
          (:spec (cut/generate-https-ingress {:issuer "prod"
+                                             :app-name "c4k-common-app"
                                              :service-name "test-io-service"
                                              :service-port 80
                                              :ingress-name "test-io-https-ingress"
@@ -97,14 +104,19 @@
 (deftest should-generate-certificate
   (is (= {:apiVersion "cert-manager.io/v1",
           :kind "Certificate",
-          :metadata {:name "test-io-cert", :namespace "default"},
+          :metadata {
+                     :name "test-io-cert", 
+                     :namespace "default",
+                     :labels {:app.kubernetes.part-of "c4k-common-app"},
+                     },
           :spec
           {:secretName "test-io-cert",
-           :commonName "test.de",
+           :commonName "test.de",           
            :duration "2160h",
            :renewBefore "360h",
            :dnsNames ["test.de" "test.org" "www.test.de" "www.test.org"],
            :issuerRef {:name "prod", :kind "ClusterIssuer"}}}
           (cut/generate-certificate {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
+                                     :app-name "c4k-common-app"
                                      :cert-name "test-io-cert"
                                      :issuer "prod"}))))
