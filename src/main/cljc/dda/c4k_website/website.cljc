@@ -28,9 +28,11 @@
 (s/def ::username string?)
 
 (def websitedata? (s/keys :req-un [::unique-name ::fqdns ::gitea-host ::gitea-repo ::branchname]
-                          :opt-un [::issuer]))
+                          :opt-un [::issuer ::volume-size]))
 
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
+
+(def flattened-and-reduced-config? (s/and websitedata? websiteauth?))
 
 (s/def ::auth (s/coll-of websiteauth?))
 
@@ -70,11 +72,10 @@
   (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
 
 ; ToDo: Move to common?
-; ToDo richtig spec-en
-(defn replace-all-matching-subvalues-in-string-start
-  [col
-   value-to-partly-match
-   value-to-inplace]
+(defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
+  [col pred/map-or-seq?
+   value-to-partly-match string?
+   value-to-inplace string?]
   (clojure.walk/postwalk #(if (and (= (type value-to-partly-match) (type %))
                                    (re-matches (re-pattern (str value-to-partly-match ".*")) %))
                             (str/replace % value-to-partly-match value-to-inplace) %)
@@ -97,11 +98,8 @@
    (defmethod yaml/load-as-edn :website [resource-name]
      (yaml/from-string (yaml/load-resource resource-name))))
 
-; TODO: gec 2022/10/28: The specs for config in the following functions are not correct, 
-;                       since config is the result of "flatten-and-reduce-config".
-;                       Use correct specs!
 (defn-spec generate-website-http-ingress pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
     (ing/generate-http-ingress {:fqdns fqdns
                                 :ingress-name (generate-http-ingress-name unique-name)
@@ -109,7 +107,7 @@
                                 :service-port 80})))
 
 (defn-spec generate-website-https-ingress pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
     (ing/generate-https-ingress {:fqdns fqdns
                                  :cert-name (generate-cert-name unique-name)
@@ -118,7 +116,7 @@
                                  :service-port 80})))
 
 (defn-spec generate-website-certificate pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name issuer fqdns]
          :or {issuer "staging"}} config]
     (ing/generate-certificate {:fqdns fqdns
@@ -126,7 +124,7 @@
                                :issuer issuer})))
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
@@ -137,21 +135,21 @@
                   (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-nginx-service pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name volume-size]
          :or {volume-size "3"}} config]
     (->
@@ -160,22 +158,21 @@
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
-  [config websitedata?]
+  [config flattened-and-reduced-config?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-deployment.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
-; TODO: gec 2022/10/28: gitea-host, gitea-repo, branchname are not in "websiteauth?"
 (defn-spec generate-website-build-secret pred/map-or-seq?
-  [auth websiteauth?]
+  [auth flattened-and-reduced-config?]
   (let [{:keys [unique-name
                 authtoken
                 gitea-host

@@ -1,15 +1,20 @@
 (ns dda.c4k-website.core
   (:require
    [clojure.spec.alpha :as s]
+   #?(:clj [orchestra.core :refer [defn-spec]]
+      :cljs [orchestra.core :refer-macros [defn-spec]])
    [dda.c4k-common.yaml :as yaml]
    [dda.c4k-common.common :as cm]
+   [dda.c4k-common.predicate :as pred]
    [dda.c4k-website.website :as website]))
 
 (def config-defaults {:issuer "staging"
                       :volume-size "3"})
 
-(defn flatten-and-reduce-config
-  [unsorted-config]
+(def merged-config-and-auth? (s/and website/config? website/auth?))
+
+(defn-spec flatten-and-reduce-config  pred/map-or-seq?
+  [unsorted-config merged-config-and-auth?]
   (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))
         sorted-auth (into [] (sort-by :unique-name (unsorted-config :auth)))
         config (-> unsorted-config
