@@ -1,4 +1,4 @@
-(ns dda.c4k-website.ingress
+(ns dda.c4k-website.ingress-cert
   (:require
    [clojure.spec.alpha :as s]
    #?(:cljs [shadow.resource :as rc])

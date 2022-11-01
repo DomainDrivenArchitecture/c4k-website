@@ -48,19 +48,25 @@
                                                               :gitea-host "gitea.evilorg",
                                                               :gitea-repo "none",
                                                               :branchname "mablain",
-                                                              :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+                                                              :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                              :username "someuser"
+                                                              :authtoken "abedjgbasdodj"})))))
   (is (= "types {\n  text/html                             html htm shtml;\n  text/css                              css;\n  text/xml                              xml rss;\n  image/gif                             gif;\n  image/jpeg                            jpeg jpg;\n  application/x-javascript              js;\n  text/plain                            txt;\n  text/x-component                      htc;\n  text/mathml                           mml;\n  image/png                             png;\n  image/x-icon                          ico;\n  image/x-jng                           jng;\n  image/vnd.wap.wbmp                    wbmp;\n  application/java-archive              jar war ear;\n  application/mac-binhex40              hqx;\n  application/pdf                       pdf;\n  application/x-cocoa                   cco;\n  application/x-java-archive-diff       jardiff;\n  application/x-java-jnlp-file          jnlp;\n  application/x-makeself                run;\n  application/x-perl                    pl pm;\n  application/x-pilot                   prc pdb;\n  application/x-rar-compressed          rar;\n  application/x-redhat-package-manager  rpm;\n  application/x-sea                     sea;\n  application/x-shockwave-flash         swf;\n  application/x-stuffit                 sit;\n  application/x-tcl                     tcl tk;\n  application/x-x509-ca-cert            der pem crt;\n  application/x-xpinstall               xpi;\n  application/zip                       zip;\n  application/octet-stream              deb;\n  application/octet-stream              bin exe dll;\n  application/octet-stream              dmg;\n  application/octet-stream              eot;\n  application/octet-stream              iso img;\n  application/octet-stream              msi msp msm;\n  audio/mpeg                            mp3;\n  audio/x-realaudio                     ra;\n  video/mpeg                            mpeg mpg;\n  video/quicktime                       mov;\n  video/x-flv                           flv;\n  video/x-msvideo                       avi;\n  video/x-ms-wmv                        wmv;\n  video/x-ms-asf                        asx asf;\n  video/x-mng                           mng;\n}\n"
          (:mime.types (:data (cut/generate-nginx-configmap {:unique-name "test.io",
                                                             :gitea-host "gitea.evilorg",
                                                             :gitea-repo "none",
                                                             :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                            :username "someuser"
+                                                            :authtoken "abedjgbasdodj"})))))
   (is (= "user nginx;\nworker_processes 3;\nerror_log /var/log/nginx/error.log;\npid /var/log/nginx/nginx.pid;\nworker_rlimit_nofile 8192;\nevents { \n  worker_connections 4096; \n}\nhttp {\n  include /etc/nginx/mime.types; \n  default_type application/octet-stream;\n  log_format   main '$remote_addr - $remote_user [$time_local] $status'\n  '\"$request\" $body_bytes_sent \"$http_referer\"'\n  '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n  access_log /var/log/nginx/access.log main;\n  sendfile on;\n  tcp_nopush on;\n  keepalive_timeout 65;\n  server_names_hash_bucket_size 128;\n  include /etc/nginx/conf.d/website.conf;\n}\n"
          (:nginx.conf (:data (cut/generate-nginx-configmap {:unique-name "test.io",
                                                             :gitea-host "gitea.evilorg",
                                                             :gitea-repo "none",
                                                             :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                            :username "someuser"
+                                                            :authtoken "abedjgbasdodj"})))))
   (is (= {:apiVersion "v1",
           :kind "ConfigMap",
           :metadata {:name "test-io-configmap", :namespace "default"}}
@@ -68,9 +74,11 @@
                                                 :gitea-host "gitea.evilorg",
                                                 :gitea-repo "none",
                                                 :branchname "mablain",
-                                                :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :data))))
+                                                :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                :username "someuser"
+                                                :authtoken "abedjgbasdodj"}) :data))))
 
-(deftest should-generate-nginx-deployment 
+(deftest should-generate-nginx-deployment
   (is (= {:apiVersion "apps/v1",
           :kind "Deployment",
           :metadata {:name "test-io-deployment"},
@@ -107,7 +115,9 @@
                                          :gitea-host "gitea.evilorg",
                                          :gitea-repo "none",
                                          :branchname "mablain",
-                                         :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                         :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                         :username "someuser"
+                                         :authtoken "abedjgbasdodj"}))))
 
 (deftest should-generate-nginx-service
   (is (= {:name-c1 "test-io-service",
@@ -118,12 +128,16 @@
                                                    :gitea-host "gitea.evilorg",
                                                    :gitea-repo "none",
                                                    :branchname "mablain",
-                                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
+                                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                   :username "someuser"
+                                                   :authtoken "abedjgbasdodj"})
                       (cut/generate-nginx-service {:unique-name "test.org",
                                                    :gitea-host "gitea.evilorg",
                                                    :gitea-repo "none",
                                                    :branchname "mablain",
-                                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+                                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                   :username "someuser"
+                                                   :authtoken "abedjgbasdodj"})))))
 
 (deftest should-generate-website-build-cron
   (is (= {:apiVersion "batch/v1beta1",
@@ -150,7 +164,9 @@
                                            :gitea-host "gitea.evilorg",
                                            :gitea-repo "none",
                                            :branchname "mablain",
-                                           :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                           :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                           :username "someuser"
+                                           :authtoken "abedjgbasdodj"}))))
 
 (deftest should-generate-website-build-deployment
   (is (= {:apiVersion "apps/v1",
@@ -176,7 +192,9 @@
                                                  :gitea-host "gitea.evilorg",
                                                  :gitea-repo "none",
                                                  :branchname "mablain",
-                                                 :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                                 :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                 :username "someuser"
+                                                 :authtoken "abedjgbasdodj"}))))
 
 (deftest should-generate-website-build-secret
   (is (= {:name-c1 "test-io-secret",
@@ -190,13 +208,16 @@
                                                           :gitea-host "gitlab.org",
                                                           :gitea-repo "websitebau",
                                                           :username "dumpty",
-                                                          :branchname "testname"})
+                                                          :branchname "testname",
+                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}
+                                                         )
                       (cut/generate-website-build-secret {:unique-name "test.org",
                                                           :authtoken "token2",
                                                           :gitea-host "github.com",
                                                           :gitea-repo "websitedachs",
                                                           :username "humpty",
-                                                          :branchname "testname"})))))
+                                                          :branchname "testname",
+                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
 
 (deftest should-generate-website-content-volume
   (is (= {:name-c1 "test-io-content-volume",
@@ -207,9 +228,13 @@
                                                             :gitea-host "gitea.evilorg",
                                                             :gitea-repo "none",
                                                             :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                            :username "someuser"
+                                                            :authtoken "abedjgbasdodj"})
                       (cut/generate-website-content-volume {:unique-name "test.org",
                                                             :gitea-host "gitea.evilorg",
                                                             :gitea-repo "none",
                                                             :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                                            :username "someuser"
+                                                            :authtoken "abedjgbasdodj"})))))
