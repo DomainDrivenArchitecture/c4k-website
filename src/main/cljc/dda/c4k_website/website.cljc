@@ -152,7 +152,8 @@
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
   [config websitedata?]
-  (let [{:keys [unique-name volume-size]} config]
+  (let [{:keys [unique-name volume-size]
+         :or {volume-size "3"}} config]
     (->
      (yaml/load-as-edn "website/website-content-volume.yaml")
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
