@@ -18,7 +18,6 @@
 (s/def ::service-port pos-int?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 
-; TODO: Review jem 2022/10/26: Namespace is called ingress but we do more: Ingress & cert -> rename ore mv. certificate to own ns
 (def ingress? (s/keys :req-un [::fqdns ::ingress-name ::service-name ::service-port]
                       :opt-un [::issuer ::cert-name]))
 

@@ -15,6 +15,6 @@ spec:
             path: "/"
             backend: # TODO: Review jem 2022/10/26: wo backend as we should only do a redirect here ... ?
               service:
-                name: SERVIC_ENAME
+                name: SERVICE_NAME
                 port:
                   number: 80

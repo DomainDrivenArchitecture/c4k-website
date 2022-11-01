@@ -71,7 +71,6 @@
    branch string?]
   (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
 
-; ToDo: Move to common?
 (defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
   [col pred/map-or-seq?
    value-to-partly-match string?

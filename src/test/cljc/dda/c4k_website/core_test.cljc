@@ -48,8 +48,6 @@
    :username "someuser",
    :authtoken "abedjgbasdodj"})
 
-; TODO: gec 2022/10/28: This might be the desired behavior.
-;       cut/flatten-and-reduce-config must be fixed accordingly.
 (deftest test-flatten-and-reduce-config
   (is (=
        (cut/flatten-and-reduce-config (merge websites auth1))
