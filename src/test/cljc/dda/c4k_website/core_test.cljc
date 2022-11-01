@@ -50,8 +50,8 @@
 
 (deftest test-flatten-and-reduce-config
   (is (=
-       (cut/flatten-and-reduce-config (merge websites auth1))
+       (cut/flatten-and-reduce-config (cut/sort-config (merge websites auth1)))
        flattened-and-reduced-config))
   (is (=
-       (cut/flatten-and-reduce-config (merge websites auth2))
+       (cut/flatten-and-reduce-config (cut/sort-config (merge websites auth2)))
        flattened-and-reduced-config)))

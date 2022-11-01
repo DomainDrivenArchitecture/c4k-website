@@ -13,23 +13,26 @@
 
 (def merged-config-and-auth? (s/and website/config? website/auth?))
 
-(defn-spec flatten-and-reduce-config  pred/map-or-seq?
+(defn-spec sort-config pred/map-or-seq?
   [unsorted-config merged-config-and-auth?]
   (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))
-        sorted-auth (into [] (sort-by :unique-name (unsorted-config :auth)))
-        config (-> unsorted-config
-                   (assoc-in [:websites] sorted-websites)
-                   (assoc-in [:auth] sorted-auth))]
-    (merge (-> config :websites first)
-           (-> config :auth first)
-           (when (contains? config :issuer)
-             {:issuer (config :issuer)})
-           (when (contains? config :volume-size)
-             {:volume-size (config :volume-size)}))))
+        sorted-auth (into [] (sort-by :unique-name (unsorted-config :auth)))]
+    (-> unsorted-config
+        (assoc-in [:websites] sorted-websites)
+        (assoc-in [:auth] sorted-auth))))
+
+(defn-spec flatten-and-reduce-config  pred/map-or-seq?
+  [config merged-config-and-auth?]
+  (merge (-> config :websites first)
+         (-> config :auth first)
+         (when (contains? config :issuer)
+           {:issuer (config :issuer)})
+         (when (contains? config :volume-size)
+           {:volume-size (config :volume-size)})))
 
 ; TODO: Find a better readable expression.
 (defn generate-configs [config]
-  (loop [config config
+  (loop [config (sort-config config)
          result []]
 
     (if (and (empty? (config :auth)) (empty? (config :websites)))
