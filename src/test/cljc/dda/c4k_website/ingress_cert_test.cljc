@@ -1,4 +1,4 @@
-(ns dda.c4k-website.ingress-test
+(ns dda.c4k-website.ingress-cert-test
   (:require
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
@@ -9,8 +9,6 @@
 (st/instrument `cut/generate-http-ingress)
 (st/instrument `cut/generate-https-ingress)
 (st/instrument `cut/generate-certificate)
-
-; ToDo: Refactor to ingress-cert-test
 
 (deftest should-generate-rule
   (is (= {:host "test.com",
