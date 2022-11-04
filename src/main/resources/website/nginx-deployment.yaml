@@ -29,9 +29,6 @@ spec:
         - mountPath: /var/www/html/website
           name: website-content-volume
           readOnly: true
-        - mountPath: /etc/certs
-          name: website-cert
-          readOnly: true
       volumes:
         - name: nginx-config-volume
           configMap:
@@ -48,12 +45,4 @@ spec:
         - name: website-content-volume
           persistentVolumeClaim:
             claimName: NAME-content-volume
-        - name: website-cert
-          secret: 
-            secretName: NAME-cert
-            items:
-              - key: tls.crt
-                path: tls.crt
-              - key: tls.key
-                path: tls.key
                 

@@ -99,8 +99,7 @@
                :volumeMounts
                [{:mountPath "/etc/nginx", :readOnly true, :name "nginx-config-volume"}
                 {:mountPath "/var/log/nginx", :name "log"}
-                {:mountPath "/var/www/html/website", :name "website-content-volume", :readOnly true}
-                {:mountPath "/etc/certs", :name "website-cert", :readOnly true}]}],
+                {:mountPath "/var/www/html/website", :name "website-content-volume", :readOnly true}]}],
              :volumes
              [{:name "nginx-config-volume",
                :configMap
@@ -110,10 +109,7 @@
                  {:key "website.conf", :path "conf.d/website.conf"}
                  {:key "mime.types", :path "mime.types"}]}}
               {:name "log", :emptyDir {}}
-              {:name "website-content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
-              {:name "website-cert",
-               :secret
-               {:secretName "test-io-cert", :items [{:key "tls.crt", :path "tls.crt"} {:key "tls.key", :path "tls.key"}]}}]}}}}
+              {:name "website-content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
          (cut/generate-nginx-deployment {:unique-name "test.io",
                                          :gitea-host "gitea.evilorg",
                                          :gitea-repo "none",
