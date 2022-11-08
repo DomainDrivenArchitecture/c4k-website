@@ -96,11 +96,6 @@
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
-; TODO: Review jem 2022/10/26: move this fkt. to a more general place
-#?(:cljs
-   (defmethod yaml/load-as-edn :website [resource-name]
-     (yaml/from-string (yaml/load-resource resource-name))))
-
 (defn-spec generate-website-http-ingress pred/map-or-seq?
   [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
