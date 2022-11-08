@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: NAME-initial-build-job
+  labels:
+    app.kubernetes.part-of: NAME-website 
+spec:  
+  template:
+    spec:
+      containers:
+      - image: domaindrivenarchitecture/c4k-website-build
+        name: NAME-build-app
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]            
+        envFrom:
+        - secretRef:
+            name: NAME-secret                   
+        volumeMounts:
+        - name: content-volume
+          mountPath: /var/www/html/website
+      volumes:
+      - name: content-volume
+        persistentVolumeClaim:
+          claimName: NAME-content-volume
+      restartPolicy: OnFailure
+          

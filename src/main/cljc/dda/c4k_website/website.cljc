@@ -91,6 +91,7 @@
        "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
        "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")
        "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
+       "website/website-initial-build-job.yaml" (rc/inline "website/website-initial-build-job.yaml")
        "website/website-build-deployment.yaml" (rc/inline "website/website-build-deployment.yaml")
        "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
@@ -167,6 +168,14 @@
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn "website/website-build-cron.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+
+(defn-spec generate-website-initial-build-job pred/map-or-seq?
+  [config flattened-and-reduced-config?]
+  (let [{:keys [unique-name]} config]
+    (->
+     (yaml/load-as-edn "website/website-initial-build-job.yaml")
      (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 

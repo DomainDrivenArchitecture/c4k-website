@@ -200,6 +200,31 @@
                                                  :username "someuser"
                                                  :authtoken "abedjgbasdodj"}))))
 
+(deftest should-generate-website-initial-build-job
+  (is (= {:apiVersion "batch/v1",
+          :kind "Job",
+          :metadata {:name "test-io-initial-build-job", :labels {:app.kubernetes.part-of "test-io-website"}},
+          :spec
+          {:template
+           {:spec
+            {:containers
+             [{:image "domaindrivenarchitecture/c4k-website-build",
+               :name "test-io-build-app",
+               :imagePullPolicy "IfNotPresent",
+               :command ["/entrypoint.sh"],
+               :envFrom [{:secretRef {:name "test-io-secret"}}],
+               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
+             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
+             :restartPolicy "OnFailure"}}}}
+         (cut/generate-website-initial-build-job {:unique-name "test.io",
+                                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                                 :gitea-host "gitlab.de",
+                                                 :gitea-repo "repo",
+                                                 :branchname "main",
+                                                 :username "someuser",
+                                                 :authtoken "abedjgbasdodj",
+                                                 :issuer "staging"}))))
+
 (deftest should-generate-website-build-secret
   (is (= {:name-c1 "test-io-secret",
           :name-c2 "test-org-secret",

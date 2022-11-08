@@ -49,6 +49,7 @@
                    (website/generate-website-https-ingress (flatten-and-reduce-config config))
                    (website/generate-website-certificate (flatten-and-reduce-config config))
                    (website/generate-website-build-cron (flatten-and-reduce-config config))
+                   (website/generate-website-initial-build-job (flatten-and-reduce-config config))
                    (website/generate-website-build-secret (flatten-and-reduce-config config)))))))
 
 (defn k8s-objects [config]
