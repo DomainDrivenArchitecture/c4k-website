@@ -70,7 +70,7 @@
 (defn config-from-document []
   (let [issuer (br/get-content-from-element "issuer" :optional true)]
     (merge
-     {:websites (br/get-content-from-element "websites" :deserializer edn/read-string)}
+     (br/get-content-from-element "websites" :deserializer edn/read-string)
      (when (not (st/blank? issuer))
        {:issuer issuer}))))
 
