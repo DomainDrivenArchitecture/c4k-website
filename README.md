@@ -36,6 +36,7 @@ You need:
 * cryogen as a static site generator
 * a cryogen project ready to build
 * and a gitea account which holds the buildable project
+* a kubernetes cluster provisioned by [provs]
 
 Before deploying, you need an authorization token, that can be generated in your gitea account.
 Then you need a URL that points to: `https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip`.
@@ -48,3 +49,5 @@ Let c4k-website generate your .yaml file and `kubectl apply yourApp.yaml`. Done.
 Copyright © 2022 meissa GmbH
 Licensed under the [Apache License, Version 2.0](LICENSE) (the "License")
 Pls. find licenses of our subcomponents [here](doc/SUBCOMPONENT_LICENSE)
+
+[provs]: https://gitlab.com/domaindrivenarchitecture/provs/-/commits/master
