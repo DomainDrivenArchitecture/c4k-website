@@ -10,7 +10,7 @@ function execute-scripts-when-existing {
     websitedir=$(ls $BUILDDIR)
     if [[ -f $BUILDDIR/$websitedir/$SCRIPTFILE ]]
         then 
-            checksum="$(sha256sum $BUILDDIR/$websitedir/$SCRIPTFILE)"            
+            checksum="$(sha256sum $BUILDDIR/$websitedir/$SCRIPTFILE | grep -oE "^[a-z0-9]+")"            
             if [[ "$SHA256SUM" == "$checksum" ]]
                 then
                     chmod +x $BUILDDIR/$websitedir/$SCRIPTFILE
@@ -22,8 +22,7 @@ function execute-scripts-when-existing {
                     exit 1
                 fi
     else
-        printf "No script file provided, exiting."
-        exit 0
+        printf "No script file provided."
     fi
 }
 
