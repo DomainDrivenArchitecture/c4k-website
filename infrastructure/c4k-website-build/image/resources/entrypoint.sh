@@ -3,6 +3,11 @@
 mkdir $BUILDDIR
 mkdir $SOURCEDIR
 
+set -o nounset
+set -o xtrace
+set -o errexit
+set -eo pipefail
+
 source /usr/local/bin/functions.sh
 
 echo "Downloading website"
