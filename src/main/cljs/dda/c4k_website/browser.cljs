@@ -31,19 +31,20 @@
        (cm/concat-vec
         (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
         (br/generate-text-area
-         "websites" "A collection containing fqdns and repo infos for each website:"
+         "websites" "Contains fqdns, repo infos, an optional sha256sum-output for script execution for each website:"
          "{:websites
           [{:unique-name \"test.io\",
             :fqdns [\"test.de\" \"www.test.de\"],
             :gitea-host \"githost.de\",
             :gitea-repo \"repo\",
-            :branchname \"main\"}
+            :branchname \"main\",
+            :sha256sum-output \"123456789ab123cd345de script-file-name.sh\"}
            {:unique-name \"example.io \",
             :fqdns [\"example.org\" \"www.example.org\"],
             :gitea-host \"githost.org\",
             :gitea-repo \"repo\",
             :branchname \"main\"}]}"
-         "10")))
+         "11")))
       (generate-group
        "credentials"
        (br/generate-text-area

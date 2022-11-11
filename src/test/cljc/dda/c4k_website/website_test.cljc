@@ -143,9 +143,7 @@
 (deftest should-generate-website-build-cron
   (is (= {:apiVersion "batch/v1beta1",
           :kind "CronJob",
-          :metadata {
-                     :name "test-io-build-cron", 
-                     :labels {:app.kubernetes.part-of "test-io-website"}},
+          :metadata {:name "test-io-build-cron", :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:schedule "0/7 * * * *",
            :successfulJobsHistoryLimit 1,
@@ -160,22 +158,24 @@
                  :imagePullPolicy "IfNotPresent",
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
+                 :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
                :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
-         (cut/generate-website-build-cron {:unique-name "test.io",
-                                           :gitea-host "gitea.evilorg",
-                                           :gitea-repo "none",
-                                           :branchname "mablain",
-                                           :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
-                                           :username "someuser"
-                                           :authtoken "abedjgbasdodj"}))))
+         (cut/generate-website-build-cron {:authtoken "abedjgbasdodj",
+                                           :gitea-host "gitlab.de",
+                                           :username "someuser",
+                                           :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                           :gitea-repo "repo",
+                                           :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                           :issuer "staging",
+                                           :branchname "main",
+                                           :unique-name "test.io"}))))
 
 (deftest should-generate-website-build-deployment
   (is (= {:apiVersion "apps/v1",
           :kind "Deployment",
-          :metadata {:name "test-io-build-deployment",
-                     :labels {:app.kubernetes.part-of "test-io-website"}},
+          :metadata {:name "test-io-build-deployment", :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:replicas 0,
            :selector {:matchLabels {:app "test-io-builder"}},
@@ -190,15 +190,18 @@
                :imagePullPolicy "IfNotPresent",
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
+               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
                :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
              :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
-         (cut/generate-website-build-deployment {:unique-name "test.io",
-                                                 :gitea-host "gitea.evilorg",
-                                                 :gitea-repo "none",
-                                                 :branchname "mablain",
-                                                 :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
-                                                 :username "someuser"
-                                                 :authtoken "abedjgbasdodj"}))))
+         (cut/generate-website-build-deployment {:authtoken "abedjgbasdodj",
+                                                 :gitea-host "gitlab.de",
+                                                 :username "someuser",
+                                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                                 :gitea-repo "repo",
+                                                 :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                                 :issuer "staging",
+                                                 :branchname "main",
+                                                 :unique-name "test.io"}))))
 
 (deftest should-generate-website-initial-build-job
   (is (= {:apiVersion "batch/v1",
@@ -213,17 +216,19 @@
                :imagePullPolicy "IfNotPresent",
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
+               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
                :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
              :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
              :restartPolicy "OnFailure"}}}}
-         (cut/generate-website-initial-build-job {:unique-name "test.io",
-                                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                                 :gitea-host "gitlab.de",
-                                                 :gitea-repo "repo",
-                                                 :branchname "main",
-                                                 :username "someuser",
-                                                 :authtoken "abedjgbasdodj",
-                                                 :issuer "staging"}))))
+         (cut/generate-website-initial-build-job {:authtoken "abedjgbasdodj",
+                                                  :gitea-host "gitlab.de",
+                                                  :username "someuser",
+                                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                                  :gitea-repo "repo",
+                                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                                  :issuer "staging",
+                                                  :branchname "main",
+                                                  :unique-name "test.io"}))))
 
 (deftest should-generate-website-build-secret
   (is (= {:name-c1 "test-io-secret",

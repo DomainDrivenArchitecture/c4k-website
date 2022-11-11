@@ -16,10 +16,15 @@ spec:
           - image: domaindrivenarchitecture/c4k-website-build
             name: NAME-build-app
             imagePullPolicy: IfNotPresent
-            command: ["/entrypoint.sh"]            
+            command: ["/entrypoint.sh"]
             envFrom:
             - secretRef:
-                name: NAME-secret                   
+                name: NAME-secret
+            env:
+            - name: SHA256SUM
+              value: CHECK_SUM
+            - name: SCRIPTFILE
+              value: SCRIPT_FILE
             volumeMounts:
             - name: content-volume
               mountPath: /var/www/html/website

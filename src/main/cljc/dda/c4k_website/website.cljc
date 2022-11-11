@@ -11,13 +11,15 @@
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]
    [dda.c4k-website.ingress-cert :as ing]
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.string :as st]))
 
 (defn fqdn-list?
   [input]
   (every? true? (map pred/fqdn-string? input)))
 
 (s/def ::unique-name string?)
+(s/def ::sha256sum-output string?)
 (s/def ::issuer pred/letsencrypt-issuer?)
 (s/def ::volume-size pred/integer-string?)
 (s/def ::authtoken pred/bash-env-string?)
@@ -28,7 +30,7 @@
 (s/def ::username string?)
 
 (def websitedata? (s/keys :req-un [::unique-name ::fqdns ::gitea-host ::gitea-repo ::branchname]
-                          :opt-un [::issuer ::volume-size]))
+                          :opt-un [::issuer ::volume-size ::sha256sum-output]))
 
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
 
@@ -42,6 +44,14 @@
 
 (def config? (s/keys :req-un [::websites]
                      :opt-un [::issuer ::volume-size]))
+
+(defn-spec get-hash-from-sha256sum-output string?
+  [sha256sum-output string?]
+  (first (st/split sha256sum-output #" ")))
+
+(defn-spec get-file-name-from-sha256sum-output string?
+  [sha256sum-output string?]
+  (second (st/split sha256sum-output #" ")))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]
@@ -163,29 +173,28 @@
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
-(defn-spec generate-website-build-cron pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name]} config]
+(defn-spec replace-build-data pred/map-or-seq?
+  [resource-file string?
+   config flattened-and-reduced-config?]
+  (let [{:keys [unique-name sha256sum-output]} config]
     (->
-     (yaml/load-as-edn "website/website-build-cron.yaml")
+     (yaml/load-as-edn resource-file)
      (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
+     (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
+     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output))
      (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
-(defn-spec generate-website-initial-build-job pred/map-or-seq?
+(defn-spec generate-website-build-cron pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name]} config]
-    (->
-     (yaml/load-as-edn "website/website-initial-build-job.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+  (replace-build-data "website/website-build-cron.yaml" config))
+
+(defn-spec generate-website-initial-build-job pred/map-or-seq? 
+  [config flattened-and-reduced-config?]
+  (replace-build-data "website/website-initial-build-job.yaml" config))
 
 (defn-spec generate-website-build-deployment pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name]} config]
-    (->
-     (yaml/load-as-edn "website/website-build-deployment.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+  (replace-build-data "website/website-build-deployment.yaml" config))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth flattened-and-reduced-config?]
