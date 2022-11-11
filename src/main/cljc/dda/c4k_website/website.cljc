@@ -47,11 +47,15 @@
 
 (defn-spec get-hash-from-sha256sum-output string?
   [sha256sum-output string?]
-  (first (st/split sha256sum-output #" ")))
+  (if (nil? sha256sum-output)
+    nil
+    (first (st/split sha256sum-output #"\ +"))))
 
 (defn-spec get-file-name-from-sha256sum-output string?
   [sha256sum-output string?]
-  (second (st/split sha256sum-output #" ")))
+  (if (nil? sha256sum-output)
+    nil
+    (second (st/split (st/trim sha256sum-output) #"\ +"))))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]

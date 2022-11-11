@@ -8,7 +8,7 @@ function get-and-unzip-website-data() {
 
 function execute-scripts-when-existing {
     websitedir=$(ls $BUILDDIR)
-    if [[ -e $BUILDDIR/$websitedir/$SCRIPTFILE ]]
+    if [[ -f $BUILDDIR/$websitedir/$SCRIPTFILE ]]
         then 
             checksum="$(sha256sum $BUILDDIR/$websitedir/$SCRIPTFILE)"            
             if [[ "$SHA256SUM" == "$checksum" ]]
@@ -22,7 +22,7 @@ function execute-scripts-when-existing {
                     exit 1
                 fi
     else
-        prinf "No script file provided, exiting."
+        printf "No script file provided, exiting."
         exit 0
     fi
 }

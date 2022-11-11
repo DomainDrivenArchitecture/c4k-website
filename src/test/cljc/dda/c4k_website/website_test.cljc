@@ -230,6 +230,32 @@
                                                   :branchname "main",
                                                   :unique-name "test.io"}))))
 
+(deftest should-generate-website-initial-build-job-without-script-file
+  (is (= {:apiVersion "batch/v1",
+          :kind "Job",
+          :metadata {:name "test-io-initial-build-job", :labels {:app.kubernetes.part-of "test-io-website"}},
+          :spec
+          {:template
+           {:spec
+            {:containers
+             [{:image "domaindrivenarchitecture/c4k-website-build",
+               :name "test-io-build-app",
+               :imagePullPolicy "IfNotPresent",
+               :command ["/entrypoint.sh"],
+               :envFrom [{:secretRef {:name "test-io-secret"}}],
+               :env [{:name "SHA256SUM", :value nil} {:name "SCRIPTFILE", :value nil}],
+               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
+             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
+             :restartPolicy "OnFailure"}}}}
+         (cut/generate-website-initial-build-job {:authtoken "abedjgbasdodj",
+                                                  :gitea-host "gitlab.de",
+                                                  :username "someuser",
+                                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                                  :gitea-repo "repo",
+                                                  :issuer "staging",
+                                                  :branchname "main",
+                                                  :unique-name "test.io"}))))
+
 (deftest should-generate-website-build-secret
   (is (= {:name-c1 "test-io-secret",
           :name-c2 "test-org-secret",
