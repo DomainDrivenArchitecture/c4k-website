@@ -1,4 +1,5 @@
 # convention 4 kubernetes: c4k-website
+
 [![Clojars Project](https://img.shields.io/clojars/v/org.domaindrivenarchitecture/c4k-website.svg)](https://clojars.org/org.domaindrivenarchitecture/c4k-website) [![pipeline status](https://gitlab.com/domaindrivenarchitecture/c4k-website/badges/master/pipeline.svg)](https://gitlab.com/domaindrivenarchitecture/c4k-website/-/commits/main) 
 
 [<img src="https://domaindrivenarchitecture.org/img/delta-chat.svg" width=20 alt="DeltaChat"> chat over e-mail](mailto:buero@meissa-gmbh.de?subject=community-chat) | [<img src="https://meissa-gmbh.de/img/community/Mastodon_Logotype.svg" width=20 alt="team@social.meissa-gmbh.de"> team@social.meissa-gmbh.de](https://social.meissa-gmbh.de/@team) | [Website & Blog](https://domaindrivenarchitecture.org)
@@ -8,9 +9,7 @@
 Delivering cryogen generated static sites with the push of a few buttons.
 
 c4k-website generates configuration files for multiple nginx webservers, and
-corresponding cryogen static site generator build containers. This automatically downloads a branch.zip 
-from a specified gitea API url. You need an authorization token to access the specified gitea user
-account. The build container is based on clojure:lein.  
+corresponding cryogen static site generator build containers. This automatically downloads a `<branch>.zip` from a specified gitea API url. You need an authorization token to access the specified gitea user account. The build container is based on clojure:lein.  
 
 Following the example in valid-config.edn and valid-auth.edn you can add as many websites as you like (provided you have the DNS Routes set up). One set of configmaps, deployment, services etc will be created for each element in the :websites and :auth list.  
 
@@ -29,7 +28,7 @@ Click on the image to try out live in your browser:
 
 Your input will stay in your browser. No server interaction is required.
 
-## Setup
+## Usage
 
 You need:
 
@@ -40,10 +39,25 @@ You need:
 * a kubernetes cluster provisioned by [provs]
 
 Before deploying, you need an authorization token, that can be generated in your gitea account.
-Then you need a URL that points to: `https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip`.
-Add this to your auth.edn config file and you should be ready to go.
+Then you need a URL that points to: `https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branch>.zip`. Add this to your auth.edn config file and you should be ready to go.
 
 Let c4k-website generate your .yaml file and `kubectl apply yourApp.yaml`. Done.
+
+### Script Execution
+
+Optionally you can specify a sha256sum output generated from a script file that should be executed.
+Just add the :sha256-output "\[hash-of-file file.name\]" :key value pair to the respective collection in :websites. See the example in valid-config.edn.
+
+The script file needs to exist in the `<branch>.zip` and path specification to the script file
+should be relative to the root of the unzipped folder.
+
+Scripts can be of any type - as long as an according shebang exists in the first line.
+
+```bash
+sha256sum your-script-file #  use output of this call
+sha256sum scripts/your-script-file #  or this
+sha256sum scripts/foo/bar/your-script-file #  or this
+```
 
 ## License
 

@@ -7,12 +7,14 @@ function get-and-unzip-website-data() {
 }
 
 function execute-scripts-when-existing {
-    if [[ -e $BUILDDIR/$SCRIPTFILE ]]
+    websitedir=$(ls $BUILDDIR)
+    if [[ -e $BUILDDIR/$websitedir/$SCRIPTFILE ]]
         then 
-            checksum="$(sha256sum $BUILDDIR/$SCRIPTFILE)"            
+            checksum="$(sha256sum $BUILDDIR/$websitedir/$SCRIPTFILE)"            
             if [[ "$SHA256SUM" == "$checksum" ]]
                 then
-                    /bin/bash $BUILDDIR/$SCRIPTFILE
+                    chmod +x $BUILDDIR/$websitedir/$SCRIPTFILE
+                    (cd $BUILDDIR; dir=$(ls); cd $dir; ./$SCRIPTFILE) #make sure paths defined in scriptfile are relative to $dir
                 else
                     printf "Provided SHA256 Sum does not match calculated sum. Exiting."
                     printf "Calculated SHA256: $checksum"
