@@ -39,6 +39,7 @@ data:
       text/plain                            txt;
       text/x-component                      htc;
       text/mathml                           mml;
+      image/svg+xml                         svg svgz;
       image/png                             png;
       image/x-icon                          ico;
       image/x-jng                           jng;
