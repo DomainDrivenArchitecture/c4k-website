@@ -10,9 +10,8 @@
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]
-   [dda.c4k-website.ingress-cert :as ing]
-   [clojure.string :as str]
-   [clojure.string :as st]))
+   [dda.c4k-common.ingress-cert :as ing]
+   [clojure.string :as str]))
 
 (defn fqdn-list?
   [input]
@@ -49,13 +48,13 @@
   [sha256sum-output string?]
   (if (nil? sha256sum-output)
     nil
-    (first (st/split sha256sum-output #"\ +"))))
+    (first (str/split sha256sum-output #"\ +"))))
 
 (defn-spec get-file-name-from-sha256sum-output string?
   [sha256sum-output string?]
   (if (nil? sha256sum-output)
     nil
-    (second (st/split (st/trim sha256sum-output) #"\ +"))))
+    (second (str/split (str/trim sha256sum-output) #"\ +"))))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]
@@ -73,13 +72,9 @@
   [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-cert"))
 
-(defn-spec generate-http-ingress-name string?
+(defn-spec generate-ingress-name string?
   [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-http-ingress"))
-
-(defn-spec generate-https-ingress-name string?
-  [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-https-ingress"))
+  (str (replace-dots-by-minus unique-name) "-ingress"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
 (defn-spec make-gitrepourl string?
@@ -111,24 +106,14 @@
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
-(defn-spec generate-website-http-ingress pred/map-or-seq?
+(defn-spec generate-website-ingress pred/map-or-seq?
   [config flattened-and-reduced-config?]
   (let [{:keys [unique-name fqdns]} config]
-    (ing/generate-http-ingress {:fqdns fqdns
-                                :app-name (generate-app-name unique-name)
-                                :ingress-name (generate-http-ingress-name unique-name)
-                                :service-name (generate-service-name unique-name)
-                                :service-port 80})))
-
-(defn-spec generate-website-https-ingress pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name fqdns]} config]
-    (ing/generate-https-ingress {:fqdns fqdns
-                                 :cert-name (generate-cert-name unique-name)
-                                 :app-name (generate-app-name unique-name)
-                                 :ingress-name (generate-https-ingress-name unique-name)
-                                 :service-name (generate-service-name unique-name)
-                                 :service-port 80})))
+    (ing/generate-ingress {:fqdns fqdns
+                           :app-name (generate-app-name unique-name)
+                           :ingress-name (generate-ingress-name unique-name)
+                           :service-name (generate-service-name unique-name)
+                           :service-port 80})))
 
 (defn-spec generate-website-certificate pred/map-or-seq?
   [config flattened-and-reduced-config?]
