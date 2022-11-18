@@ -108,8 +108,7 @@
                      :labels {:app.kubernetes.part-of "c4k-common-app"},
                      },
           :spec
-          {:secretName "test-io-cert",
-           :commonName "test.de",           
+          {:secretName "test-io-cert",           
            :duration "2160h",
            :renewBefore "360h",
            :dnsNames ["test.de" "test.org" "www.test.de" "www.test.org"],

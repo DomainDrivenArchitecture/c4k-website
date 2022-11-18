@@ -73,8 +73,7 @@
      (yaml/load-as-edn "ingress/certificate.yaml")     
      (assoc-in [:metadata :name] cert-name)
      (assoc-in [:metadata :labels :app.kubernetes.part-of] app-name)
-     (assoc-in [:spec :secretName] cert-name)
-     (assoc-in [:spec :commonName] (first fqdns))
+     (assoc-in [:spec :secretName] cert-name)     
      (assoc-in [:spec :dnsNames] fqdns)
      (assoc-in [:spec :issuerRef :name] letsencrypt-issuer))))
  
