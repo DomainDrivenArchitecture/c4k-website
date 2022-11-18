@@ -8,12 +8,11 @@
    [dda.c4k-website.website :as cut]   
    [clojure.spec.alpha :as s]))
 
-(st/instrument `cut/generate-http-ingress)
-(st/instrument `cut/generate-https-ingress)
 (st/instrument `cut/generate-nginx-configmap)
 (st/instrument `cut/generate-nginx-deployment)
 (st/instrument `cut/generate-nginx-service)
 (st/instrument `cut/generate-website-content-volume)
+(st/instrument `cut/generate-website-ingress)
 (st/instrument `cut/generate-website-certificate)
 (st/instrument `cut/generate-website-build-cron)
 (st/instrument `cut/generate-website-build-deployment)
