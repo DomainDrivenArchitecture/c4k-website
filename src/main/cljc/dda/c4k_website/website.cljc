@@ -76,7 +76,7 @@
   [unique-name pred/fqdn-string?]
   (str (replace-dots-by-minus unique-name) "-ingress"))
 
-; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
+; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branch>.zip
 (defn-spec generate-gitrepourl string?
   [host pred/fqdn-string?
    repo string?
@@ -96,7 +96,7 @@
 (defn-spec replace-common-data pred/map-or-seq?
   [resource-file string?
    config flattened-and-reduced-config?]
-  (let [{:keys [unique-name sha256sum-output]} config]
+  (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn resource-file)
      (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
