@@ -15,7 +15,6 @@
 (st/instrument `cut/generate-website-ingress)
 (st/instrument `cut/generate-website-certificate)
 (st/instrument `cut/generate-website-build-cron)
-(st/instrument `cut/generate-website-build-deployment)
 (st/instrument `cut/generate-website-build-secret)
 
 (deftest should-be-valid-website-auth-spec
@@ -82,8 +81,7 @@
 (deftest should-generate-nginx-deployment
   (is (= {:apiVersion "apps/v1",
           :kind "Deployment",
-          :metadata {:name "test-io-deployment",
-                     :labels {:app.kubernetes.part-of "test-io-website"}},
+          :metadata {:name "test-io-deployment", :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:replicas 1,
            :selector {:matchLabels {:app "test-io-nginx"}},
@@ -98,7 +96,15 @@
                :volumeMounts
                [{:mountPath "/etc/nginx", :readOnly true, :name "nginx-config-volume"}
                 {:mountPath "/var/log/nginx", :name "log"}
-                {:mountPath "/var/www/html/website", :name "website-content-volume", :readOnly true}]}],
+                {:mountPath "/var/www/html/website", :name "content-volume", :readOnly true}]}],
+             :initContainers
+             [{:image "domaindrivenarchitecture/c4k-website-build",
+               :name "test-io-init-build-container",
+               :imagePullPolicy "IfNotPresent",
+               :command ["/entrypoint.sh"],
+               :envFrom [{:secretRef {:name "test-io-secret"}}],
+               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
+               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
              :volumes
              [{:name "nginx-config-volume",
                :configMap
@@ -108,14 +114,16 @@
                  {:key "website.conf", :path "conf.d/website.conf"}
                  {:key "mime.types", :path "mime.types"}]}}
               {:name "log", :emptyDir {}}
-              {:name "website-content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
-         (cut/generate-nginx-deployment {:unique-name "test.io",
-                                         :gitea-host "gitea.evilorg",
-                                         :gitea-repo "none",
-                                         :branchname "mablain",
-                                         :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
-                                         :username "someuser"
-                                         :authtoken "abedjgbasdodj"}))))
+              {:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
+         (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
+                                         :gitea-host "gitlab.de",
+                                         :username "someuser",
+                                         :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                         :gitea-repo "repo",
+                                         :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                         :issuer "staging",
+                                         :branchname "main",
+                                         :unique-name "test.io"}))))
 
 (deftest should-generate-nginx-service
   (is (= {:name-c1 "test-io-service",
@@ -140,7 +148,7 @@
                                                    :authtoken "abedjgbasdodj"})))))
 
 (deftest should-generate-website-build-cron
-  (is (= {:apiVersion "batch/v1beta1",
+  (is (= {:apiVersion "batch/v1",
           :kind "CronJob",
           :metadata {:name "test-io-build-cron", :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
@@ -170,90 +178,6 @@
                                            :issuer "staging",
                                            :branchname "main",
                                            :unique-name "test.io"}))))
-
-(deftest should-generate-website-build-deployment
-  (is (= {:apiVersion "apps/v1",
-          :kind "Deployment",
-          :metadata {:name "test-io-build-deployment", :labels {:app.kubernetes.part-of "test-io-website"}},
-          :spec
-          {:replicas 0,
-           :selector {:matchLabels {:app "test-io-builder"}},
-           :strategy {:type "Recreate"},
-           :template
-           {:metadata
-            {:labels {:app "test-io-builder", :app.kubernetes.io/name "test-io-builder", :app.kubernetes.io/part-of "website"}},
-            :spec
-            {:containers
-             [{:image "domaindrivenarchitecture/c4k-website-build",
-               :name "test-io-build-app",
-               :imagePullPolicy "IfNotPresent",
-               :command ["/entrypoint.sh"],
-               :envFrom [{:secretRef {:name "test-io-secret"}}],
-               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
-         (cut/generate-website-build-deployment {:authtoken "abedjgbasdodj",
-                                                 :gitea-host "gitlab.de",
-                                                 :username "someuser",
-                                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                                 :gitea-repo "repo",
-                                                 :sha256sum-output "123456789ab123cd345de script-file-name.sh",
-                                                 :issuer "staging",
-                                                 :branchname "main",
-                                                 :unique-name "test.io"}))))
-
-(deftest should-generate-website-initial-build-job
-  (is (= {:apiVersion "batch/v1",
-          :kind "Job",
-          :metadata {:name "test-io-initial-build-job", :labels {:app.kubernetes.part-of "test-io-website"}},
-          :spec
-          {:template
-           {:spec
-            {:containers
-             [{:image "domaindrivenarchitecture/c4k-website-build",
-               :name "test-io-build-app",
-               :imagePullPolicy "IfNotPresent",
-               :command ["/entrypoint.sh"],
-               :envFrom [{:secretRef {:name "test-io-secret"}}],
-               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
-             :restartPolicy "OnFailure"}}}}
-         (cut/generate-website-initial-build-job {:authtoken "abedjgbasdodj",
-                                                  :gitea-host "gitlab.de",
-                                                  :username "someuser",
-                                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                                  :gitea-repo "repo",
-                                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
-                                                  :issuer "staging",
-                                                  :branchname "main",
-                                                  :unique-name "test.io"}))))
-
-(deftest should-generate-website-initial-build-job-without-script-file
-  (is (= {:apiVersion "batch/v1",
-          :kind "Job",
-          :metadata {:name "test-io-initial-build-job", :labels {:app.kubernetes.part-of "test-io-website"}},
-          :spec
-          {:template
-           {:spec
-            {:containers
-             [{:image "domaindrivenarchitecture/c4k-website-build",
-               :name "test-io-build-app",
-               :imagePullPolicy "IfNotPresent",
-               :command ["/entrypoint.sh"],
-               :envFrom [{:secretRef {:name "test-io-secret"}}],
-               :env [{:name "SHA256SUM", :value nil} {:name "SCRIPTFILE", :value nil}],
-               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-             :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
-             :restartPolicy "OnFailure"}}}}
-         (cut/generate-website-initial-build-job {:authtoken "abedjgbasdodj",
-                                                  :gitea-host "gitlab.de",
-                                                  :username "someuser",
-                                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                                  :gitea-repo "repo",
-                                                  :issuer "staging",
-                                                  :branchname "main",
-                                                  :unique-name "test.io"}))))
 
 (deftest should-generate-website-build-secret
   (is (= {:name-c1 "test-io-secret",

@@ -77,7 +77,7 @@
   (str (replace-dots-by-minus unique-name) "-ingress"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/main.zip
-(defn-spec make-gitrepourl string?
+(defn-spec generate-gitrepourl string?
   [host pred/fqdn-string?
    repo string?
    user string?
@@ -93,6 +93,24 @@
                             (str/replace % value-to-partly-match value-to-inplace) %)
                          col))
 
+(defn-spec replace-common-data pred/map-or-seq?
+  [resource-file string?
+   config flattened-and-reduced-config?]
+  (let [{:keys [unique-name sha256sum-output]} config]
+    (->
+     (yaml/load-as-edn resource-file)
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
+     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+
+(defn-spec replace-build-data pred/map-or-seq?
+  [resource-file string?
+   config flattened-and-reduced-config?]
+  (let [{:keys [sha256sum-output]} config]
+    (->
+     (replace-common-data resource-file config)     
+     (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
+     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output)))))
+
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
      (case resource-name
@@ -100,8 +118,6 @@
        "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
        "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")
        "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
-       "website/website-initial-build-job.yaml" (rc/inline "website/website-initial-build-job.yaml")
-       "website/website-build-deployment.yaml" (rc/inline "website/website-build-deployment.yaml")
        "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
@@ -126,80 +142,46 @@
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name fqdns]} config]
+  (let [{:keys [fqdns]} config]
     (->
-     (yaml/load-as-edn "website/nginx-configmap.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
+     (replace-common-data "website/nginx-configmap.yaml" config)     
      (#(assoc-in %
                  [:data :website.conf]
                  (str/replace
                   (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name]} config]
-    (->
-     (yaml/load-as-edn "website/nginx-deployment.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+  [config flattened-and-reduced-config?]  
+     (replace-build-data "website/nginx-deployment.yaml" config))
 
 (defn-spec generate-nginx-service pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name]} config]
-    (->
-     (yaml/load-as-edn "website/nginx-service.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+  (replace-common-data "website/nginx-service.yaml" config))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name volume-size]
+  (let [{:keys [volume-size]
          :or {volume-size "3"}} config]
     (->
-     (yaml/load-as-edn "website/website-content-volume.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
+     (replace-common-data "website/website-content-volume.yaml" config)     
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
-
-(defn-spec replace-build-data pred/map-or-seq?
-  [resource-file string?
-   config flattened-and-reduced-config?]
-  (let [{:keys [unique-name sha256sum-output]} config]
-    (->
-     (yaml/load-as-edn resource-file)
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
-     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config flattened-and-reduced-config?]
   (replace-build-data "website/website-build-cron.yaml" config))
 
-(defn-spec generate-website-initial-build-job pred/map-or-seq? 
-  [config flattened-and-reduced-config?]
-  (replace-build-data "website/website-initial-build-job.yaml" config))
-
-(defn-spec generate-website-build-deployment pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (replace-build-data "website/website-build-deployment.yaml" config))
-
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [auth flattened-and-reduced-config?]
-  (let [{:keys [unique-name
-                authtoken
+  (let [{:keys [authtoken
                 gitea-host
                 gitea-repo
                 username
                 branchname]} auth]
     (->
-     (yaml/load-as-edn "website/website-build-secret.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name))
+     (replace-common-data "website/website-build-secret.yaml" auth)     
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "URL" (b64/encode
-                                                         (make-gitrepourl
+                                                         (generate-gitrepourl
                                                           gitea-host
                                                           gitea-repo
                                                           username
