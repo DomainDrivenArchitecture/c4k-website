@@ -27,8 +27,24 @@ spec:
         - mountPath: /var/log/nginx
           name: log                    
         - mountPath: /var/www/html/website
-          name: website-content-volume
+          name: content-volume
           readOnly: true
+      initContainers:
+      - image: domaindrivenarchitecture/c4k-website-build
+        name: NAME-init-build-container
+        imagePullPolicy: IfNotPresent
+        command: ["/entrypoint.sh"]
+        envFrom:
+        - secretRef:
+            name: NAME-secret
+        env:
+        - name: SHA256SUM
+          value: CHECK_SUM
+        - name: SCRIPTFILE
+          value: SCRIPT_FILE
+        volumeMounts:
+        - name: content-volume
+          mountPath: /var/www/html/website
       volumes:
         - name: nginx-config-volume
           configMap:
@@ -42,7 +58,7 @@ spec:
                 path: mime.types 
         - name: log
           emptyDir: {}
-        - name: website-content-volume
+        - name: content-volume
           persistentVolumeClaim:
             claimName: NAME-content-volume
                 
