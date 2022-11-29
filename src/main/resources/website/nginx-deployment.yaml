@@ -33,6 +33,13 @@ spec:
       - image: domaindrivenarchitecture/c4k-website-build
         name: NAME-init-build-container
         imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: BUILD_CPU_REQUEST
+            memory: BUILD_MEMORY_REQUEST
+          limits:
+            cpu: BUILD_CPU_LIMIT
+            memory: BUILD_MEMORY_LIMIT
         command: ["/entrypoint.sh"]
         envFrom:
         - secretRef:

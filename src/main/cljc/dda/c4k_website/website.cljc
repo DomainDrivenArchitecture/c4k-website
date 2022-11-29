@@ -27,9 +27,23 @@
 (s/def ::gitea-repo string?)
 (s/def ::branchname string?)
 (s/def ::username string?)
+(s/def ::build-cpu-request string?)
+(s/def ::build-memory-request string?)
+(s/def ::build-cpu-limit string?)
+(s/def ::build-memory-limit string?)
 
-(def websitedata? (s/keys :req-un [::unique-name ::fqdns ::gitea-host ::gitea-repo ::branchname]
-                          :opt-un [::issuer ::volume-size ::sha256sum-output]))
+(def websitedata? (s/keys :req-un [::unique-name 
+                                   ::fqdns 
+                                   ::gitea-host
+                                   ::gitea-repo
+                                   ::branchname]
+                          :opt-un [::issuer 
+                                   ::volume-size
+                                   ::sha256sum-output
+                                   ::build-cpu-request
+                                   ::build-cpu-limit
+                                   ::build-memory-request
+                                   ::build-memory-limit]))
 
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
 
@@ -105,11 +119,16 @@
 (defn-spec replace-build-data pred/map-or-seq?
   [resource-file string?
    config flattened-and-reduced-config?]
-  (let [{:keys [sha256sum-output]} config]
+  (let [{:keys [sha256sum-output build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
+         :or {build-cpu-request "1000m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
     (->
-     (replace-common-data resource-file config)     
+     (replace-common-data resource-file config)
      (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
-     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output)))))
+     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output))
+     (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
+     (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
+     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
+     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]

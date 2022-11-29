@@ -43,8 +43,12 @@
             :fqdns [\"example.org\" \"www.example.org\"],
             :gitea-host \"githost.org\",
             :gitea-repo \"repo\",
-            :branchname \"main\"}]}"
-         "11")))
+            :branchname \"main\",
+            :build-cpu-request \"1500m\",
+            :build-cpu-limit \"3000m\",
+            :build-memory-request \"512Mi\",
+            :build-memory-limit \"1024Mi\"}]}"
+         "16")))
       (generate-group
        "credentials"
        (br/generate-text-area

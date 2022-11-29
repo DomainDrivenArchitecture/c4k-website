@@ -101,6 +101,7 @@
              [{:image "domaindrivenarchitecture/c4k-website-build",
                :name "test-io-init-build-container",
                :imagePullPolicy "IfNotPresent",
+               :resources {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
                :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
@@ -124,6 +125,34 @@
                                          :issuer "staging",
                                          :branchname "main",
                                          :unique-name "test.io"}))))
+
+(deftest should-generate-resource-requests
+  (is (= {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}}
+         (-> (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
+                                             :gitea-host "gitlab.de",
+                                             :username "someuser",
+                                             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                             :gitea-repo "repo",
+                                             :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                             :issuer "staging",
+                                             :branchname "main",
+                                             :unique-name "test.io"}) 
+             :spec :template :spec :initContainers first :resources )))
+  (is (= {:requests {:cpu "1500m", :memory "512Mi"}, :limits {:cpu "3000m", :memory "1024Mi"}}
+         (-> (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
+                                             :gitea-host "gitlab.de",
+                                             :username "someuser",
+                                             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                             :gitea-repo "repo",
+                                             :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                             :issuer "staging",
+                                             :branchname "main",
+                                             :unique-name "test.io"
+                                             :build-cpu-request "1500m"
+                                             :build-cpu-limit "3000m"
+                                             :build-memory-request "512Mi"
+                                             :build-memory-limit "1024Mi"})
+             :spec :template :spec :initContainers first :resources))))
 
 (deftest should-generate-nginx-service
   (is (= {:name-c1 "test-io-service",
@@ -163,6 +192,7 @@
                [{:image "domaindrivenarchitecture/c4k-website-build",
                  :name "test-io-build-app",
                  :imagePullPolicy "IfNotPresent",
+                 :resources {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
                  :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
