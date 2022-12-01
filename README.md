@@ -64,7 +64,7 @@ sha256sum scripts/foo/bar/your-script-file #  or this
 
 ### resource requests and limits
 
-You may want to adjust the resource requests and limits to your specific scenario.
+You may want to adjust the resource requests and limits of the build and init containers to your specific scenario.
 
 ## License
 
