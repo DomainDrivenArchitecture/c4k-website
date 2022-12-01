@@ -127,7 +127,7 @@
                                          :unique-name "test.io"}))))
 
 (deftest should-generate-resource-requests
-  (is (= {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}}
+  (is (= {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}}
          (-> (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
                                              :gitea-host "gitlab.de",
                                              :username "someuser",
@@ -192,7 +192,7 @@
                [{:image "domaindrivenarchitecture/c4k-website-build",
                  :name "test-io-build-app",
                  :imagePullPolicy "IfNotPresent",
-                 :resources {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
+                 :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
                  :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],

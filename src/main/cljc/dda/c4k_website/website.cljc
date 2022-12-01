@@ -120,7 +120,7 @@
   [resource-file string?
    config flattened-and-reduced-config?]
   (let [{:keys [sha256sum-output build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
-         :or {build-cpu-request "1000m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
+         :or {build-cpu-request "500m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
     (->
      (replace-common-data resource-file config)
      (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
