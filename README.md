@@ -62,6 +62,10 @@ sha256sum scripts/your-script-file #  or this
 sha256sum scripts/foo/bar/your-script-file #  or this
 ```
 
+### resource requests and limits
+
+You may want to adjust the resource requests and limits to your specific scenario.
+
 ## License
 
 Copyright © 2022 meissa GmbH
