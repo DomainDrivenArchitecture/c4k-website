@@ -2,6 +2,7 @@
 
 mkdir $BUILDDIR
 mkdir $SOURCEDIR
+mkdir -p $HASHFILEDIR
 
 set -o nounset
 set -o xtrace
@@ -29,12 +30,11 @@ hashfilename="hashfile"
     # start the build
 
 echo "Downloading website data"
-get-website-data filename
+get-website-data $filename
 echo "Check for new content"
 if [[ -f $hashfile ]]
     then
-    currentHash=$( sha256sum $SOURCEDIR/$filename | cut -d " " -f 1  > ~/$2 ) #ToDo: output of sh256sum without path to file?
-
+    currentHash=$(print-hash-from-file $filename )
     
     else
     write-hashfile $filename $hashfilename

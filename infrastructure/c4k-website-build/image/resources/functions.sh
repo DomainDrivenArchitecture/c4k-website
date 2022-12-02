@@ -1,11 +1,15 @@
 #!/bin/bash
 
 function get-website-data() {    
-    curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$filename $GITREPOURL
+    curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$1 $GITREPOURL
 }
 
 function write-hashfile() {
-    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1  > ~/$2;)
+    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1  > $HASHFILEDIR/$2;)
+}
+
+function print-hash-from-file() {
+    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1;)
 }
 
 function compare-website-data() {
@@ -14,7 +18,7 @@ function compare-website-data() {
 }
 
 function unzip-website-data() {
-    unzip $SOURCEDIR/$filename -d $BUILDDIR
+    unzip $SOURCEDIR/$1 -d $BUILDDIR
 }
 
 function execute-scripts-when-existing {
