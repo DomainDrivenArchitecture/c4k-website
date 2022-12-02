@@ -101,11 +101,12 @@
              [{:image "domaindrivenarchitecture/c4k-website-build",
                :name "test-io-init-build-container",
                :imagePullPolicy "IfNotPresent",
-               :resources {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
+               :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
                :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
+               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
+                              {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
              :volumes
              [{:name "nginx-config-volume",
                :configMap
@@ -115,7 +116,8 @@
                  {:key "website.conf", :path "conf.d/website.conf"}
                  {:key "mime.types", :path "mime.types"}]}}
               {:name "log", :emptyDir {}}
-              {:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
+              {:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
+              {:name "hashfile-volume", :persistentVolumeClaim {:claimName "test-io-hashfile-volume"}}]}}}}
          (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
                                          :gitea-host "gitlab.de",
                                          :username "someuser",
@@ -196,8 +198,10 @@
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
                  :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-                 :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
+                 :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
+                                {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
+               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
+                         {:name "hashfile-volume", :persistentVolumeClaim {:claimName "test-io-hashfile-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
          (cut/generate-website-build-cron {:authtoken "abedjgbasdodj",
                                            :gitea-host "gitlab.de",

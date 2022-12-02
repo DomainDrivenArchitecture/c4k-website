@@ -42,7 +42,7 @@ spec:
             persistentVolumeClaim:
               claimName: NAME-content-volume
           - name: hashfile-volume
-          persistentVolumeClaim:
-            claimName: NAME-hashfile-volume
+            persistentVolumeClaim:
+              claimName: NAME-hashfile-volume
           restartPolicy: OnFailure
           
