@@ -13,7 +13,6 @@ source /usr/local/bin/functions.sh
 
 filename="website.zip"
 hashfilename="hashfile"
-touch $HASHFILEDIR/$hashfilename
 
 # create empty hashfile
 # download website data
@@ -32,6 +31,7 @@ get-website-data $filename
 
 echo "Check for new content"
 currentHash=$( print-hash-from-file $filename )
+touch $HASHFILEDIR/$hashfilename
 if [[ $currentHash == $(cat $HASHFILEDIR/$hashfilename) ]]
     then
         echo "Nothing to do"
