@@ -52,6 +52,8 @@ spec:
         volumeMounts:
         - name: content-volume
           mountPath: /var/www/html/website
+        - name: hashfile-volume
+          mountPath: /var/hashfile.d
       volumes:
         - name: nginx-config-volume
           configMap:
@@ -68,4 +70,7 @@ spec:
         - name: content-volume
           persistentVolumeClaim:
             claimName: NAME-content-volume
+        - name: hashfile-volume
+          persistentVolumeClaim:
+            claimName: NAME-hashfile-volume
                 

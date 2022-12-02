@@ -1,8 +1,8 @@
 #!/bin/bash
+# curl -s -H "Authorization: token d92668fff6e005582dcb09c6590982a39b2523fc" https://repo.prod.meissa.de/api/v1/repos/meissa-intern/meissa-io/git/commits/HEAD | jq '.'
 
 mkdir $BUILDDIR
 mkdir $SOURCEDIR
-mkdir -p $HASHFILEDIR
 
 set -o nounset
 set -o xtrace
@@ -14,8 +14,8 @@ source /usr/local/bin/functions.sh
 filename="website.zip"
 hashfilename="hashfile"
 
-# create empty hashfile
 # download website data
+# create empty hashfile
 # compare current hash to hashfile
     # same? 
         # do nothing

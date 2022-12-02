@@ -185,6 +185,10 @@
      (replace-common-data "website/website-content-volume.yaml" config)     
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
+(defn-spec generate-hashfile-volume pred/map-or-seq?
+  [config flattened-and-reduced-config?]
+  (replace-common-data "website/website-content-volume.yaml" config))
+
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config flattened-and-reduced-config?]
   (replace-build-data "website/website-build-cron.yaml" config))
@@ -205,3 +209,4 @@
                                                           gitea-repo
                                                           username
                                                           branchname))))))
+
