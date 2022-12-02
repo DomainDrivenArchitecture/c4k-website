@@ -1,8 +1,19 @@
 #!/bin/bash
 
-function get-and-unzip-website-data() {
-    filename="website.zip"
+function get-website-data() {    
     curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$filename $GITREPOURL
+}
+
+function write-hashfile() {
+    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1  > ~/$2;)
+}
+
+function compare-website-data() {
+    oldHash="$( cat ~/hashfile )"
+    
+}
+
+function unzip-website-data() {
     unzip $SOURCEDIR/$filename -d $BUILDDIR
 }
 

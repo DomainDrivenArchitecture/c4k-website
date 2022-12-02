@@ -10,8 +10,38 @@ set -eo pipefail
 
 source /usr/local/bin/functions.sh
 
-echo "Downloading website"
-get-and-unzip-website-data
+filename="website.zip"
+hashfilename="hashfile"
+
+# download website data
+# check if hashfile exists
+# if yes
+    # hash the current file
+    # compare current hash to hashfile
+        # same? 
+            # do nothing
+        # not same?
+            # overwrite hashfile with new hash
+            # start the website build
+# if not
+    # hash the current file
+    # write the hashfile
+    # start the build
+
+echo "Downloading website data"
+get-website-data filename
+echo "Check for new content"
+if [[ -f $hashfile ]]
+    then
+    currentHash=$( sha256sum $SOURCEDIR/$filename | cut -d " " -f 1  > ~/$2 ) #ToDo: output of sh256sum without path to file?
+
+    
+    else
+    write-hashfile $filename $hashfilename
+
+fi
+
+
 echo "Executing Custom Scripts, if applicable"
 execute-scripts-when-existing
 echo "Building website"
