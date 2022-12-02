@@ -139,6 +139,7 @@
        "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
        "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
+       "website/hashfile-volume.yaml" (rc/inline "website/hashfile-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
 (defn-spec generate-website-ingress pred/map-or-seq?
@@ -187,7 +188,7 @@
 
 (defn-spec generate-hashfile-volume pred/map-or-seq?
   [config flattened-and-reduced-config?]
-  (replace-common-data "website/website-content-volume.yaml" config))
+  (replace-common-data "website/hashfile-volume.yaml" config))
 
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config flattened-and-reduced-config?]

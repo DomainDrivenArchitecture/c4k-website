@@ -14,18 +14,6 @@ source /usr/local/bin/functions.sh
 filename="website.zip"
 hashfilename="hashfile"
 
-# download website data
-# create empty hashfile
-# compare current hash to hashfile
-    # same? 
-        # do nothing
-    # not same?
-        # overwrite hashfile with new hash
-        # unzip website
-        # execute scripts (if applicable)
-        # build website
-        # move files
-
 echo "Downloading website data"
 get-website-data $filename
 

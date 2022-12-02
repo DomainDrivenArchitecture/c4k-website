@@ -12,6 +12,7 @@
 (st/instrument `cut/generate-nginx-deployment)
 (st/instrument `cut/generate-nginx-service)
 (st/instrument `cut/generate-website-content-volume)
+(st/instrument `cut/generate-hashfile-volume)
 (st/instrument `cut/generate-website-ingress)
 (st/instrument `cut/generate-website-certificate)
 (st/instrument `cut/generate-website-build-cron)
@@ -259,3 +260,19 @@
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
                                                             :username "someuser"
                                                             :authtoken "abedjgbasdodj"})))))
+
+(deftest should-generate-hashfile-volume
+  (is (= {:apiVersion "v1",
+          :kind "PersistentVolumeClaim",
+          :metadata
+          {:name "test-io-hashfile-volume",
+           :namespace "default",
+           :labels {:app "test-io-nginx", :app.kubernetes.part-of "test-io-website"}},
+          :spec {:storageClassName "local-path", :accessModes ["ReadWriteOnce"], :resources {:requests {:storage "16Mi"}}}}
+         (cut/generate-hashfile-volume {:unique-name "test.io",
+                                        :gitea-host "gitea.evilorg",
+                                        :gitea-repo "none",
+                                        :branchname "mablain",
+                                        :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                        :username "someuser"
+                                        :authtoken "abedjgbasdodj"}))))
