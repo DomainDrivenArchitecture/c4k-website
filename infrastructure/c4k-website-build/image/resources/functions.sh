@@ -5,16 +5,11 @@ function get-website-data() {
 }
 
 function write-hashfile() {
-    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1  > $HASHFILEDIR/$2;)
+    echo $1 > $HASHFILEDIR/$2
 }
 
 function print-hash-from-file() {
     (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1;)
-}
-
-function compare-website-data() {
-    oldHash="$( cat ~/hashfile )"
-    
 }
 
 function unzip-website-data() {
@@ -41,7 +36,7 @@ function execute-scripts-when-existing {
     fi
 }
 
-function build-and-extract-website() {
+function build-website() {
     (cd $BUILDDIR; dir=$(ls); cd $dir; lein run;)
 }
 
