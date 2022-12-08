@@ -45,6 +45,7 @@
                    (website/generate-nginx-configmap (flatten-and-reduce-config config))
                    (website/generate-nginx-service (flatten-and-reduce-config config))
                    (website/generate-website-content-volume (flatten-and-reduce-config config))
+                   (website/generate-hashfile-volume (flatten-and-reduce-config config))
                    (website/generate-website-ingress (flatten-and-reduce-config config))
                    (website/generate-website-certificate (flatten-and-reduce-config config))
                    (website/generate-website-build-cron (flatten-and-reduce-config config))                   
