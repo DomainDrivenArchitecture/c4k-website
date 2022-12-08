@@ -2,7 +2,7 @@
 
 apt update > /dev/null;
 
-apt install -y unzip rsync
+apt install -y unzip rsync imagemagick
 
 mkdir /etc/lein/
 
