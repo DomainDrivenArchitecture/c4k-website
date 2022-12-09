@@ -18,8 +18,8 @@ newHash=$( get-hash-data )
 if [[ $currentHash == $newHash ]]
     then
         echo "Nothing to do"
-    else
-        echo $currentHash > $HASHFILEDIR/$hashfilename
+    else        
+        write-hash-data $currentHash $hashfilename
         echo "Downloading website data"
         get-website-data $filename
         unzip-website-data $filename
