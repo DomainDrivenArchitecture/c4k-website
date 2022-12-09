@@ -12,6 +12,7 @@
 (st/instrument `cut/generate-nginx-deployment)
 (st/instrument `cut/generate-nginx-service)
 (st/instrument `cut/generate-website-content-volume)
+(st/instrument `cut/generate-hashfile-volume)
 (st/instrument `cut/generate-website-ingress)
 (st/instrument `cut/generate-website-certificate)
 (st/instrument `cut/generate-website-build-cron)
@@ -101,11 +102,12 @@
              [{:image "domaindrivenarchitecture/c4k-website-build",
                :name "test-io-init-build-container",
                :imagePullPolicy "IfNotPresent",
-               :resources {:requests {:cpu "1000m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
+               :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
                :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
+               :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
+                              {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
              :volumes
              [{:name "nginx-config-volume",
                :configMap
@@ -115,7 +117,8 @@
                  {:key "website.conf", :path "conf.d/website.conf"}
                  {:key "mime.types", :path "mime.types"}]}}
               {:name "log", :emptyDir {}}
-              {:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}]}}}}
+              {:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
+              {:name "hashfile-volume", :persistentVolumeClaim {:claimName "test-io-hashfile-volume"}}]}}}}
          (cut/generate-nginx-deployment {:authtoken "abedjgbasdodj",
                                          :gitea-host "gitlab.de",
                                          :username "someuser",
@@ -196,8 +199,10 @@
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
                  :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
-                 :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}]}],
-               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}],
+                 :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
+                                {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
+               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
+                         {:name "hashfile-volume", :persistentVolumeClaim {:claimName "test-io-hashfile-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
          (cut/generate-website-build-cron {:authtoken "abedjgbasdodj",
                                            :gitea-host "gitlab.de",
@@ -209,30 +214,25 @@
                                            :branchname "main",
                                            :unique-name "test.io"}))))
 
+
+
 (deftest should-generate-website-build-secret
-  (is (= {:name-c1 "test-io-secret",
-          :name-c2 "test-org-secret",
-          :AUTHTOKEN-c1 (b64/encode "token1"),
-          :AUTHTOKEN-c2 (b64/encode "token2"),
-          :GITREPOURL-c1 (b64/encode "https://gitlab.org/api/v1/repos/dumpty/websitebau/archive/testname.zip"),
-          :GITREPOURL-c2 (b64/encode "https://github.com/api/v1/repos/humpty/websitedachs/archive/testname.zip"),
-          :app.kubernetes.part-of-c1 "test-io-website", 
-          :app.kubernetes.part-of-c2 "test-org-website"}
-         (th/map-diff (cut/generate-website-build-secret {:unique-name "test.io",
-                                                          :authtoken "token1",
-                                                          :gitea-host "gitlab.org",
-                                                          :gitea-repo "websitebau",
-                                                          :username "dumpty",
-                                                          :branchname "testname",
-                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}
-                                                         )
-                      (cut/generate-website-build-secret {:unique-name "test.org",
-                                                          :authtoken "token2",
-                                                          :gitea-host "github.com",
-                                                          :gitea-repo "websitedachs",
-                                                          :username "humpty",
-                                                          :branchname "testname",
-                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+  (is (= {:apiVersion "v1",
+          :kind "Secret",
+          :metadata {:name "test-io-secret", :labels {:app.kubernetes.part-of "test-io-website"}},
+          :data
+          {:AUTHTOKEN "YWJlZGpnYmFzZG9kag==",
+           :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
+           :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
+         (cut/generate-website-build-secret {:authtoken "abedjgbasdodj",
+                                             :gitea-host "gitlab.de",
+                                             :username "someuser",
+                                             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                             :gitea-repo "repo",
+                                             :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                             :issuer "staging",
+                                             :branchname "main",
+                                             :unique-name "test.io"}))))
 
 (deftest should-generate-website-content-volume
   (is (= {:name-c1 "test-io-content-volume",
@@ -255,3 +255,19 @@
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
                                                             :username "someuser"
                                                             :authtoken "abedjgbasdodj"})))))
+
+(deftest should-generate-hashfile-volume
+  (is (= {:apiVersion "v1",
+          :kind "PersistentVolumeClaim",
+          :metadata
+          {:name "test-io-hashfile-volume",
+           :namespace "default",
+           :labels {:app "test-io-nginx", :app.kubernetes.part-of "test-io-website"}},
+          :spec {:storageClassName "local-path", :accessModes ["ReadWriteOnce"], :resources {:requests {:storage "16Mi"}}}}
+         (cut/generate-hashfile-volume {:unique-name "test.io",
+                                        :gitea-host "gitea.evilorg",
+                                        :gitea-repo "none",
+                                        :branchname "mablain",
+                                        :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]
+                                        :username "someuser"
+                                        :authtoken "abedjgbasdodj"}))))

@@ -98,7 +98,14 @@
    branch string?]
   (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
 
-(defn-spec replace-all-matching-subvalues-in-string-start pred/map-or-seq?
+; https://your.gitea.host/api/v1/repos/<owner>/<repo>/git/commits/HEAD
+(defn-spec generate-gitcommiturl string?
+  [host pred/fqdn-string?
+   repo string?
+   user string?]
+  (str "https://" host "/api/v1/repos/" user "/" repo "/git/" "commits/" "HEAD"))
+
+(defn-spec replace-all-matching-substrings-beginning-with pred/map-or-seq?
   [col pred/map-or-seq?
    value-to-partly-match string?
    value-to-inplace string?]
@@ -114,7 +121,7 @@
     (->
      (yaml/load-as-edn resource-file)
      (assoc-in [:metadata :labels :app.kubernetes.part-of] (generate-app-name unique-name))
-     (replace-all-matching-subvalues-in-string-start "NAME" (replace-dots-by-minus unique-name)))))
+     (replace-all-matching-substrings-beginning-with "NAME" (replace-dots-by-minus unique-name)))))
 
 (defn-spec replace-build-data pred/map-or-seq?
   [resource-file string?
@@ -139,6 +146,7 @@
        "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
        "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
        "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
+       "website/hashfile-volume.yaml" (rc/inline "website/hashfile-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
 (defn-spec generate-website-ingress pred/map-or-seq?
@@ -185,6 +193,10 @@
      (replace-common-data "website/website-content-volume.yaml" config)     
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
+(defn-spec generate-hashfile-volume pred/map-or-seq?
+  [config flattened-and-reduced-config?]
+  (replace-common-data "website/hashfile-volume.yaml" config))
+
 (defn-spec generate-website-build-cron pred/map-or-seq?
   [config flattened-and-reduced-config?]
   (replace-build-data "website/website-build-cron.yaml" config))
@@ -199,9 +211,15 @@
     (->
      (replace-common-data "website/website-build-secret.yaml" auth)     
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
-     (cm/replace-all-matching-values-by-new-value "URL" (b64/encode
-                                                         (generate-gitrepourl
+     (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
+                                                         (generate-gitrepourl                                                          
                                                           gitea-host
                                                           gitea-repo
                                                           username
-                                                          branchname))))))
+                                                          branchname)))
+     (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
+                                                         (generate-gitcommiturl
+                                                          gitea-host
+                                                          gitea-repo
+                                                          username))))))
+

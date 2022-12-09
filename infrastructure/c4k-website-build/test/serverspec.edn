@@ -1,5 +1,4 @@
-{:file [{:path "/usr/local/bin/install.sh" :mod "700"}
+{:file [{:path "/entrypoint.sh" :mod "700"}
         {:path "/usr/local/bin/functions.sh" :mod "700"}
-        {:path "/usr/local/bin/exclude.pattern" :mod "700"}
-        {:path "/usr/local/bin/project.clj" :mod "700"}
-        {:path "/entrypoint.sh" :mod "700"}]}
+        {:path "/etc/exclude.pattern" :mod "700"}
+        {:path "/etc/lein/project.clj" :mod "700"}]}
