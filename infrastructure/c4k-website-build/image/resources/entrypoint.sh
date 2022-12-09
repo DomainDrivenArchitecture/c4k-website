@@ -1,5 +1,5 @@
 #!/bin/bash
-# curl -s -H "Authorization: token d92668fff6e005582dcb09c6590982a39b2523fc" https://repo.prod.meissa.de/api/v1/repos/meissa-intern/meissa-io/git/commits/HEAD | jq '.'
+# curl -s -H "Authorization: token xxxx" https://gitea.host/api/v1/repos/{owner}/{repo}/git/commits/HEAD | jq '.sha'
 
 mkdir $BUILDDIR
 mkdir $SOURCEDIR

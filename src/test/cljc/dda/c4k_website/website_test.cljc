@@ -214,30 +214,25 @@
                                            :branchname "main",
                                            :unique-name "test.io"}))))
 
+
+
 (deftest should-generate-website-build-secret
-  (is (= {:name-c1 "test-io-secret",
-          :name-c2 "test-org-secret",
-          :AUTHTOKEN-c1 (b64/encode "token1"),
-          :AUTHTOKEN-c2 (b64/encode "token2"),
-          :GITREPOURL-c1 (b64/encode "https://gitlab.org/api/v1/repos/dumpty/websitebau/archive/testname.zip"),
-          :GITREPOURL-c2 (b64/encode "https://github.com/api/v1/repos/humpty/websitedachs/archive/testname.zip"),
-          :app.kubernetes.part-of-c1 "test-io-website", 
-          :app.kubernetes.part-of-c2 "test-org-website"}
-         (th/map-diff (cut/generate-website-build-secret {:unique-name "test.io",
-                                                          :authtoken "token1",
-                                                          :gitea-host "gitlab.org",
-                                                          :gitea-repo "websitebau",
-                                                          :username "dumpty",
-                                                          :branchname "testname",
-                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}
-                                                         )
-                      (cut/generate-website-build-secret {:unique-name "test.org",
-                                                          :authtoken "token2",
-                                                          :gitea-host "github.com",
-                                                          :gitea-repo "websitedachs",
-                                                          :username "humpty",
-                                                          :branchname "testname",
-                                                          :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+  (is (= {:apiVersion "v1",
+          :kind "Secret",
+          :metadata {:name "test-io-secret", :labels {:app.kubernetes.part-of "test-io-website"}},
+          :data
+          {:AUTHTOKEN "YWJlZGpnYmFzZG9kag==",
+           :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
+           :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
+         (cut/generate-website-build-secret {:authtoken "abedjgbasdodj",
+                                             :gitea-host "gitlab.de",
+                                             :username "someuser",
+                                             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                             :gitea-repo "repo",
+                                             :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                             :issuer "staging",
+                                             :branchname "main",
+                                             :unique-name "test.io"}))))
 
 (deftest should-generate-website-content-volume
   (is (= {:name-c1 "test-io-content-volume",

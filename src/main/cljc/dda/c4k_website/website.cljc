@@ -98,6 +98,13 @@
    branch string?]
   (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
 
+; https://your.gitea.host/api/v1/repos/<owner>/<repo>/git/commits/HEAD
+(defn-spec generate-gitcommiturl string?
+  [host pred/fqdn-string?
+   repo string?
+   user string?]
+  (str "https://" host "/api/v1/repos/" user "/" repo "/git/" "commits/" "HEAD"))
+
 (defn-spec replace-all-matching-substrings-beginning-with pred/map-or-seq?
   [col pred/map-or-seq?
    value-to-partly-match string?
@@ -204,10 +211,15 @@
     (->
      (replace-common-data "website/website-build-secret.yaml" auth)     
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
-     (cm/replace-all-matching-values-by-new-value "URL" (b64/encode
-                                                         (generate-gitrepourl
+     (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
+                                                         (generate-gitrepourl                                                          
                                                           gitea-host
                                                           gitea-repo
                                                           username
-                                                          branchname))))))
+                                                          branchname)))
+     (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
+                                                         (generate-gitcommiturl
+                                                          gitea-host
+                                                          gitea-repo
+                                                          username))))))
 

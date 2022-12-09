@@ -1,5 +1,5 @@
 #!/bin/bash
-# curl -s -H "Authorization: token xxxx" https://repo.prod.meissa.de/api/v1/repos/meissa-intern/meissa-io/git/commits/HEAD | jq '.sha'
+# curl -s -H "Authorization: token xxxx" https://gitea.host/api/v1/repos/{owner}/{repo}/git/commits/HEAD | jq '.sha'
 
 function get-website-data() {    
     curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$1 $GITREPOURL
