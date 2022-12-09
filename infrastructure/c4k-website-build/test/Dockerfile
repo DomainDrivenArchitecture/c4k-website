@@ -1,4 +1,4 @@
-FROM clojure:lein
+FROM c4k-website-build
 
 RUN apt update
 RUN apt -yqq --no-install-recommends --yes install curl default-jre-headless
