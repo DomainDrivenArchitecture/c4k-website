@@ -1,23 +1,22 @@
 #!/bin/bash
-# curl -s -H "Authorization: token xxxx" https://gitea.host/api/v1/repos/{owner}/{repo}/git/commits/HEAD | jq '.sha'
 
 function get-website-data() {    
     curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$1 $GITREPOURL
 }
 
-function write-hashfile() {
-    echo $1 > $HASHFILEDIR/$2
+function get-hash-data() {
+    curl -s -H "Authorization: token $AUTHTOKEN" $GITCOMMITURL | jq '.sha'
 }
 
-function print-hash-from-file() {
-    (cd $SOURCEDIR; sha256sum $1 | cut -d " " -f 1;)
+function write-hash-data() {
+    echo $1 > $HASHFILEDIR/$2
 }
 
 function unzip-website-data() {
     unzip $SOURCEDIR/$1 -d $BUILDDIR
 }
 
-function execute-scripts-when-existing {
+function execute-scripts-when-existing() {
     websitedir=$(ls $BUILDDIR)
     if [[ -f $BUILDDIR/$websitedir/$SCRIPTFILE ]]
         then 
