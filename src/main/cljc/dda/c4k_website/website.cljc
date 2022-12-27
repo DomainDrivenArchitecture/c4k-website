@@ -10,7 +10,7 @@
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as pred]
-   [dda.c4k-common.ingress-cert :as ing]
+   [dda.c4k-common.ingress :as ing]
    [clojure.string :as str]))
 
 (defn fqdn-list?
