@@ -2,34 +2,25 @@
   (:require
    [clojure.string :as st]
    [clojure.tools.reader.edn :as edn]
+   [dda.c4k-common.monitoring :as mon]
    [dda.c4k-website.core :as core]
    [dda.c4k-website.website :as website]   
-   [dda.c4k-common.browser :as br]   
-   [dda.c4k-common.common :as cm]))
-
-(defn generate-group
-  [name
-   content]
-  [{:type :element
-    :tag :div
-    :attrs {:class "rounded border border-3  m-3 p-2"}
-    :content [{:type :element
-               :tag :b
-               :attrs {:style "z-index: 1; position: relative; top: -1.3rem;"}
-               :content name}
-              {:type :element
-               :tag :fieldset
-               :content content}]}])
+   [dda.c4k-common.common :as cm]   
+   [dda.c4k-common.browser :as br]
+   ))
 
 (defn generate-content []
   (cm/concat-vec
    [(assoc
      (br/generate-needs-validation) :content
      (cm/concat-vec
-      (generate-group
+      (br/generate-group
        "domain"
        (cm/concat-vec
         (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
+        (br/generate-input-field "mon-cluster-name" "(Optional) monitoring cluster name:" "website")
+        (br/generate-input-field "mon-cluster-stage" "(Optional) monitoring cluster stage:" "test")
+        (br/generate-input-field "mon-cloud-url" "(Optional) grafana cloud url:" "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push")
         (br/generate-text-area
          "websites" "Contains fqdns, repo infos, an optional sha256sum-output for script execution for each website:"
          "{:websites
@@ -49,17 +40,19 @@
             :build-memory-request \"512Mi\",
             :build-memory-limit \"1024Mi\"}]}"
          "16")))
-      (generate-group
+      (br/generate-group
        "credentials"
        (br/generate-text-area
         "auth" "Your authentication data for each website or git repo:"
-        "{:auth
-           [{:unique-name \"test.io\",
-             :username \"someuser\",
-             :authtoken \"abedjgbasdodj\"}
-            {:unique-name \"example.io\",
-             :username \"someuser\",
-             :authtoken \"abedjgbasdodj\"}]}"
+        "{:mon-auth {:grafana-cloud-user \"your-user-id\"
+        :grafana-cloud-password \"your-cloud-password\"}
+ :auth
+  [{:unique-name \"test.io\",
+    :username \"someuser\",
+    :authtoken \"abedjgbasdodj\"}
+   {:unique-name \"example.io\",
+    :username \"someuser\",
+    :authtoken \"abedjgbasdodj\"}]}"
         "7"))
       [(br/generate-br)]
       (br/generate-button "generate-button" "Generate c4k yaml")))]
@@ -73,15 +66,25 @@
    (generate-content)})
 
 (defn config-from-document []
-  (let [issuer (br/get-content-from-element "issuer" :optional true)]
+  (let [issuer (br/get-content-from-element "issuer" :optional true)
+        mon-cluster-name (br/get-content-from-element "mon-cluster-name" :optional true)
+        mon-cluster-stage (br/get-content-from-element "mon-cluster-stage" :optional true :deserializer keyword)
+        mon-cloud-url (br/get-content-from-element "mon-cloud-url" :optional true)]
     (merge
      (br/get-content-from-element "websites" :deserializer edn/read-string)
      (when (not (st/blank? issuer))
-       {:issuer issuer}))))
+       {:issuer issuer})
+     (when (some? mon-cluster-name)
+       {:mon-cfg {:cluster-name mon-cluster-name
+                  :cluster-stage (keyword mon-cluster-stage)
+                  :grafana-cloud-url mon-cloud-url}}))))
 
 (defn validate-all! []
-  (br/validate! "websites" website/config? :deserializer edn/read-string)  
+  (br/validate! "websites" website/config? :deserializer edn/read-string)
   (br/validate! "issuer" ::website/issuer :optional true)
+  (br/validate! "mon-cluster-name" ::mon/cluster-name :optional true)
+  (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true :deserializer keyword)
+  (br/validate! "mon-cloud-url" ::mon/grafana-cloud-url :optional true)
   (br/validate! "auth" website/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
 
@@ -103,4 +106,7 @@
                                   (br/set-output!)))))
   (add-validate-listener "websites")
   (add-validate-listener "issuer")
+  (add-validate-listener "mon-cluster-name")
+  (add-validate-listener "mon-cluster-stage")
+  (add-validate-listener "mon-cloud-url")
   (add-validate-listener "auth"))
