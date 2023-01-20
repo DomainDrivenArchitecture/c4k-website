@@ -2,7 +2,7 @@ stages:
   - image
 
 services:
-  - docker:19.03.12-dind
+  - docker:dind
 
 website-image-test-publish:
   image: domaindrivenarchitecture/devops-build:latest
