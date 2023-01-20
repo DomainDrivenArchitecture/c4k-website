@@ -8,4 +8,4 @@ website-image-test-publish:
   image: domaindrivenarchitecture/devops-build:latest
   stage: image
   script:
-    - cd infrastructure/docker-nextcloud && pyb image test
+    - cd infrastructure/c4k-website-build && pyb image test
