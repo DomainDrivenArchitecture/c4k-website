@@ -32,31 +32,24 @@
 (s/def ::build-cpu-limit string?)
 (s/def ::build-memory-limit string?)
 
-(def websitedata? (s/keys :req-un [::unique-name 
-                                   ::fqdns 
-                                   ::gitea-host
-                                   ::gitea-repo
-                                   ::branchname]
-                          :opt-un [::issuer 
-                                   ::volume-size
-                                   ::sha256sum-output
-                                   ::build-cpu-request
-                                   ::build-cpu-limit
-                                   ::build-memory-request
-                                   ::build-memory-limit]))
+(def websiteconfig? (s/keys :req-un [::unique-name
+                                     ::fqdns
+                                     ::gitea-host
+                                     ::gitea-repo
+                                     ::branchname]
+                            :opt-un [::issuer
+                                     ::volume-size
+                                     ::sha256sum-output
+                                     ::build-cpu-request
+                                     ::build-cpu-limit
+                                     ::build-memory-request
+                                     ::build-memory-limit]))
 
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
 
-(def flattened-and-reduced-config? (s/and websitedata? websiteauth?))
+(s/def ::websites (s/coll-of websiteconfig?))
 
 (s/def ::auth (s/coll-of websiteauth?))
-
-(s/def ::websites (s/coll-of websitedata?))
-
-(def auth? (s/keys  :req-un [::auth]))
-
-(def config? (s/keys :req-un [::websites]
-                     :opt-un [::issuer ::volume-size]))
 
 (defn-spec get-hash-from-sha256sum-output string?
   [sha256sum-output string?]
@@ -116,7 +109,7 @@
 
 (defn-spec replace-common-data pred/map-or-seq?
   [resource-file string?
-   config flattened-and-reduced-config?]
+   config websiteconfig?]
   (let [{:keys [unique-name]} config]
     (->
      (yaml/load-as-edn resource-file)
@@ -125,7 +118,7 @@
 
 (defn-spec replace-build-data pred/map-or-seq?
   [resource-file string?
-   config flattened-and-reduced-config?]
+   config websiteconfig?]
   (let [{:keys [sha256sum-output build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
          :or {build-cpu-request "500m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
     (->
@@ -149,26 +142,12 @@
        "website/hashfile-volume.yaml" (rc/inline "website/hashfile-volume.yaml")
        (throw (js/Error. "Undefined Resource!")))))
 
-(defn-spec generate-website-ingress pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name fqdns]} config]
-    (ing/generate-ingress {:fqdns fqdns
-                           :app-name (generate-app-name unique-name)
-                           :ingress-name (generate-ingress-name unique-name)
-                           :service-name (generate-service-name unique-name)
-                           :service-port 80})))
-
-(defn-spec generate-website-certificate pred/map-or-seq?
-  [config flattened-and-reduced-config?]
-  (let [{:keys [unique-name issuer fqdns]
-         :or {issuer "staging"}} config]
-    (ing/generate-certificate {:fqdns fqdns
-                               :app-name (generate-app-name unique-name)
-                               :cert-name (generate-cert-name unique-name)
-                               :issuer issuer})))
+(defn-spec generate-nginx-deployment pred/map-or-seq?
+  [config websiteconfig?]
+  (replace-build-data "website/nginx-deployment.yaml" config))
 
 (defn-spec generate-nginx-configmap pred/map-or-seq?
-  [config flattened-and-reduced-config?]
+  [config websiteconfig?]
   (let [{:keys [fqdns]} config]
     (->
      (replace-common-data "website/nginx-configmap.yaml" config)     
@@ -177,16 +156,12 @@
                  (str/replace
                   (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
 
-(defn-spec generate-nginx-deployment pred/map-or-seq?
-  [config flattened-and-reduced-config?]  
-     (replace-build-data "website/nginx-deployment.yaml" config))
-
 (defn-spec generate-nginx-service pred/map-or-seq?
-  [config flattened-and-reduced-config?]
+  [config websiteconfig?]
   (replace-common-data "website/nginx-service.yaml" config))
 
 (defn-spec generate-website-content-volume pred/map-or-seq?
-  [config flattened-and-reduced-config?]
+  [config websiteconfig?]
   (let [{:keys [volume-size]
          :or {volume-size "3"}} config]
     (->
@@ -194,32 +169,52 @@
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
 (defn-spec generate-hashfile-volume pred/map-or-seq?
-  [config flattened-and-reduced-config?]
+  [config websiteconfig?]
   (replace-common-data "website/hashfile-volume.yaml" config))
 
+
+(defn-spec generate-website-ingress pred/map-or-seq?
+  [config websiteconfig?]
+  (let [{:keys [unique-name fqdns]} config]
+    (ing/generate-ingress {:fqdns fqdns
+                           :app-name (generate-app-name unique-name)
+                           :ingress-name (generate-ingress-name unique-name)
+                           :service-name (generate-service-name unique-name)
+                           :service-port 80})))
+
+(defn-spec generate-website-certificate pred/map-or-seq?
+  [config websiteconfig?]
+  (let [{:keys [unique-name issuer fqdns]
+         :or {issuer "staging"}} config]
+    (ing/generate-certificate {:fqdns fqdns
+                               :app-name (generate-app-name unique-name)
+                               :cert-name (generate-cert-name unique-name)
+                               :issuer issuer})))
+
 (defn-spec generate-website-build-cron pred/map-or-seq?
-  [config flattened-and-reduced-config?]
+  [config websiteconfig?]
   (replace-build-data "website/website-build-cron.yaml" config))
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
-  [auth flattened-and-reduced-config?]
-  (let [{:keys [authtoken
-                gitea-host
+  [config websiteconfig?
+   auth websiteauth?]
+  (let [{:keys [gitea-host
                 gitea-repo
-                username
-                branchname]} auth]
+                branchname]} config
+        {:keys [authtoken
+                username]} auth]
     (->
-     (replace-common-data "website/website-build-secret.yaml" auth)     
+     (replace-common-data "website/website-build-secret.yaml" config)
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
-                                                         (generate-gitrepourl                                                          
-                                                          gitea-host
-                                                          gitea-repo
-                                                          username
-                                                          branchname)))
+                                                             (generate-gitrepourl
+                                                              gitea-host
+                                                              gitea-repo
+                                                              username
+                                                              branchname)))
      (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
-                                                         (generate-gitcommiturl
-                                                          gitea-host
-                                                          gitea-repo
-                                                          username))))))
+                                                               (generate-gitcommiturl
+                                                                gitea-host
+                                                                gitea-repo
+                                                                username))))))
 

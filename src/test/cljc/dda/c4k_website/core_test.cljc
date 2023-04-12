@@ -19,7 +19,7 @@
   (is (s/valid? cut/config? (yaml/load-as-edn "website-test/valid-config.yaml")))
   (is (s/valid? cut/auth? (yaml/load-as-edn "website-test/valid-auth.yaml"))))
 
-(def websites
+(def websites1
   {:websites
    [{:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
@@ -29,6 +29,19 @@
     {:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :gitea-host "gitlab.de"
+     :gitea-repo "repo"
+     :branchname "main"}]})
+
+(def websites2
+  {:websites
+   [{:unique-name "test.io"
+     :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
+     :gitea-host "gitlab.de"
+     :gitea-repo "repo"
+     :branchname "main"}
+    {:unique-name "example.io"
+     :fqdns ["example.org", "www.example.com"]
+     :gitea-host "finegitehost.net"
      :gitea-repo "repo"
      :branchname "main"}]})
 
@@ -55,14 +68,54 @@
    :fqdns ["example.org" "www.example.com"],
    :gitea-host "finegitehost.net",
    :gitea-repo "repo",
-   :branchname "main",
+   :branchname "main"})
+
+(def flattened-and-reduced-auth
+  {:unique-name "example.io",
    :username "someuser",
    :authtoken "abedjgbasdodj"})
 
+(deftest sorts-config
+  (is (= {:issuer "staging",
+          :websites
+          [{:unique-name "example.io",
+            :fqdns ["example.org" "www.example.com"],
+            :gitea-host "finegitehost.net",
+            :gitea-repo "repo",
+            :branchname "main"},
+           {:unique-name "test.io",
+            :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+            :gitea-host "gitlab.de",
+            :gitea-repo "repo",
+            :branchname "main",
+            :sha256sum-output "123456789ab123cd345de script-file-name.sh"}],
+          :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}
+         (cut/sort-config
+          {:issuer "staging",
+           :websites
+           [{:unique-name "test.io",
+             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+             :gitea-host "gitlab.de",
+             :gitea-repo "repo",
+             :branchname "main",
+             :sha256sum-output "123456789ab123cd345de script-file-name.sh"}
+            {:unique-name "example.io",
+             :fqdns ["example.org" "www.example.com"],
+             :gitea-host "finegitehost.net",
+             :gitea-repo "repo",
+             :branchname "main"}],
+           :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}))))
+
 (deftest test-flatten-and-reduce-config
   (is (=
-       (cut/flatten-and-reduce-config (cut/sort-config (merge websites auth1)))
-       flattened-and-reduced-config))
+       flattened-and-reduced-config
+       (cut/flatten-and-reduce-config (cut/sort-config websites1))))
   (is (=
-       (cut/flatten-and-reduce-config (cut/sort-config (merge websites auth2)))
-       flattened-and-reduced-config)))
+       flattened-and-reduced-config
+       (cut/flatten-and-reduce-config (cut/sort-config websites2)))))
+
+(deftest test-flatten-and-reduce-auth
+  (is (= flattened-and-reduced-auth
+         (cut/flatten-and-reduce-auth (cut/sort-auth auth1))))
+  (is (= flattened-and-reduced-auth
+         (cut/flatten-and-reduce-auth (cut/sort-auth auth2)))))
