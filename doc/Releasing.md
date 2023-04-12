@@ -21,7 +21,7 @@ Repository Settings -> Protected Tags -> set \*.\*.\* as tag and save.
 ``` bash
 git checkout main # for old projects replace main with master
 git add .
-git commit 
+git commit   
 ```
 
 Open package.json, find ":version" keyword and remove "-SNAPSHOT" from version number.
@@ -67,7 +67,7 @@ git push --follow-tags
 Open package.json again, increase version increment by one and add "-SNAPSHOT".
 
 ``` bash
-git commit -am "version bump"
+git commit -am "[Skip-CI] version bump"
 git push
 ```
 

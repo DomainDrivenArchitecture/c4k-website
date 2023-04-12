@@ -23,35 +23,45 @@
 (def auth? (s/keys :req-un [::website/auth]
                    :opt-un [::mon-auth]))
 
-(def merged-config-and-auth? (s/and website/config? website/auth?))
-
 (defn-spec sort-config cp/map-or-seq?
-  [unsorted-config merged-config-and-auth?]
-  (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))
-        sorted-auth (into [] (sort-by :unique-name (unsorted-config :auth)))]
+  [unsorted-config config?]
+  (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))]
     (-> unsorted-config
-        (assoc-in [:websites] sorted-websites)
+        (assoc-in [:websites] sorted-websites))))
+
+(defn-spec sort-auth cp/map-or-seq?
+  [unsorted-auth auth?]
+  (let [sorted-auth (into [] (sort-by :unique-name (unsorted-auth :auth)))]
+    (-> unsorted-auth
         (assoc-in [:auth] sorted-auth))))
 
 (defn-spec flatten-and-reduce-config  cp/map-or-seq?
-  [config merged-config-and-auth?]
-  (merge (-> config :websites first)
-         (-> config :auth first)
-         (when (contains? config :issuer)
-           {:issuer (config :issuer)})
-         (when (contains? config :volume-size)
-           {:volume-size (config :volume-size)})))
+  [config config?]
+  (let
+   [first-entry (first (:websites config))]
+    (conj first-entry
+           (when (contains? config :issuer)
+             {:issuer (config :issuer)})
+           (when (contains? config :volume-size)
+             {:volume-size (config :volume-size)}))))
 
-(defn generate-configs [config]
+(defn-spec flatten-and-reduce-auth  cp/map-or-seq?
+  [auth auth?]
+  (-> auth :auth first))
+
+(defn generate-configs [config auth]
   (loop [config (sort-config config)
+         auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :auth)) (empty? (config :websites)))
+    (if (and (empty? (config :websites)) (empty? (auth :auth)))
       result
       (recur (->
               config
-              (assoc-in  [:websites] (rest (config :websites)))
-              (assoc-in  [:auth] (rest (config :auth))))
+              (assoc-in  [:websites] (rest (config :websites))))
+             (->
+              auth
+              (assoc-in  [:auth] (rest (auth :auth))))
              (conj result
                    (website/generate-nginx-deployment (flatten-and-reduce-config config))
                    (website/generate-nginx-configmap (flatten-and-reduce-config config))
@@ -60,8 +70,8 @@
                    (website/generate-hashfile-volume (flatten-and-reduce-config config))
                    (website/generate-website-ingress (flatten-and-reduce-config config))
                    (website/generate-website-certificate (flatten-and-reduce-config config))
-                   (website/generate-website-build-cron (flatten-and-reduce-config config))                   
-                   (website/generate-website-build-secret (flatten-and-reduce-config config)))))))
+                   (website/generate-website-build-cron (flatten-and-reduce-config config))
+                   (website/generate-website-build-secret (flatten-and-reduce-config config) (flatten-and-reduce-auth auth)))))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?
@@ -71,6 +81,6 @@
         (filter
          #(not (nil? %))
          (cm/concat-vec
-          (generate-configs (merge config auth))
+          (generate-configs config auth)
           (when (:contains? config :mon-cfg)
             (mon/generate (:mon-cfg config) (:mon-auth auth))))))))
