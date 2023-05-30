@@ -77,6 +77,16 @@ sha256sum scripts/foo/bar/your-script-file #  or this
 
 You may want to adjust the resource requests and limits of the build and init containers to your specific scenario.
 
+## Development & mirrors
+
+Development happens at: https://repo.prod.meissa.de/meissa/c4k-website
+
+Mirrors are:
+
+* https://gitlab.com/domaindrivenarchitecture/c4k-website (issues and PR, CI)
+
+For more details about our repository model see: https://repo.prod.meissa.de/meissa/federate-your-repos
+
 ## License
 
 Copyright © 2022 meissa GmbH
