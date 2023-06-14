@@ -51,6 +51,10 @@
 
 (s/def ::auth (s/coll-of websiteauth?))
 
+(def websites? (s/keys :req-un [::websites]))
+
+(def auth? (s/keys :req-un [::auth]))
+
 (defn-spec get-hash-from-sha256sum-output string?
   [sha256sum-output string?]
   (if (nil? sha256sum-output)
