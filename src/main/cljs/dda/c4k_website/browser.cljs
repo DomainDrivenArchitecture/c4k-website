@@ -17,13 +17,15 @@
       (br/generate-group
        "domain"
        (cm/concat-vec
-        (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "")
+        (br/generate-input-field "issuer" "(Optional) Your issuer prod/staging:" "staging")
         (br/generate-input-field "mon-cluster-name" "(Optional) monitoring cluster name:" "website")
         (br/generate-input-field "mon-cluster-stage" "(Optional) monitoring cluster stage:" "test")
-        (br/generate-input-field "mon-cloud-url" "(Optional) grafana cloud url:" "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push")
+        (br/generate-input-field "mon-cloud-url" "(Optional) grafana cloud url:" "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push")))
+      (br/generate-group
+       "website-data"
         (br/generate-text-area
          "websites" "Contains fqdns, repo infos, an optional sha256sum-output for script execution for each website:"
-         "{:websites
+         "{ :websites
           [{:unique-name \"test.io\",
             :fqdns [\"test.de\" \"www.test.de\"],
             :gitea-host \"githost.de\",
@@ -67,11 +69,12 @@
 
 (defn config-from-document []
   (let [issuer (br/get-content-from-element "issuer" :optional true)
+        websites (br/get-content-from-element "websites" :deserializer edn/read-string)
         mon-cluster-name (br/get-content-from-element "mon-cluster-name" :optional true)
-        mon-cluster-stage (br/get-content-from-element "mon-cluster-stage" :optional true :deserializer keyword)
+        mon-cluster-stage (br/get-content-from-element "mon-cluster-stage" :optional true)
         mon-cloud-url (br/get-content-from-element "mon-cloud-url" :optional true)]
     (merge
-     (br/get-content-from-element "websites" :deserializer edn/read-string)
+     {:websites websites}
      (when (not (st/blank? issuer))
        {:issuer issuer})
      (when (some? mon-cluster-name)
@@ -80,10 +83,10 @@
                   :grafana-cloud-url mon-cloud-url}}))))
 
 (defn validate-all! []
-  (br/validate! "websites" website/config? :deserializer edn/read-string)
+  (br/validate! "websites" website/websites? :deserializer edn/read-string)
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "mon-cluster-name" ::mon/cluster-name :optional true)
-  (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true :deserializer keyword)
+  (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true)
   (br/validate! "mon-cloud-url" ::mon/grafana-cloud-url :optional true)
   (br/validate! "auth" website/auth? :deserializer edn/read-string)
   (br/set-form-validated!))
