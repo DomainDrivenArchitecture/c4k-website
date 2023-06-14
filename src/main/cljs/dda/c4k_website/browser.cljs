@@ -40,21 +40,22 @@
             :build-cpu-request \"1500m\",
             :build-cpu-limit \"3000m\",
             :build-memory-request \"512Mi\",
-            :build-memory-limit \"1024Mi\"}]}"
-         "16")))
+            :build-memory-limit \"1024Mi\"}] }"
+         "16"))
       (br/generate-group
        "credentials"
        (br/generate-text-area
         "auth" "Your authentication data for each website or git repo:"
-        "{:mon-auth {:grafana-cloud-user \"your-user-id\"
-        :grafana-cloud-password \"your-cloud-password\"}
- :auth
-  [{:unique-name \"test.io\",
-    :username \"someuser\",
-    :authtoken \"abedjgbasdodj\"}
-   {:unique-name \"example.io\",
-    :username \"someuser\",
-    :authtoken \"abedjgbasdodj\"}]}"
+        "{:mon-auth 
+          {:grafana-cloud-user \"your-user-id\"
+           :grafana-cloud-password \"your-cloud-password\"}
+          :auth
+          [{:unique-name \"test.io\",
+            :username \"someuser\",
+            :authtoken \"abedjgbasdodj\"}
+           {:unique-name \"example.io\",
+            :username \"someuser\",
+            :authtoken \"abedjgbasdodj\"}]}"
         "7"))
       [(br/generate-br)]
       (br/generate-button "generate-button" "Generate c4k yaml")))]
