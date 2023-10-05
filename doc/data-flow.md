@@ -1,4 +1,4 @@
-# Data Flow from confif & auth to final website
+# Data Flow from config & auth to final website
 
 ```mermaid
 flowchart TB
