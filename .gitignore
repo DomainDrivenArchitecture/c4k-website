@@ -29,3 +29,6 @@ config.edn
 
 build-and-move-frontend.sh
 website.yaml
+
+out.yaml
+.eastwood

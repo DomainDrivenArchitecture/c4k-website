@@ -3,6 +3,7 @@ FROM c4k-website-build
 RUN apt update
 RUN apt -yqq --no-install-recommends --yes install curl default-jre-headless
 
+# TODO: path does not exist
 RUN curl -L -o /tmp/serverspec.jar \
     https://github.com/DomainDrivenArchitecture/dda-serverspec-crate/releases/download/2.0.0/dda-serverspec-standalone.jar
 
