@@ -7,7 +7,7 @@ import logging
 name = 'c4k-website'
 MODULE = 'build'
 PROJECT_ROOT_PATH = '../..'
-version = "1.1.5"
+version = "1.1.6-SNAPSHOT"
 
 
 @init
