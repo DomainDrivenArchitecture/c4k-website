@@ -11,6 +11,9 @@
 ### Modularisierung von Templates
 Als Website-Pfleger möchte ich Templates versioniert verwenden können. Damit kann ich entscheiden, wann ich Template Weiterentwicklungen folgen möchte.
 
+Bei hugo:
+=> authorisierung, clonen & versionieren müssten wir selbst scripten.
+
 ## 002
 ### Websitestruktur ist einfach zu lernen
 Die fertige Websitestruktur soll möglichst unkompliziert und somit einfach für den Website-Pfleger zu lernen sein.
@@ -58,3 +61,7 @@ Die Website-Betreiber sollen keine hohen Kosten beim Betreiben der Website haben
 ## 015
 ### Template-Eigenschaften sind überschreibbar
 Als Website-Entwickler möchte ich Template Eigenschaften auf Ebene von Website oder Seite überschreiben können, damit ich kleine Änderungen schnell umsetzen kann.
+
+## 16
+### Unser theme / layout soll privat bleiben können
+Als meissa Mitglied wollen wir verhindern, dass jemand einfach unsere Website clonen kann.
