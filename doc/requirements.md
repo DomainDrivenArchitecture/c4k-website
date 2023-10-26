@@ -12,11 +12,30 @@
 Als Website-Pfleger möchte ich Templates versioniert verwenden können. Damit kann ich entscheiden, wann ich Template Weiterentwicklungen folgen möchte.
 
 Bei hugo:
-=> authorisierung, clonen & versionieren müssten wir selbst scripten.
+wird typischerweise mit git submodule umgesetzt 
+=> Micha meint, dass dann der Entwicklungsroundtrip um 1 bis 2 Schritte größer wird. 
+(git pull im submodul ordner & keine sprechende versionsnumme).
+
+bei cryogen:
+modularisierung über jar-file => im kombinierten Entwicklungszyklus wird mit snapshot ein Schritt weniger gebraucht.
 
 ## 002
 ### Websitestruktur ist einfach zu lernen
 Die fertige Websitestruktur soll möglichst unkompliziert und somit einfach für den Website-Pfleger zu lernen sein.
+
+These: Damit jemand die Website-Struktur lernen kann, muss klar sein, wie das Theme funktionieert und wir wir unsere Inhalte strukturieren.
+
+Theme: Setzt sich aus der Menge der Layouts, CSS und JS zusammen
+
+Layout: Besteht aus einem oder mehreren Partials und repräsentiert einen Seitentyp im Theme
+
+Partials: sind HTML und Template Elemente, die in Layouts enthalten sein können.
+
+Asset:
+
+Cryogen: Hat Inhalte und Theme gemischt, Folder sind teilweise fest im Code verdrahtet
+
+Hugo: Erlaubt Trennung von Inhalt und Theme, relativ viel Freiheit bei Folder-Structure (Erik sucht evtl. noch Details raus)
 
 ## 003
 ### Responsive Design
