@@ -31,19 +31,27 @@ Layout: Besteht aus einem oder mehreren Partials und repräsentiert einen Seiten
 
 Partials: sind HTML und Template Elemente, die in Layouts enthalten sein können.
 
-Asset:
+Asset: 
+
+Hugo: Erlaubt Trennung von Inhalt und Theme, relativ viel Freiheit bei Folder-Structure (Erik sucht evtl. noch Details raus)
 
 Cryogen: Hat Inhalte und Theme gemischt, Folder sind teilweise fest im Code verdrahtet
 
-Hugo: Erlaubt Trennung von Inhalt und Theme, relativ viel Freiheit bei Folder-Structure (Erik sucht evtl. noch Details raus)
+Die Doku muss auf Theme-Ebene gemacht werden.
 
 ## 003
 ### Responsive Design
 Als Website-Konsument möchte ich die Website auf Smartphon, Tablet oder auf dem 4K-Sreen konsumieren können.
 
+Große Auswahl an Themes bei Hugo, Auswahl bei reinen Bootstrap-themes (noch) unklar.
+Zeit in Recherche von Themes investieren (2h) mit Fokus auf Aussehen, interne Struktur und Erweiterbarkeit.
+
 ## 004
 ### Inhalte ohne Layout
 Der Website-Pfleger soll Inhalte möglichst einfach verändern können, ohne dass er sich um das Layout kümmern muss (evtl Markdown oder Asciidoc ?).
+
+Michael und Ansgar wollen Seiten mit Markdown machen können.
+Erik findet Markdown auf den LandingPages nicht wichtig und in manchen Fällen kontraproduktiv.
 
 ## 005
 ### Website muss keine Inhalte von extern downloaden (müssen) - z.B. Fonts, css etc
