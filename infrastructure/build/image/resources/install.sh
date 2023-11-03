@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eux
+
 apt update > /dev/null;
 
 apt install -y unzip rsync jq imagemagick curl
