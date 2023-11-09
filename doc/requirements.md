@@ -57,17 +57,39 @@ Erik findet Markdown auf den LandingPages nicht wichtig und in manchen Fällen k
 ### Website muss keine Inhalte von extern downloaden (müssen) - z.B. Fonts, css etc
 Als Website-Konsument möchte ich nur der besuchten Seite meine Daten zugestehen - und nicht der gesamten tracking-Welt.
 
+Geht bei beiden.
+
 ## 007
 ### Rückwärtskompatibilität
-Als Website-Betreiber möchte ich, dass alte Websites (bspw Informatikbüro Jerger) mit c4k-website weiterhin funktionieren, ohne bei ihnen Anpassungen machen zu müssen. (cluster muss weiterlaufen bei Änderungen)
+Als Website-Betreiber möchte ich, dass alte Websites (bspw Informatikbüro Jerger) mit c4k-website weiterhin funktionieren, ohne bei ihnen Anpassungen machen zu müssen (wir brauchen eine Wartungsperspektive für 3 weitere bestehende Websites).
+
+Todos sind:
+* lein als build-aufruf muss einheitlicher werden
+* c4k-website müsste evtl. mit einem weitern flavor "hugo" umgehen können
+* Migrationspfad für bestehende Websites (Anleitung für Navigation / bisherige Content-Struktur)
+* POC: der die wesentlichen Features für dda.io abbildet (Navigation, Migration für Seiten&Bilder, Blog, partials)
 
 ## 008
 ### Website soll statisch sein
-Als Website-Betreiber möchte ich eine statische Website ausliefern, damit der Website Betrieb nicht so komplex wird.
+Als Website-Betreiber möchte ich eine statische Website ausliefern, damit der Website Betrieb nicht so komplex wird. Der Website betreiber muss sich zudem bei statischen Websites nicht so sehr um die Sicherheit von Credentials, Assets und ähnliches kümmern.
+
+Geht bei beiden.
 
 ## 009
 ### Einfache und Zugängliche Technologie
-Die Technologie, die der Website-Entwickler zum Bau der WS verwendet, soll gut dokumentiert und zugänglich sein. Damit ist es für den Website-Entwickler einfach, Änderungen im technischen Kontext der Website umzusetzen.
+a) Die Technologie, die der Theme-Entwickler zum Bau der WS verwendet (mit Technik drumherum), soll gut dokumentiert und zugänglich sein. Damit ist es für den Website-Entwickler einfach, Änderungen im technischen Kontext der Website umzusetzen.
+
+Beim Generator stehen da so Fragen an wie:
+    * Lookup-Order in der Dir-Struktur
+    * Modul-Frage
+    * Content Organisation (Page-Bundles bei hugo)
+    * Debug-Möglichkeiten
+    
+Community (Hugo) <-> Wissen in der Firma (Micha hat das Zeugs in Cryogen eingebaut)
+(Ausführliche) Dokumentation
+
+b) Die Technologie, die der Content-Entwickler verwendet, soll gut dokumentiert und zugänglich sein. Damit ist es für den Website-Entwickler einfach, Änderungen im Inhalt umzusetzen.
+
 
 ## 010
 ### Spass bei Entwicklung und Pflege
