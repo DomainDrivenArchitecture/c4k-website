@@ -1,4 +1,4 @@
-# Aktoren
+ Aktoren
 
 ## A1: Der Website-Konsument
 ## A2: Der Website-Pfleger
@@ -90,27 +90,65 @@ Community (Hugo) <-> Wissen in der Firma (Micha hat das Zeugs in Cryogen eingeba
 
 b) Die Technologie, die der Content-Entwickler verwendet, soll gut dokumentiert und zugänglich sein. Damit ist es für den Website-Entwickler einfach, Änderungen im Inhalt umzusetzen.
 
+Beim Theme stehen da so Fragen an wie:
+    * Wie stelle ich navigation her
+    * Link in texts
+    * Welche Layouts existieren
+    * Bilder
+    * Meta-Infos
+    * Muss ich Graph Head bedienen?
 
 ## 010
 ### Spass bei Entwicklung und Pflege
 Website-Entwickler und Website-Pfleger sollten Spaß haben bei Website redesignen und Pflege (techn. und inhaltliche Pflege)
 
+Spassfaktoren:
+    * Startgeschwindigkeit des Tools
+* Hugo startet schnell, ohne JDK
+* Cryogen braucht länger, kann evtl mit GraalVM beschleunigt werden
+* Buildzeit
+* Hugo kommt and WYSIWYG feeling heran, buildzeit zur Vorschau bei <1s
+* Cryogen builds brauchen ca +-10s
+* Entwicklungsflow
+* Instantane Anzeige von Änderungen auf der Site bei Hugo
+* Editor-Freiheit
+* Markdown hat schon im Editor ein PreView
+* Markdown erlaubt kleine Freiheiten, ohne immer gleich am Theme ändern zu müssen.
+* Bild-Nachbearbeitungspipeline
+* Mehr Automatisierung bei Bild-Metainfos, Sizing, Dimensionierung
+* Spassbremse: Hugo erinnert mich an Helm - und das hat Brechreitzfaktor für Micha
+     * Hugo wäre Investierung in die Zukunft
+     * Hugo-Wissen kann auf dem Lebenslauf evtl. nützlich sein.
+
 ## 011
 ### Wohlfühlen mit schönem und funktionierendem Design
 Der Website-Konsument soll sich bei dem Besuch der WS wohlfühlen und schnell erfassen können worum es geht.
+
+Geht bei beiden.
 
 ## 012
 ### OpenSource
 Der Entwickler und Betreiber möchte Tools und Layouts mit OS-Lizenz, da das unkomplizierter ist.
 
+Geht bei beiden.
+
 ## 013
 ### Leichtgewichtiger Buildprozess
 Die Website-Betreiber sollen keine hohen Kosten beim Betreiben der Website haben.
+
+Geht bei beiden.
+
+Cryogen brauch evtl. GraalVM, aber tendenziell sind beide tools gleichwertig in Gewichtigkeit des Bau-Prozesses.
 
 ## 015
 ### Template-Eigenschaften sind überschreibbar
 Als Website-Entwickler möchte ich Template Eigenschaften auf Ebene von Website oder Seite überschreiben können, damit ich kleine Änderungen schnell umsetzen kann.
 
-## 16
+## 016
 ### Unser theme / layout soll privat bleiben können
 Als meissa Mitglied wollen wir verhindern, dass jemand einfach unsere Website clonen kann.
+
+
+## 017
+### URL-Redirects
+Als Website-Pfleger möchte ich Redirects definieren können um eingägnge und stabile alternativ URLs zu einer Seite definieren zu können.
