@@ -15,6 +15,7 @@ Bei hugo:
 wird typischerweise mit git submodule umgesetzt 
 => Micha meint, dass dann der Entwicklungsroundtrip um 1 bis 2 Schritte größer wird. 
 (git pull im submodul ordner & keine sprechende versionsnumme).
+Addendum: Es gibt hugo modules, die Versionsverwaltung und Modularisierung einfach machen: https://www.nickgracilla.com/posts/master-hugo-modules-managing-themes-as-modules/
 
 bei cryogen:
 modularisierung über jar-file => im kombinierten Entwicklungszyklus wird mit snapshot ein Schritt weniger gebraucht.
@@ -144,11 +145,27 @@ Cryogen brauch evtl. GraalVM, aber tendenziell sind beide tools gleichwertig in 
 ### Template-Eigenschaften sind überschreibbar
 Als Website-Entwickler möchte ich Template Eigenschaften auf Ebene von Website oder Seite überschreiben können, damit ich kleine Änderungen schnell umsetzen kann.
 
+Lokales überschreiben von Themes funktioniert:
+Hugo:
+    * Entweder über go modules
+    * Oder lokale theme ordner
+Cryogen:
+    * Ebenfalls über lokale theme ordner
+
 ## 016
 ### Unser theme / layout soll privat bleiben können
 Als meissa Mitglied wollen wir verhindern, dass jemand einfach unsere Website clonen kann.
 
+Funktioniert bei beiden: Via git repo.
 
 ## 017
 ### URL-Redirects
 Als Website-Pfleger möchte ich Redirects definieren können um eingägnge und stabile alternativ URLs zu einer Seite definieren zu können.
+
+Kann cryogen nicht.
+Unklar bei Hugo - Aliases?
+Resourcen: https://gohugo.io/content-management/urls/
+
+## 018
+### Domain-Logik ist in Programiersprache beschreibbar.
+Als Theme-Entwickler möchte ich möglichst wenig Logik in Templating haben müssen.
