@@ -1,16 +1,25 @@
 #!/bin/bash
 
-set -eux
+set -exo pipefail
 
-apt update > /dev/null;
+function main()
+{
+    {
+        upgradeSystem
+        apt-get install -qqy unzip rsync jq imagemagick curl
 
-apt install -y unzip rsync jq imagemagick curl
+        install -d /etc/lein/
+        install -m 0700 /tmp/entrypoint.sh /
+        install -m 0700 /tmp/functions.sh /usr/local/bin/
+        install -m 0700 /tmp/exclude.pattern /etc/
+        install -m 0700 /tmp/project.clj /etc/lein/
 
-mkdir /etc/lein/
+        cd /etc/lein
+        lein deps
+        
+        cleanupDocker
+    } > /dev/null
+}
 
-install -m 0700 /tmp/entrypoint.sh /
-install -m 0700 /tmp/functions.sh /usr/local/bin/
-install -m 0700 /tmp/exclude.pattern /etc/
-install -m 0700 /tmp/project.clj /etc/lein/
-cd /etc/lein; 
-lein deps;
+source /tmp/install_functions_debian.sh
+DEBIAN_FRONTEND=noninteractive DEBCONF_NOWARNINGS=yes main
