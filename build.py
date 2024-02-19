@@ -129,12 +129,12 @@ def package_native(project):
         check=True,
     )
     run(
-        "sha256sum target/graalvm/c4k-forgejo > target/graalvm/" + project.name + ".sha256",
+        "sha256sum target/graalvm/" + project.name + " > target/graalvm/" + project.name + ".sha256",
         shell=True,
         check=True,
     )
     run(
-        "sha512sum target/graalvm/c4k-forgejo > target/graalvm/" + project.name + ".sha512",
+        "sha512sum target/graalvm/" + project.name + " > target/graalvm/" + project.name + ".sha512",
         shell=True,
         check=True,
     )
