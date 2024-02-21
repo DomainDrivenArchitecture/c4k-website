@@ -28,8 +28,9 @@ def initialize(project):
         "release_organisation": "meissa",
         "release_repository_name": name,
         "release_artifacts": [
-            "target/uberjar/c4k-website-standalone.jar",
-            "target/frontend-build/c4k-website.js",
+            "target/graalvm/" + name,
+            "target/uberjar/" + name + "-standalone.jar",
+            "target/frontend-build/" + name + ".js"
         ],
     }
 
@@ -105,6 +106,59 @@ def package_uberjar(project):
         check=True,
     )
 
+@task
+def package_native(project):
+    run(
+        "mkdir -p target/graalvm",
+        shell=True,
+        check=True,
+    )
+    run(
+        "native-image " +
+        "--native-image-info " +
+        "--report-unsupported-elements-at-runtime " +
+        "--no-server " +
+        "--no-fallback " +
+        "--features=clj_easy.graal_build_time.InitClojureClasses " +
+        "-jar target/uberjar/" + project.name + "-standalone.jar " +
+        "-H:IncludeResources=.*.yaml " +
+        "-H:IncludeResources=.*.xml " +
+        "-H:Log=registerResource:verbose " +
+        "-H:Name=target/graalvm/" + project.name + "",
+        shell=True,
+        check=True,
+    )
+    run(
+        "sha256sum target/graalvm/" + project.name + " > target/graalvm/" + project.name + ".sha256",
+        shell=True,
+        check=True,
+    )
+    run(
+        "sha512sum target/graalvm/" + project.name + " > target/graalvm/" + project.name + ".sha512",
+        shell=True,
+        check=True,
+    )
+
+
+@task
+def inst(project):
+    run(
+        "lein uberjar",
+        shell=True,
+        check=True,
+    )
+    package_native(project)
+    run(
+        "sudo install -m=755 target/uberjar/" + project.name + "-standalone.jar /usr/local/bin/" + project.name + "-standalone.jar",
+        shell=True,
+        check=True,
+    )
+    run(
+        "sudo install -m=755 target/graalvm/" + project.name + " /usr/local/bin/" + project.name + "",
+        shell=True,
+        check=True,
+    )
+    
 
 @task
 def upload_clj(project):
