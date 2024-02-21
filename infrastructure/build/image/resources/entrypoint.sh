@@ -30,7 +30,3 @@ if [[ $currentHash == $newHash ]]
         echo "Moving files"
         move-website-files-to-target
 fi
-
-
-
-
