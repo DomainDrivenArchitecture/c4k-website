@@ -1,11 +1,9 @@
 (ns dda.c4k-website.website
   (:require
    [clojure.spec.alpha :as s]
-   #?(:cljs [shadow.resource :as rc])
    #?(:clj [orchestra.core :refer [defn-spec]]
       :cljs [orchestra.core :refer-macros [defn-spec]])
-   #?(:clj [clojure.edn :as edn]
-      :cljs [cljs.reader :as edn])
+   #?(:cljs [dda.c4k-common.macros :refer-macros [inline-resources]])
    [dda.c4k-common.yaml :as yaml]
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.base64 :as b64]
@@ -136,15 +134,7 @@
 
 #?(:cljs
    (defmethod yaml/load-resource :website [resource-name]
-     (case resource-name
-       "website/nginx-configmap.yaml" (rc/inline "website/nginx-configmap.yaml")
-       "website/nginx-deployment.yaml" (rc/inline "website/nginx-deployment.yaml")
-       "website/nginx-service.yaml" (rc/inline "website/nginx-service.yaml")
-       "website/website-build-cron.yaml" (rc/inline "website/website-build-cron.yaml")
-       "website/website-build-secret.yaml" (rc/inline "website/website-build-secret.yaml")
-       "website/website-content-volume.yaml" (rc/inline "website/website-content-volume.yaml")
-       "website/hashfile-volume.yaml" (rc/inline "website/hashfile-volume.yaml")
-       (throw (js/Error. "Undefined Resource!")))))
+     (get (inline-resources "website") resource-name)))
 
 (defn-spec generate-nginx-deployment pred/map-or-seq?
   [config websiteconfig?]
