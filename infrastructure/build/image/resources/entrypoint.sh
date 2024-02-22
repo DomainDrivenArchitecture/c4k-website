@@ -23,8 +23,6 @@ if [[ $currentHash == $newHash ]]
         echo "Downloading website data"
         get-website-data $filename
         unzip-website-data $filename
-        echo "Executing Custom Scripts, if applicable"
-        execute-scripts-when-existing
         echo "Building website"
         build-website
         echo "Moving files"
