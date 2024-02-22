@@ -120,12 +120,10 @@
 (defn-spec replace-build-data pred/map-or-seq?
   [resource-file string?
    config websiteconfig?]
-  (let [{:keys [sha256sum-output build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
+  (let [{:keys [build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
          :or {build-cpu-request "500m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
     (->
      (replace-common-data resource-file config)
-     (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
-     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output))
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
@@ -165,7 +163,7 @@
   [config websiteconfig?]
   (replace-common-data "website/hashfile-volume.yaml" config))
 
-
+; using simple ingress instead removes the need of cert handling
 (defn-spec generate-website-ingress pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name fqdns]} config]
@@ -188,6 +186,7 @@
   [config websiteconfig?]
   (replace-build-data "website/website-build-cron.yaml" config))
 
+; TODO: repo & commit-url sounds more like config map?
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]

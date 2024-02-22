@@ -72,7 +72,6 @@
                :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                :command ["/entrypoint.sh"],
                :envFrom [{:secretRef {:name "test-io-secret"}}],
-               :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
                :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
                               {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
              :volumes
@@ -155,7 +154,6 @@
                  :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
-                 :env [{:name "SHA256SUM", :value "123456789ab123cd345de"} {:name "SCRIPTFILE", :value "script-file-name.sh"}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
                                 {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
                :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
@@ -164,7 +162,6 @@
          (cut/generate-website-build-cron {:forgejo-host "gitlab.de",
                                            :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                            :forgejo-repo "repo",
-                                           :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                            :issuer "staging",
                                            :branchname "main",
                                            :unique-name "test.io"}))))
