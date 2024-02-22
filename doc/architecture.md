@@ -16,5 +16,4 @@ sequenceDiagram
     j ->> j: generate.sh
     j ->> j: cp /target/html to website
     deactivate j
-
 ```

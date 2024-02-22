@@ -179,7 +179,6 @@
            :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
          (cut/generate-website-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                              :forgejo-repo "repo",
-                                             :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                              :issuer "staging",
                                              :branchname "main",
                                              :unique-name "test.io",

@@ -191,8 +191,8 @@
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]
-  (let [{:keys [gitea-host
-                gitea-repo
+  (let [{:keys [forgejo-host
+                forgejo-repo
                 branchname]} config
         {:keys [authtoken
                 username]} auth]
@@ -201,13 +201,13 @@
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
                                                              (generate-gitrepourl
-                                                              gitea-host
-                                                              gitea-repo
+                                                              forgejo-host
+                                                              forgejo-repo
                                                               username
                                                               branchname)))
      (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
                                                                (generate-gitcommiturl
-                                                                gitea-host
-                                                                gitea-repo
+                                                                forgejo-host
+                                                                forgejo-repo
                                                                 username))))))
 
