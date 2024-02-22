@@ -21,8 +21,8 @@
 (s/def ::volume-size pred/integer-string?)
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
-(s/def ::gitea-host pred/fqdn-string?)
-(s/def ::gitea-repo string?)
+(s/def ::forgejo-host pred/fqdn-string?)
+(s/def ::forgejo-repo string?)
 (s/def ::branchname string?)
 (s/def ::username string?)
 (s/def ::build-cpu-request string?)
@@ -32,12 +32,11 @@
 
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
-                                     ::gitea-host
-                                     ::gitea-repo
+                                     ::forgejo-host
+                                     ::forgejo-repo
                                      ::branchname]
                             :opt-un [::issuer
                                      ::volume-size
-                                     ::sha256sum-output
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
