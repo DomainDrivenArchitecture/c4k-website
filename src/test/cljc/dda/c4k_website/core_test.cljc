@@ -5,8 +5,7 @@
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.alpha :as s]
    [dda.c4k-common.yaml :as yaml]
-   [dda.c4k-website.core :as cut]
-   [clojure.spec.alpha :as s]))
+   [dda.c4k-website.core :as cut]))
 
 #?(:cljs
    (defmethod yaml/load-resource :website-test [resource-name]
@@ -23,26 +22,26 @@
   {:websites
    [{:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
-     :gitea-host "finegitehost.net"
-     :gitea-repo "repo"
+     :forgejo-host "finegitehost.net"
+     :forgejo-repo "repo"
      :branchname "main"}
     {:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
-     :gitea-host "gitlab.de"
-     :gitea-repo "repo"
+     :forgejo-host "gitlab.de"
+     :forgejo-repo "repo"
      :branchname "main"}]})
 
 (def websites2
   {:websites
    [{:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
-     :gitea-host "gitlab.de"
-     :gitea-repo "repo"
+     :forgejo-host "gitlab.de"
+     :forgejo-repo "repo"
      :branchname "main"}
     {:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
-     :gitea-host "finegitehost.net"
-     :gitea-repo "repo"
+     :forgejo-host "finegitehost.net"
+     :forgejo-repo "repo"
      :branchname "main"}]})
 
 (def auth1
@@ -66,8 +65,8 @@
 (def flattened-and-reduced-config
   {:unique-name "example.io",
    :fqdns ["example.org" "www.example.com"],
-   :gitea-host "finegitehost.net",
-   :gitea-repo "repo",
+   :forgejo-host "finegitehost.net",
+   :forgejo-repo "repo",
    :branchname "main"})
 
 (def flattened-and-reduced-auth
@@ -80,13 +79,13 @@
           :websites
           [{:unique-name "example.io",
             :fqdns ["example.org" "www.example.com"],
-            :gitea-host "finegitehost.net",
-            :gitea-repo "repo",
+            :forgejo-host "finegitehost.net",
+            :forgejo-repo "repo",
             :branchname "main"},
            {:unique-name "test.io",
             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-            :gitea-host "gitlab.de",
-            :gitea-repo "repo",
+            :forgejo-host "gitlab.de",
+            :forgejo-repo "repo",
             :branchname "main",
             :sha256sum-output "123456789ab123cd345de script-file-name.sh"}],
           :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}
@@ -95,14 +94,14 @@
            :websites
            [{:unique-name "test.io",
              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-             :gitea-host "gitlab.de",
-             :gitea-repo "repo",
+             :forgejo-host "gitlab.de",
+             :forgejo-repo "repo",
              :branchname "main",
              :sha256sum-output "123456789ab123cd345de script-file-name.sh"}
             {:unique-name "example.io",
              :fqdns ["example.org" "www.example.com"],
-             :gitea-host "finegitehost.net",
-             :gitea-repo "repo",
+             :forgejo-host "finegitehost.net",
+             :forgejo-repo "repo",
              :branchname "main"}],
            :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}))))
 
