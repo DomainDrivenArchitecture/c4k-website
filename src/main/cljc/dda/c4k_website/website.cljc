@@ -21,8 +21,8 @@
 (s/def ::volume-size pred/integer-string?)
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
-(s/def ::gitea-host pred/fqdn-string?)
-(s/def ::gitea-repo string?)
+(s/def ::forgejo-host pred/fqdn-string?)
+(s/def ::forgejo-repo string?)
 (s/def ::branchname string?)
 (s/def ::username string?)
 (s/def ::build-cpu-request string?)
@@ -32,12 +32,11 @@
 
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
-                                     ::gitea-host
-                                     ::gitea-repo
+                                     ::forgejo-host
+                                     ::forgejo-repo
                                      ::branchname]
                             :opt-un [::issuer
                                      ::volume-size
-                                     ::sha256sum-output
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
@@ -121,12 +120,10 @@
 (defn-spec replace-build-data pred/map-or-seq?
   [resource-file string?
    config websiteconfig?]
-  (let [{:keys [sha256sum-output build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
+  (let [{:keys [build-cpu-request build-cpu-limit build-memory-request build-memory-limit]
          :or {build-cpu-request "500m" build-cpu-limit "1700m" build-memory-request "256Mi" build-memory-limit "512Mi"}} config]
     (->
      (replace-common-data resource-file config)
-     (cm/replace-all-matching-values-by-new-value "CHECK_SUM" (get-hash-from-sha256sum-output sha256sum-output))
-     (cm/replace-all-matching-values-by-new-value "SCRIPT_FILE" (get-file-name-from-sha256sum-output sha256sum-output))
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
@@ -166,7 +163,7 @@
   [config websiteconfig?]
   (replace-common-data "website/hashfile-volume.yaml" config))
 
-
+; using simple ingress instead removes the need of cert handling
 (defn-spec generate-website-ingress pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name fqdns]} config]
@@ -189,11 +186,12 @@
   [config websiteconfig?]
   (replace-build-data "website/website-build-cron.yaml" config))
 
+; TODO: repo & commit-url sounds more like config map?
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]
-  (let [{:keys [gitea-host
-                gitea-repo
+  (let [{:keys [forgejo-host
+                forgejo-repo
                 branchname]} config
         {:keys [authtoken
                 username]} auth]
@@ -202,13 +200,13 @@
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
                                                              (generate-gitrepourl
-                                                              gitea-host
-                                                              gitea-repo
+                                                              forgejo-host
+                                                              forgejo-repo
                                                               username
                                                               branchname)))
      (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
                                                                (generate-gitcommiturl
-                                                                gitea-host
-                                                                gitea-repo
+                                                                forgejo-host
+                                                                forgejo-repo
                                                                 username))))))
 

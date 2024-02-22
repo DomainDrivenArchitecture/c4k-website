@@ -25,7 +25,8 @@
                        :dependencies [[org.clojure/tools.cli "1.1.230"]
                                       [ch.qos.logback/logback-classic "1.5.0"
                                        :exclusions [com.sun.mail/javax.mail]]
-                                      [org.slf4j/jcl-over-slf4j "2.0.12"]]}}
+                                      [org.slf4j/jcl-over-slf4j "2.0.12"]
+                                      [com.github.clj-easy/graal-build-time "1.0.5"]]}}
   :release-tasks [["test"]
                   ["vcs" "assert-committed"]
                   ["change" "version" "leiningen.release/bump-version" "release"]
