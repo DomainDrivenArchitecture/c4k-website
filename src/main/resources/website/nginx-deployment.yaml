@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: NAME-deployment
+  namespace: webserver
   labels:
     app.kubernetes.part-of: NAME-website
 spec:
@@ -11,6 +12,7 @@ spec:
       app: NAME-nginx
   template:
     metadata:
+      namespace: webserver
       labels:
         app: NAME-nginx
     spec:
@@ -23,7 +25,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/nginx 
           readOnly: true
-          name: nginx-config-volume
+          name: etc-ngingx
         - mountPath: /var/log/nginx
           name: log                    
         - mountPath: /var/www/html/website
@@ -50,9 +52,9 @@ spec:
         - name: hashfile-volume
           mountPath: /var/hashfile.d
       volumes:
-        - name: nginx-config-volume
+        - name: etc-ngingx
           configMap:
-            name: NAME-configmap
+            name: etc-ngingx
             items:
               - key: nginx.conf
                 path: nginx.conf

@@ -1,14 +1,14 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: NAME-service
-  labels:
-    app: NAME-nginx
-    app.kubernetes.part-of: NAME-website
+  name: NAME
   namespace: default
+  labels:
+    app: NAME
+    app.kubernetes.part-of: NAME
 spec:    
   selector:
-    app: NAME-nginx
+    app: NAME
   ports:
     - name: nginx-http
       port: 80               

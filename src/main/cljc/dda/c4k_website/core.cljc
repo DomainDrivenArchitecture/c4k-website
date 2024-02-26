@@ -49,7 +49,9 @@
   [auth auth?]
   (-> auth :auth first))
 
-(defn generate-configs [config auth]
+(defn-spec generate seq?
+  [config config?
+   auth auth?]
   (loop [config (sort-config config)
          auth (sort-auth auth)
          result []]
@@ -64,14 +66,16 @@
               (assoc-in  [:auth] (rest (auth :auth))))
              (conj result
                    (website/generate-nginx-deployment (flatten-and-reduce-config config))
-                   (website/generate-nginx-configmap (flatten-and-reduce-config config))
-                   (website/generate-nginx-service (flatten-and-reduce-config config))
-                   (website/generate-website-content-volume (flatten-and-reduce-config config))
-                   (website/generate-hashfile-volume (flatten-and-reduce-config config))
-                   (website/generate-website-ingress (flatten-and-reduce-config config))
-                   (website/generate-website-certificate (flatten-and-reduce-config config))
-                   (website/generate-website-build-cron (flatten-and-reduce-config config))
-                   (website/generate-website-build-secret (flatten-and-reduce-config config) (flatten-and-reduce-auth auth)))))))
+                   ;(website/generate-nginx-configmap (flatten-and-reduce-config config))
+                   ;(website/generate-nginx-service (flatten-and-reduce-config config))
+                   ;(website/generate-website-content-volume (flatten-and-reduce-config config))
+                   ;(website/generate-hashfile-volume (flatten-and-reduce-config config))
+                   ;(website/generate-website-ingress (flatten-and-reduce-config config))
+                   ;(website/generate-website-certificate (flatten-and-reduce-config config))
+                   ;(website/generate-website-build-cron (flatten-and-reduce-config config))
+                   ;(website/generate-website-build-secret (flatten-and-reduce-config config) 
+             ;                                             (flatten-and-reduce-auth auth))
+             )))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?
@@ -81,6 +85,6 @@
         (filter
          #(not (nil? %))
          (cm/concat-vec
-          (generate-configs config auth)
+          (generate config auth)
           (when (:contains? config :mon-cfg)
             (mon/generate (:mon-cfg config) (:mon-auth auth))))))))
