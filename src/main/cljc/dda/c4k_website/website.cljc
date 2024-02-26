@@ -2,7 +2,9 @@
   (:require
    [clojure.spec.alpha :as s]
    #?(:clj [orchestra.core :refer [defn-spec]]
-      :cljs [orchestra.core :refer-macros [defn-spec]])
+      :cljs [orchestra.core :refer-macros [defn-spec]])   
+   [dda.c4k-common.ingress :as ing]
+   [dda.c4k-common.namespace :as ns]
    [dda.c4k-website.website.website-internal :as int]))
 
 (s/def ::unique-name ::int/unique-name)
@@ -45,3 +47,63 @@
   (let [final-config (merge config-defaults
                             config)]
     (int/generate-nginx-deployment final-config)))
+
+
+(defn-spec generate-nginx-configmap map?
+  [config websiteconfig?]
+   (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-nginx-configmap final-config)))
+
+
+(defn-spec generate-nginx-service map?
+  [config websiteconfig?]
+  (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-nginx-service final-config)))
+
+
+(defn-spec generate-website-content-volume map?
+  [config websiteconfig?]
+  (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-website-content-volume final-config)))
+
+
+(defn-spec generate-hashfile-volume map?
+  [config websiteconfig?]
+  (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-hashfile-volume final-config)))
+
+(defn-spec generate-website-build-cron map?
+  [config websiteconfig?]
+  (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-website-build-cron final-config)))
+
+
+(defn-spec generate-website-build-secret map?
+  [config websiteconfig?
+   auth websiteauth?]
+  (let [final-config (merge config-defaults
+                             config)]
+     (int/generate-website-build-secret final-config auth)))
+
+(defn-spec generate-namespcae seq?
+  [config websiteconfig?]
+  (let [name (int/replace-dots-by-minus (:unique-name config))
+        final-config (merge config-defaults
+                            {:namespace name}
+                            config)]
+    (ns/generate final-config)))
+
+(defn-spec generate-ingress seq?
+  [config websiteconfig?]
+  (let [name (int/replace-dots-by-minus (:unique-name config))
+        final-config (merge config-defaults
+                            {:service-name name
+                             :service-port 80
+                             :namespace name}
+                            config)]
+    (ing/generate-simple-ingress final-config)))

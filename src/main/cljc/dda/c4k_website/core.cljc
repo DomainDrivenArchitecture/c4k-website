@@ -9,9 +9,6 @@
    [dda.c4k-common.monitoring :as mon]
    [dda.c4k-website.website :as website]))
 
-(def config-defaults {:issuer "staging"
-                      :volume-size "3"})
-
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
 
@@ -64,18 +61,19 @@
              (->
               auth
               (assoc-in  [:auth] (rest (auth :auth))))
-             (conj result
-                   (website/generate-nginx-deployment (flatten-and-reduce-config config))
-                   ;(website/generate-nginx-configmap (flatten-and-reduce-config config))
-                   ;(website/generate-nginx-service (flatten-and-reduce-config config))
-                   ;(website/generate-website-content-volume (flatten-and-reduce-config config))
-                   ;(website/generate-hashfile-volume (flatten-and-reduce-config config))
-                   ;(website/generate-website-ingress (flatten-and-reduce-config config))
-                   ;(website/generate-website-certificate (flatten-and-reduce-config config))
-                   ;(website/generate-website-build-cron (flatten-and-reduce-config config))
-                   ;(website/generate-website-build-secret (flatten-and-reduce-config config) 
-             ;                                             (flatten-and-reduce-auth auth))
-             )))))
+             (cm/concat-vec
+              result
+              (website/generate-namespcae (flatten-and-reduce-config config))
+              [(website/generate-nginx-deployment (flatten-and-reduce-config config))
+               (website/generate-nginx-configmap (flatten-and-reduce-config config))
+               (website/generate-nginx-service (flatten-and-reduce-config config))
+               (website/generate-website-content-volume (flatten-and-reduce-config config))
+               (website/generate-hashfile-volume (flatten-and-reduce-config config))
+               (website/generate-website-build-cron (flatten-and-reduce-config config))
+               (website/generate-website-build-secret (flatten-and-reduce-config config)
+                                                      (flatten-and-reduce-auth auth))]
+              (website/generate-ingress (flatten-and-reduce-config config))
+              )))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?

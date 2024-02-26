@@ -55,26 +55,6 @@
   [fqdn pred/fqdn-string?]
   (str/replace fqdn #"\." "-"))
 
-; TODO: remove
-(defn-spec generate-app-name string?
-  [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-website"))
-
-; TODO: remove
-(defn-spec generate-service-name string?
-  [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-service"))
-
-; TODO: remove
-(defn-spec generate-cert-name string?
-  [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-cert"))
-
-; TODO: remove
-(defn-spec generate-ingress-name string?
-  [unique-name pred/fqdn-string?]
-  (str (replace-dots-by-minus unique-name) "-ingress"))
-
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branch>.zip
 (defn-spec generate-gitrepourl string?
   [host pred/fqdn-string?
@@ -105,7 +85,7 @@
   (let [{:keys [unique-name build-cpu-request build-cpu-limit 
                 build-memory-request build-memory-limit]} config
         name (replace-dots-by-minus unique-name)]
-    (-> 
+    (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
      (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (assoc-in [:metadata :namespace] name)
@@ -113,8 +93,7 @@
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
-     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit)
-     )))
+     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 
 (defn-spec generate-nginx-configmap map?
@@ -162,27 +141,6 @@
      (yaml/load-as-edn "website/hashfile-volume.yaml")
      (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (replace-all-matching-substrings-beginning-with "NAME" name))))
-
-
-; TODO: remove
-(defn-spec generate-website-ingress pred/map-or-seq?
-  [config websiteconfig?]
-  (let [{:keys [unique-name fqdns]} config]
-    (ing/generate-ingress {:fqdns fqdns
-                           :app-name (generate-app-name unique-name)
-                           :ingress-name (generate-ingress-name unique-name)
-                           :service-name (generate-service-name unique-name)
-                           :service-port 80})))
-
-; TODO: remove - using simple ingress instead removes the need of cert handling
-(defn-spec generate-website-certificate pred/map-or-seq?
-  [config websiteconfig?]
-  (let [{:keys [unique-name issuer fqdns]
-         :or {issuer "staging"}} config]
-    (ing/generate-certificate {:fqdns fqdns
-                               :app-name (generate-app-name unique-name)
-                               :cert-name (generate-cert-name unique-name)
-                               :issuer issuer})))
 
 
 (defn-spec generate-website-build-cron map?
