@@ -69,7 +69,7 @@
                                                             :forgejo-repo "none",
                                                             :branchname "mablain",
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
-  (is (= "user nginx;\nworker_processes 3;\nerror_log /var/log/nginx/error.log;\npid /var/log/nginx/nginx.pid;\nworker_rlimit_nofile 8192;\nevents {\n  worker_connections 4096;\n}\nhttp {\n  include /etc/nginx/mime.types;\n  default_type application/octet-stream;\n  log_format   main '$remote_addr - $remote_user [$time_local] $status'\n  '\"$request\" $body_bytes_sent \"$http_referer\"'\n  '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n  access_log /var/log/nginx/access.log main;\n  sendfile on;\n  tcp_nopush on;\n  keepalive_timeout 65;\n  server_names_hash_bucket_size 128;\n  include /etc/nginx/conf.d/website.conf;\n}\n"
+  (is (= "user nginx;\nworker_processes 3;\nerror_log stdout info;\npid /var/log/nginx/nginx.pid;\nworker_rlimit_nofile 8192;\nevents {\n  worker_connections 4096;\n}\nhttp {\n  include /etc/nginx/mime.types;\n  default_type application/octet-stream;\n  log_format   main '$remote_addr - $remote_user [$time_local] $status'\n  '\"$request\" $body_bytes_sent \"$http_referer\"'\n  '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n  access_log stdout main;\n  sendfile on;\n  tcp_nopush on;\n  keepalive_timeout 65;\n  server_names_hash_bucket_size 128;\n  include /etc/nginx/conf.d/website.conf;\n}\n"
          (:nginx.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
                                                             :build-cpu-request "500m"
                                                             :build-cpu-limit "1700m"
@@ -85,7 +85,7 @@
           :kind "ConfigMap",
           :metadata {:labels {:app.kubernetes.part-of "test-io"},
                      :namespace "test-io",
-                     :name "etc-ngingx"}}
+                     :name "etc-nginx"}}
          (dissoc (cut/generate-nginx-configmap {:issuer "staging"
                                                 :build-cpu-request "500m"
                                                 :build-cpu-limit "1700m"
