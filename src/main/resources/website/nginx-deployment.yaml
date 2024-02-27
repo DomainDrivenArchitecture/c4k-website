@@ -1,21 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: NAME-deployment
+  name: nginx
+  namespace: NAME
   labels:
     app.kubernetes.part-of: NAME-website
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: NAME-nginx
+      app: nginx
   template:
     metadata:
+      namespace: NAME
       labels:
-        app: NAME-nginx
+        app: nginx
+        app.kubernetes.part-of: NAME-website
     spec:
       containers:
-      - name: NAME-nginx
+      - name: nginx
         image: nginx:latest
         imagePullPolicy: IfNotPresent
         ports:
@@ -23,7 +26,7 @@ spec:
         volumeMounts:
         - mountPath: /etc/nginx 
           readOnly: true
-          name: nginx-config-volume
+          name: etc-ngingx
         - mountPath: /var/log/nginx
           name: log                    
         - mountPath: /var/www/html/website
@@ -31,7 +34,7 @@ spec:
           readOnly: true
       initContainers:
       - image: domaindrivenarchitecture/c4k-website-build
-        name: NAME-init-build-container
+        name: init-build-container
         imagePullPolicy: IfNotPresent
         resources:
           requests:
@@ -43,16 +46,16 @@ spec:
         command: ["/entrypoint.sh"]
         envFrom:
         - secretRef:
-            name: NAME-secret
+            name: build-secret
         volumeMounts:
         - name: content-volume
           mountPath: /var/www/html/website
-        - name: hashfile-volume
+        - name: hash-state-volume
           mountPath: /var/hashfile.d
       volumes:
-        - name: nginx-config-volume
+        - name: etc-nginx
           configMap:
-            name: NAME-configmap
+            name: etc-nginx
             items:
               - key: nginx.conf
                 path: nginx.conf
@@ -64,8 +67,8 @@ spec:
           emptyDir: {}
         - name: content-volume
           persistentVolumeClaim:
-            claimName: NAME-content-volume
-        - name: hashfile-volume
+            claimName: content-volume
+        - name: hash-state-volume
           persistentVolumeClaim:
-            claimName: NAME-hashfile-volume
+            claimName: hash-state-volume
                 

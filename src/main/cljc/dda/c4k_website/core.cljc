@@ -9,9 +9,6 @@
    [dda.c4k-common.monitoring :as mon]
    [dda.c4k-website.website :as website]))
 
-(def config-defaults {:issuer "staging"
-                      :volume-size "3"})
-
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
 
@@ -23,19 +20,19 @@
 (def auth? (s/keys :req-un [::website/auth]
                    :opt-un [::mon-auth]))
 
-(defn-spec sort-config cp/map-or-seq?
+(defn-spec sort-config map?
   [unsorted-config config?]
   (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))]
     (-> unsorted-config
         (assoc-in [:websites] sorted-websites))))
 
-(defn-spec sort-auth cp/map-or-seq?
+(defn-spec sort-auth map?
   [unsorted-auth auth?]
   (let [sorted-auth (into [] (sort-by :unique-name (unsorted-auth :auth)))]
     (-> unsorted-auth
         (assoc-in [:auth] sorted-auth))))
 
-(defn-spec flatten-and-reduce-config  cp/map-or-seq?
+(defn-spec flatten-and-reduce-config map?
   [config config?]
   (let
    [first-entry (first (:websites config))]
@@ -45,11 +42,13 @@
            (when (contains? config :volume-size)
              {:volume-size (config :volume-size)}))))
 
-(defn-spec flatten-and-reduce-auth  cp/map-or-seq?
+(defn-spec flatten-and-reduce-auth map?
   [auth auth?]
   (-> auth :auth first))
 
-(defn generate-configs [config auth]
+(defn-spec generate seq?
+  [config config?
+   auth auth?]
   (loop [config (sort-config config)
          auth (sort-auth auth)
          result []]
@@ -62,16 +61,19 @@
              (->
               auth
               (assoc-in  [:auth] (rest (auth :auth))))
-             (conj result
-                   (website/generate-nginx-deployment (flatten-and-reduce-config config))
-                   (website/generate-nginx-configmap (flatten-and-reduce-config config))
-                   (website/generate-nginx-service (flatten-and-reduce-config config))
-                   (website/generate-website-content-volume (flatten-and-reduce-config config))
-                   (website/generate-hashfile-volume (flatten-and-reduce-config config))
-                   (website/generate-website-ingress (flatten-and-reduce-config config))
-                   (website/generate-website-certificate (flatten-and-reduce-config config))
-                   (website/generate-website-build-cron (flatten-and-reduce-config config))
-                   (website/generate-website-build-secret (flatten-and-reduce-config config) (flatten-and-reduce-auth auth)))))))
+             (cm/concat-vec
+              result
+              (website/generate-namespcae (flatten-and-reduce-config config))
+              [(website/generate-nginx-deployment (flatten-and-reduce-config config))
+               (website/generate-nginx-configmap (flatten-and-reduce-config config))
+               (website/generate-nginx-service (flatten-and-reduce-config config))
+               (website/generate-website-content-volume (flatten-and-reduce-config config))
+               (website/generate-hashfile-volume (flatten-and-reduce-config config))
+               (website/generate-website-build-cron (flatten-and-reduce-config config))
+               (website/generate-website-build-secret (flatten-and-reduce-config config)
+                                                      (flatten-and-reduce-auth auth))]
+              (website/generate-ingress (flatten-and-reduce-config config))
+              )))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?
@@ -81,6 +83,6 @@
         (filter
          #(not (nil? %))
          (cm/concat-vec
-          (generate-configs config auth)
+          (generate config auth)
           (when (:contains? config :mon-cfg)
             (mon/generate (:mon-cfg config) (:mon-auth auth))))))))
