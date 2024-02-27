@@ -102,7 +102,6 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (assoc-in [:metadata :namespace] name)
      (replace-all-matching-substrings-beginning-with "NAME" name)
      (#(assoc-in %
@@ -117,7 +116,6 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (assoc-in [:metadata :namespace] name)
      (replace-all-matching-substrings-beginning-with "NAME" name))))
 

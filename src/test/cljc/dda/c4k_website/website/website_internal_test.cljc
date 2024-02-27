@@ -83,7 +83,7 @@
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
   (is (= {:apiVersion "v1",
           :kind "ConfigMap",
-          :metadata {:labels {:app.kubernetes.part-of "test-io"},
+          :metadata {:labels {:app.kubernetes.part-of "test-io-website"},
                      :namespace "test-io",
                      :name "etc-nginx"}}
          (dissoc (cut/generate-nginx-configmap {:issuer "staging"
@@ -99,15 +99,15 @@
                                                 :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :data))))
 
 (deftest should-generate-nginx-service
-  (is (= {:name-c1 "test-io",
-          :name-c2 "test-org",
-          :app-c1 "test-io",
-          :app-c2 "test-org",
-          :app.kubernetes.part-of-c1 "test-io",
-          :app.kubernetes.part-of-c2 "test-org"
-          :namespace-c1 "test-io", 
-          :namespace-c2 "test-org"}
-         (th/map-diff (cut/generate-nginx-service {:issuer "staging"
+  (is (= {:kind "Service",
+          :apiVersion "v1",
+          :metadata
+          {:name "test-io",
+           :namespace "test-io",
+           :labels {:app "test-io", :app.kubernetes.part-of "test-io-website"}},
+          :spec
+          {:selector {:app "nginx"}, :ports [{:name "nginx-http", :port 80}]}}
+         (cut/generate-nginx-service {:issuer "staging"
                                                    :build-cpu-request "500m"
                                                    :build-cpu-limit "1700m"
                                                    :build-memory-request "256Mi"
@@ -118,17 +118,7 @@
                                                    :forgejo-repo "none",
                                                    :branchname "mablain",
                                                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
-                      (cut/generate-nginx-service {:issuer "staging"
-                                                   :build-cpu-request "500m"
-                                                   :build-cpu-limit "1700m"
-                                                   :build-memory-request "256Mi"
-                                                   :build-memory-limit "512Mi"
-                                                   :volume-size "3"
-                                                   :unique-name "test.org",
-                                                   :forgejo-host "gitea.evilorg",
-                                                   :forgejo-repo "none",
-                                                   :branchname "mablain",
-                                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+)))
 
 (deftest should-generate-website-build-cron
   (is (= {:apiVersion "batch/v1",

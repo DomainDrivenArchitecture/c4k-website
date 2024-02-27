@@ -5,10 +5,10 @@ metadata:
   namespace: default
   labels:
     app: NAME
-    app.kubernetes.part-of: NAME
+    app.kubernetes.part-of: NAME-website
 spec:    
   selector:
-    app: NAME
+    app: nginx
   ports:
     - name: nginx-http
       port: 80               
