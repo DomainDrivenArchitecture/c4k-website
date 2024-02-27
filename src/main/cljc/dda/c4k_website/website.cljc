@@ -64,32 +64,32 @@
      (int/generate-nginx-service final-config)))
 
 
-(defn-spec generate-website-content-volume map?
+(defn-spec generate-content-pvc map?
   [config websiteconfig?]
   (let [final-config (merge config-defaults
                              config)]
-     (int/generate-website-content-volume final-config)))
+     (int/generate-content-pvc final-config)))
 
 
-(defn-spec generate-hashfile-volume map?
+(defn-spec generate-hash-state-pvc map?
   [config websiteconfig?]
   (let [final-config (merge config-defaults
                              config)]
-     (int/generate-hashfile-volume final-config)))
+     (int/generate-hash-state-pvc final-config)))
 
-(defn-spec generate-website-build-cron map?
+(defn-spec generate-build-cron map?
   [config websiteconfig?]
   (let [final-config (merge config-defaults
                              config)]
-     (int/generate-website-build-cron final-config)))
+     (int/generate-build-cron final-config)))
 
 
-(defn-spec generate-website-build-secret map?
+(defn-spec generate-build-secret map?
   [config websiteconfig?
    auth websiteauth?]
   (let [final-config (merge config-defaults
                              config)]
-     (int/generate-website-build-secret final-config auth)))
+     (int/generate-build-secret final-config auth)))
 
 (defn-spec generate-namespcae seq?
   [config websiteconfig?]

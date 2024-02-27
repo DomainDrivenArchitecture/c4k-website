@@ -8,13 +8,13 @@
 (st/instrument `cut/replace-dots-by-minus)
 (st/instrument `cut/generate-gitrepourl)
 (st/instrument `cut/generate-gitcommiturl)
-(st/instrument `cut/replace-all-matching-substrings-beginning-with)
+(st/instrument `cut/replace-all-matching-prefixes)
 (st/instrument `cut/generate-redirects)
 (st/instrument `cut/generate-nginx-configmap)
-(st/instrument `cut/generate-website-build-secret)
-(st/instrument `cut/generate-website-content-volume)
-(st/instrument `cut/generate-hashfile-volume)
-(st/instrument `cut/generate-website-build-cron)
+(st/instrument `cut/generate-build-secret)
+(st/instrument `cut/generate-content-pvc)
+(st/instrument `cut/generate-hash-state-pvc)
+(st/instrument `cut/generate-build-cron)
 (st/instrument `cut/generate-nginx-service)
 
 (deftest should-generate-redirects
@@ -162,7 +162,7 @@
 )))
 
 
-(deftest should-generate-website-build-cron
+(deftest should-generate-build-cron
   (is (= {:apiVersion "batch/v1",
           :kind "CronJob",
           :metadata {:name "build-cron",
@@ -192,7 +192,7 @@
                :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "content-volume"}}
                          {:name "hash-state-volume", :persistentVolumeClaim {:claimName "hash-state-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
-         (cut/generate-website-build-cron {:issuer "staging"
+         (cut/generate-build-cron {:issuer "staging"
                                            :build-cpu-request "500m"
                                            :build-cpu-limit "1700m"
                                            :build-memory-request "256Mi"
@@ -205,7 +205,7 @@
                                            :unique-name "test.io",
                                            :redirects [],}))))
 
-(deftest should-generate-website-build-secret
+(deftest should-generate-build-secret
   (is (= {:apiVersion "v1",
           :kind "Secret",
           :metadata {:name "build-secret", 
@@ -215,7 +215,7 @@
           {:AUTHTOKEN "YWJlZGpnYmFzZG9kag==",
            :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
            :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
-         (cut/generate-website-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+         (cut/generate-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                              :forgejo-repo "repo",
                                              :issuer "staging",
                                              :branchname "main",
@@ -231,7 +231,7 @@
                                              :authtoken "abedjgbasdodj",
                                              :username "someuser"}))))
 
-(deftest should-generate-website-content-volume
+(deftest should-generate-content-pvc
   (is (= {:apiVersion "v1",
           :kind "PersistentVolumeClaim",
           :metadata
@@ -242,7 +242,7 @@
           {:storageClassName "local-path",
            :accessModes ["ReadWriteOnce"],
            :resources {:requests {:storage "3Gi"}}}}
-         (cut/generate-website-content-volume {:issuer "staging"
+         (cut/generate-content-pvc {:issuer "staging"
                                                :build-cpu-request "500m"
                                                :build-cpu-limit "1700m"
                                                :build-memory-request "256Mi"
@@ -256,7 +256,7 @@
                                                :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
 
-(deftest should-generate-hashfile-volume
+(deftest should-generate-hash-state-pvc
   (is (= {:apiVersion "v1",
           :kind "PersistentVolumeClaim",
           :metadata
@@ -266,7 +266,7 @@
           :spec {:storageClassName "local-path", 
                  :accessModes ["ReadWriteOnce"], 
                  :resources {:requests {:storage "16Mi"}}}}
-         (cut/generate-hashfile-volume {:issuer "staging"
+         (cut/generate-hash-state-pvc {:issuer "staging"
                                         :build-cpu-request "500m"
                                         :build-cpu-limit "1700m"
                                         :build-memory-request "256Mi"

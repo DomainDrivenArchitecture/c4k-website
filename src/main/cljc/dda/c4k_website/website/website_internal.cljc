@@ -73,8 +73,8 @@
    user string?]
   (str "https://" host "/api/v1/repos/" user "/" repo "/git/" "commits/" "HEAD"))
 
-; TODO: Rename replace-all-matching-prefixes
-(defn-spec replace-all-matching-substrings-beginning-with map?
+
+(defn-spec replace-all-matching-prefixes map?
   [col map?
    value-to-partly-match string?
    value-to-inplace string?]
@@ -101,7 +101,7 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
-     (replace-all-matching-substrings-beginning-with "NAME" name)
+     (replace-all-matching-prefixes "NAME" name)
      (#(assoc-in % [:data :website.conf]
                  (str/replace
                   (-> % :data :website.conf)
@@ -114,7 +114,7 @@
                   (generate-redirects config 2)))))))
 
 
-(defn-spec generate-website-build-secret pred/map-or-seq?
+(defn-spec generate-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]
   (let [{:keys [unique-name
@@ -126,7 +126,7 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/build-secret.yaml")
-     (replace-all-matching-substrings-beginning-with "NAME" name)
+     (replace-all-matching-prefixes "NAME" name)
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
                                                              (generate-gitrepourl
@@ -141,24 +141,24 @@
                                                                 username))))))
 
 
-(defn-spec generate-website-content-volume map?
+(defn-spec generate-content-pvc map?
   [config websiteconfig?]
   (let [{:keys [unique-name volume-size]} config
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/content-pvc.yaml")
-     (replace-all-matching-substrings-beginning-with "NAME" name) 
+     (replace-all-matching-prefixes "NAME" name) 
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
 
 ; TODO: Non-Secret-Parts should be config map
-(defn-spec generate-hashfile-volume map?
+(defn-spec generate-hash-state-pvc map?
   [config websiteconfig?]
   (let [{:keys [unique-name]} config
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/hash-state-pvc.yaml")
-     (replace-all-matching-substrings-beginning-with "NAME" name))))
+     (replace-all-matching-prefixes "NAME" name))))
 
 
 (defn-spec generate-nginx-deployment map?
@@ -169,21 +169,21 @@
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
      (assoc-in [:metadata :namespace] name)
-     (replace-all-matching-substrings-beginning-with "NAME" name)
+     (replace-all-matching-prefixes "NAME" name)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 
-(defn-spec generate-website-build-cron map?
+(defn-spec generate-build-cron map?
   [config websiteconfig?]
   (let [{:keys [unique-name build-cpu-request build-cpu-limit build-memory-request 
                 build-memory-limit]} config
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/build-cron.yaml")
-     (replace-all-matching-substrings-beginning-with "NAME" name)
+     (replace-all-matching-prefixes "NAME" name)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
@@ -197,7 +197,7 @@
     (->
      (yaml/load-as-edn "website/nginx-service.yaml")
      (assoc-in [:metadata :namespace] name)
-     (replace-all-matching-substrings-beginning-with "NAME" name))))
+     (replace-all-matching-prefixes "NAME" name))))
 
 
 #?(:cljs
