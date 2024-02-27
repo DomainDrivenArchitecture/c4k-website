@@ -176,8 +176,7 @@
   (let [{:keys [unique-name]} config
         name (replace-dots-by-minus unique-name)]
     (->
-     (yaml/load-as-edn "website/hashfile-volume.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
+     (yaml/load-as-edn "website/hash-state-pvc.yaml")
      (replace-all-matching-substrings-beginning-with "NAME" name))))
 
 

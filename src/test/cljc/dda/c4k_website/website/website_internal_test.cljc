@@ -3,7 +3,6 @@
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.test.alpha :as st]
-   [dda.c4k-common.test-helper :as th]
    [dda.c4k-website.website.website-internal :as cut]))
 
 (st/instrument `cut/generate-nginx-configmap)
@@ -215,10 +214,12 @@
   (is (= {:apiVersion "v1",
           :kind "PersistentVolumeClaim",
           :metadata
-          {:name "test-io-hashfile-volume",
-           :namespace "default",
-           :labels {:app "test-io-nginx", :app.kubernetes.part-of "test-io"}},
-          :spec {:storageClassName "local-path", :accessModes ["ReadWriteOnce"], :resources {:requests {:storage "16Mi"}}}}
+          {:name "hash-state-volume",
+           :namespace "test-io",
+           :labels {:app.kubernetes.part-of "test-io-website"}},
+          :spec {:storageClassName "local-path", 
+                 :accessModes ["ReadWriteOnce"], 
+                 :resources {:requests {:storage "16Mi"}}}}
          (cut/generate-hashfile-volume {:issuer "staging"
                                         :build-cpu-request "500m"
                                         :build-cpu-limit "1700m"
