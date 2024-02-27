@@ -32,7 +32,7 @@ spec:
             command: ["/entrypoint.sh"]
             envFrom:
             - secretRef:
-                name: NAME-secret
+                name: build-secret
             volumeMounts:
             - name: content-volume
               mountPath: /var/www/html/website

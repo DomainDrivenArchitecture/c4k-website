@@ -133,28 +133,6 @@
      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 
-(defn-spec generate-website-content-volume map?
-  [config websiteconfig?]
-  (let [{:keys [unique-name volume-size]} config
-        name (replace-dots-by-minus unique-name)]
-    (->
-     (yaml/load-as-edn "website/website-content-volume.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
-     (replace-all-matching-substrings-beginning-with "NAME" name) 
-     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
-
-
-(defn-spec generate-hashfile-volume map?
-  [config websiteconfig?]
-  (let [{:keys [unique-name]} config
-        name (replace-dots-by-minus unique-name)]
-    (->
-     (yaml/load-as-edn "website/hashfile-volume.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
-     (replace-all-matching-substrings-beginning-with "NAME" name))))
-
-
-; TODO: Non-Secret-Parts should be config map
 (defn-spec generate-website-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]
@@ -167,7 +145,6 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/website-build-secret.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (replace-all-matching-substrings-beginning-with "NAME" name)
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
@@ -181,6 +158,28 @@
                                                                 forgejo-host
                                                                 forgejo-repo
                                                                 username))))))
+
+
+(defn-spec generate-website-content-volume map?
+  [config websiteconfig?]
+  (let [{:keys [unique-name volume-size]} config
+        name (replace-dots-by-minus unique-name)]
+    (->
+     (yaml/load-as-edn "website/website-content-volume.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
+     (replace-all-matching-substrings-beginning-with "NAME" name) 
+     (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
+
+
+; TODO: Non-Secret-Parts should be config map
+(defn-spec generate-hashfile-volume map?
+  [config websiteconfig?]
+  (let [{:keys [unique-name]} config
+        name (replace-dots-by-minus unique-name)]
+    (->
+     (yaml/load-as-edn "website/hashfile-volume.yaml")
+     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
+     (replace-all-matching-substrings-beginning-with "NAME" name))))
 
 
 #?(:cljs

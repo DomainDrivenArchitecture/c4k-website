@@ -144,7 +144,7 @@
                  :imagePullPolicy "IfNotPresent",
                  :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
-                 :envFrom [{:secretRef {:name "test-io-secret"}}],
+                 :envFrom [{:secretRef {:name "build-secret"}}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
                                 {:name "hash-state-volume", :mountPath "/var/hashfile.d"}]}],
                :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "content-volume"}}
@@ -162,10 +162,13 @@
                                            :branchname "main",
                                            :unique-name "test.io"}))))
 
+
 (deftest should-generate-website-build-secret
   (is (= {:apiVersion "v1",
           :kind "Secret",
-          :metadata {:name "test-io-secret", :labels {:app.kubernetes.part-of "test-io"}},
+          :metadata {:name "build-secret", 
+                     :namespace "test-io",
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
           {:AUTHTOKEN "YWJlZGpnYmFzZG9kag==",
            :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
@@ -186,34 +189,27 @@
                                              :username "someuser"}))))
 
 (deftest should-generate-website-content-volume
-  (is (= {:name-c1 "test-io-content-volume",
-          :name-c2 "test-org-content-volume",
-          :app-c1 "test-io-nginx",
-          :app-c2 "test-org-nginx",
-          :app.kubernetes.part-of-c1 "test-io", 
-          :app.kubernetes.part-of-c2 "test-org"}
-         (th/map-diff (cut/generate-website-content-volume {:issuer "staging"
-                                                            :build-cpu-request "500m"
-                                                            :build-cpu-limit "1700m"
-                                                            :build-memory-request "256Mi"
-                                                            :build-memory-limit "512Mi"
-                                                            :volume-size "3"
-                                                            :unique-name "test.io",
-                                                            :forgejo-host "gitea.evilorg",
-                                                            :forgejo-repo "none",
-                                                            :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
-                      (cut/generate-website-content-volume {:issuer "staging"
-                                                            :build-cpu-request "500m"
-                                                            :build-cpu-limit "1700m"
-                                                            :build-memory-request "256Mi"
-                                                            :build-memory-limit "512Mi"
-                                                            :volume-size "3"
-                                                            :unique-name "test.org",
-                                                            :forgejo-host "gitea.evilorg",
-                                                            :forgejo-repo "none",
-                                                            :branchname "mablain",
-                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
+  (is (= {:apiVersion "v1",
+          :kind "PersistentVolumeClaim",
+          :metadata
+          {:name "content-volume",
+           :namespace "test-io",
+           :labels {:app.kubernetes.part-of "test-io-website"}},
+          :spec
+          {:storageClassName "local-path",
+           :accessModes ["ReadWriteOnce"],
+           :resources {:requests {:storage "3Gi"}}}}
+         (cut/generate-website-content-volume {:issuer "staging"
+                                               :build-cpu-request "500m"
+                                               :build-cpu-limit "1700m"
+                                               :build-memory-request "256Mi"
+                                               :build-memory-limit "512Mi"
+                                               :volume-size "3"
+                                               :unique-name "test.io",
+                                               :forgejo-host "gitea.evilorg",
+                                               :forgejo-repo "none",
+                                               :branchname "mablain",
+                                               :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
 (deftest should-generate-hashfile-volume
   (is (= {:apiVersion "v1",
