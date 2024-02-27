@@ -18,7 +18,7 @@
 (st/instrument `cut/generate-nginx-service)
 
 (deftest should-generate-redirects
-  (is (= "rewrite ^/products.html$ /offer.html permanent;\n  rewrite ^/one-more$ /redirect permanent;"
+  (is (= "rewrite ^/products.html\\$ /offer.html permanent;\n  rewrite ^/one-more\\$ /redirect permanent;"
          (cut/generate-redirects {:issuer "staging"
                                   :build-cpu-request "500m"
                                   :build-cpu-limit "1700m"
@@ -80,7 +80,7 @@
              :metadata :namespace))))
 
 (deftest should-generate-nginx-configmap-website
-  (is (= "server {\n  listen 80 default_server;\n  listen [::]:80 default_server;\n  server_name test.de www.test.de test-it.de www.test-it.de;\n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';      \n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # add_header Permissions-Policy \"permissions here\";\n  root /var/www/html/website/;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html =404;\n  }\n  # redirects\n  REDIRECTS\n}\n"
+  (is (= "server {\n  listen 80 default_server;\n  listen [::]:80 default_server;\n  server_name test.de www.test.de test-it.de www.test-it.de;\n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';      \n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # add_header Permissions-Policy \"permissions here\";\n  root /var/www/html/website/;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html =404;\n  }\n  # redirects\n  rewrite ^/products.html$ /offer.html permanent;\n  rewrite ^/one-more$ /redirect permanent;\n}\n"
          (:website.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
                                                               :build-cpu-request "500m"
                                                               :build-cpu-limit "1700m"
@@ -88,7 +88,8 @@
                                                               :build-memory-limit "512Mi"
                                                               :volume-size "3"
                                                               :unique-name "test.io",
-                                                              :redirects [],
+                                                              :redirects [["/products.html", "/offer.html"]
+                                                                          ["/one-more", "/redirect"]]
                                                               :forgejo-host "gitea.evilorg",
                                                               :forgejo-repo "none",
                                                               :branchname "mablain",

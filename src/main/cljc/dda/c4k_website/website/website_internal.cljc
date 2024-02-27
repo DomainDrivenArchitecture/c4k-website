@@ -91,7 +91,7 @@
     (str/join
      (str "\n" (str/join (take indent (repeat " "))))
      (map 
-      #(str "rewrite ^" (first %1) "$ " (second %1) " permanent;") 
+      #(str "rewrite ^" (first %1) "\\$ " (second %1) " permanent;") 
       redirects))))
 
 
@@ -101,12 +101,17 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/nginx-configmap.yaml")
-     (assoc-in [:metadata :namespace] name)
      (replace-all-matching-substrings-beginning-with "NAME" name)
-     (#(assoc-in %
-                 [:data :website.conf]
+     (#(assoc-in % [:data :website.conf]
                  (str/replace
-                  (-> % :data :website.conf) #"FQDN" (str (str/join " " fqdns) ";")))))))
+                  (-> % :data :website.conf)
+                  #"FQDN"
+                  (str (str/join " " fqdns) ";"))))
+     (#(assoc-in % [:data :website.conf]
+                 (str/replace
+                  (-> % :data :website.conf)
+                  #"REDIRECTS"
+                  (generate-redirects config 2)))))))
 
 
 (defn-spec generate-website-build-secret pred/map-or-seq?
