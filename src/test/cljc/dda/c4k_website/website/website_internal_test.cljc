@@ -123,8 +123,9 @@
 (deftest should-generate-website-build-cron
   (is (= {:apiVersion "batch/v1",
           :kind "CronJob",
-          :metadata {:name "test-io-build-cron", 
-                     :labels {:app.kubernetes.part-of "test-io"}},
+          :metadata {:name "build-cron",
+                     :namespace "test-io",
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
           :spec
           {:schedule "0/7 * * * *",
            :successfulJobsHistoryLimit 1,
@@ -132,18 +133,22 @@
            :jobTemplate
            {:spec
             {:template
-             {:spec
+             {:metadata
+              {:namespace "test-io",
+               :labels
+               {:app "build-cron", :app.kubernetes.part-of "test-io-website"}}
+              :spec 
               {:containers
                [{:image "domaindrivenarchitecture/c4k-website-build",
-                 :name "test-io-build-app",
+                 :name "build-cron-container",
                  :imagePullPolicy "IfNotPresent",
                  :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
                  :envFrom [{:secretRef {:name "test-io-secret"}}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
-                                {:name "hashfile-volume", :mountPath "/var/hashfile.d"}]}],
-               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "test-io-content-volume"}}
-                         {:name "hashfile-volume", :persistentVolumeClaim {:claimName "test-io-hashfile-volume"}}],
+                                {:name "hash-state-volume", :mountPath "/var/hashfile.d"}]}],
+               :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "content-volume"}}
+                         {:name "hash-state-volume", :persistentVolumeClaim {:claimName "hash-state-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
          (cut/generate-website-build-cron {:issuer "staging"
                                            :build-cpu-request "500m"

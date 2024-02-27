@@ -87,7 +87,6 @@
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/nginx-deployment.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (assoc-in [:metadata :namespace] name)
      (replace-all-matching-substrings-beginning-with "NAME" name)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
@@ -120,6 +119,20 @@
      (replace-all-matching-substrings-beginning-with "NAME" name))))
 
 
+(defn-spec generate-website-build-cron map?
+  [config websiteconfig?]
+  (let [{:keys [unique-name build-cpu-request build-cpu-limit build-memory-request 
+                build-memory-limit]} config
+        name (replace-dots-by-minus unique-name)]
+    (->
+     (yaml/load-as-edn "website/website-build-cron.yaml")
+     (replace-all-matching-substrings-beginning-with "NAME" name)
+     (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
+     (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
+     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
+     (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
+
+
 (defn-spec generate-website-content-volume map?
   [config websiteconfig?]
   (let [{:keys [unique-name volume-size]} config
@@ -139,21 +152,6 @@
      (yaml/load-as-edn "website/hashfile-volume.yaml")
      (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
      (replace-all-matching-substrings-beginning-with "NAME" name))))
-
-
-(defn-spec generate-website-build-cron map?
-  [config websiteconfig?]
-  (let [{:keys [unique-name build-cpu-request build-cpu-limit build-memory-request 
-                build-memory-limit]} config
-         name (replace-dots-by-minus unique-name)]
-     (->
-      (yaml/load-as-edn "website/website-build-cron.yaml")
-      (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
-      (replace-all-matching-substrings-beginning-with "NAME" name)
-      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
-      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
-      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_REQUEST" build-memory-request)
-      (cm/replace-all-matching-values-by-new-value "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 
 ; TODO: Non-Secret-Parts should be config map

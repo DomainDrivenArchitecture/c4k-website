@@ -1,7 +1,8 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: NAME-build-cron
+  name: build-cron
+  namespace: NAME
   labels:
     app.kubernetes.part-of: NAME-website 
 spec:
@@ -11,10 +12,15 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          namespace: NAME
+          labels:
+            app: build-cron
+            app.kubernetes.part-of: NAME-website
         spec:
           containers:
           - image: domaindrivenarchitecture/c4k-website-build
-            name: NAME-build-app
+            name: build-cron-container
             imagePullPolicy: IfNotPresent
             resources:
               requests:
@@ -30,14 +36,14 @@ spec:
             volumeMounts:
             - name: content-volume
               mountPath: /var/www/html/website
-            - name: hashfile-volume
+            - name: hash-state-volume
               mountPath: /var/hashfile.d
           volumes:
           - name: content-volume
             persistentVolumeClaim:
-              claimName: NAME-content-volume
-          - name: hashfile-volume
+              claimName: content-volume
+          - name: hash-state-volume
             persistentVolumeClaim:
-              claimName: NAME-hashfile-volume
+              claimName: hash-state-volume
           restartPolicy: OnFailure
           
