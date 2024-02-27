@@ -40,7 +40,8 @@
                       :build-cpu-limit "1700m" 
                       :build-memory-request "256Mi" 
                       :build-memory-limit "512Mi"
-                      :volume-size "3"})
+                      :volume-size "3"
+                      :redirects []})
 
 (defn-spec generate-nginx-deployment map?
   [config websiteconfig?]
