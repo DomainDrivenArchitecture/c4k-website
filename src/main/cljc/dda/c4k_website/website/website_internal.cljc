@@ -125,7 +125,7 @@
                 build-memory-limit]} config
         name (replace-dots-by-minus unique-name)]
     (->
-     (yaml/load-as-edn "website/website-build-cron.yaml")
+     (yaml/load-as-edn "website/build-cron.yaml")
      (replace-all-matching-substrings-beginning-with "NAME" name)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching-values-by-new-value "BUILD_CPU_LIMIT" build-cpu-limit)
@@ -144,7 +144,7 @@
                 username]} auth
         name (replace-dots-by-minus unique-name)]
     (->
-     (yaml/load-as-edn "website/website-build-secret.yaml")
+     (yaml/load-as-edn "website/build-secret.yaml")
      (replace-all-matching-substrings-beginning-with "NAME" name)
      (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
