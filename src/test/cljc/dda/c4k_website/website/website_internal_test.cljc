@@ -28,7 +28,20 @@
                                              :build-memory-request "512Mi"
                                              :build-memory-limit "1024Mi"
                                              :volume-size 3})
-             :spec :template :spec :initContainers first :resources))))
+             :spec :template :spec :initContainers first :resources)))
+  (is (= "test-io"
+         (-> (cut/generate-nginx-deployment {:forgejo-host "gitlab.de",
+                                             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                             :forgejo-repo "repo",
+                                             :issuer "staging",
+                                             :branchname "main",
+                                             :unique-name "test.io"
+                                             :build-cpu-request "1500m"
+                                             :build-cpu-limit "3000m"
+                                             :build-memory-request "512Mi"
+                                             :build-memory-limit "1024Mi"
+                                             :volume-size 3})
+             :metadata :namespace))))
 
 
 (deftest should-generate-nginx-configmap-website

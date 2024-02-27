@@ -4,8 +4,14 @@
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.alpha :as s]
+   [clojure.spec.test.alpha :as st]
    [dda.c4k-common.yaml :as yaml]
    [dda.c4k-website.core :as cut]))
+
+(st/instrument `cut/sort-config)
+(st/instrument `cut/flattened-and-reduced-config)
+(st/instrument `cut/flatten-and-reduce-auth)
+(st/instrument `cut/generate)
 
 #?(:cljs
    (defmethod yaml/load-resource :website-test [resource-name]

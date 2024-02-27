@@ -20,19 +20,19 @@
 (def auth? (s/keys :req-un [::website/auth]
                    :opt-un [::mon-auth]))
 
-(defn-spec sort-config cp/map-or-seq?
+(defn-spec sort-config map?
   [unsorted-config config?]
   (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))]
     (-> unsorted-config
         (assoc-in [:websites] sorted-websites))))
 
-(defn-spec sort-auth cp/map-or-seq?
+(defn-spec sort-auth map?
   [unsorted-auth auth?]
   (let [sorted-auth (into [] (sort-by :unique-name (unsorted-auth :auth)))]
     (-> unsorted-auth
         (assoc-in [:auth] sorted-auth))))
 
-(defn-spec flatten-and-reduce-config  cp/map-or-seq?
+(defn-spec flatten-and-reduce-config map?
   [config config?]
   (let
    [first-entry (first (:websites config))]
@@ -42,7 +42,7 @@
            (when (contains? config :volume-size)
              {:volume-size (config :volume-size)}))))
 
-(defn-spec flatten-and-reduce-auth  cp/map-or-seq?
+(defn-spec flatten-and-reduce-auth map?
   [auth auth?]
   (-> auth :auth first))
 

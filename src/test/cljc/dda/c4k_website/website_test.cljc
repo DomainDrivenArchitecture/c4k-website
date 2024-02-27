@@ -3,8 +3,9 @@
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.test.alpha :as st]
-   [dda.c4k-common.test-helper :as th]
    [dda.c4k-website.website :as cut]))
+
+(st/instrument `cut/generate-ingress)
 
 (deftest should-generate-ingress
   (is (= [{:host "test.de",
