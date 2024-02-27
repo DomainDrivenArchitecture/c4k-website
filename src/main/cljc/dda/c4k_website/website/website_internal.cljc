@@ -165,8 +165,7 @@
   (let [{:keys [unique-name volume-size]} config
         name (replace-dots-by-minus unique-name)]
     (->
-     (yaml/load-as-edn "website/website-content-volume.yaml")
-     (assoc-in [:metadata :labels :app.kubernetes.part-of] name)
+     (yaml/load-as-edn "website/content-pvc.yaml")
      (replace-all-matching-substrings-beginning-with "NAME" name) 
      (cm/replace-all-matching-values-by-new-value "WEBSITESTORAGESIZE" (str volume-size "Gi")))))
 
