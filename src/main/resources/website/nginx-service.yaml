@@ -11,4 +11,4 @@ spec:
     app: nginx
   ports:
     - name: nginx-http
-      port: 8080
+      port: 80

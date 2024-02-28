@@ -22,13 +22,14 @@ spec:
           image: nginx:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 80
+          command: [ "/bin/bash", "-c", "nginx -g 'daemon off;'" ]
           volumeMounts:
             - mountPath: /etc/nginx
               readOnly: true
               name: etc-nginx
-            - mountPath: /var/log/nginx
-              name: log
+            - mountPath: /tmp
+              name: tmp
             - mountPath: /var/www/html/website
               name: content-volume
               readOnly: true
@@ -63,7 +64,7 @@ spec:
                 path: conf.d/website.conf
               - key: mime.types
                 path: mime.types
-        - name: log
+        - name: tmp
           emptyDir: {}
         - name: content-volume
           persistentVolumeClaim:
