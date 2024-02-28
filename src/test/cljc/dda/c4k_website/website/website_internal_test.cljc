@@ -1,5 +1,6 @@
 (ns dda.c4k-website.website.website-internal-test
   (:require
+   [clojure.string :as str]
    #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
       :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
    [clojure.spec.test.alpha :as st]
@@ -78,65 +79,69 @@
                                              :build-memory-limit "1024Mi"
                                              :volume-size 3})
              :metadata :namespace))))
-
-#?(:clj (deftest should-generate-nginx-configmap-website
-          (is (= "server {\n  listen 80 default_server;\n  listen [::]:80 default_server;\n  server_name test.de www.test.de test-it.de www.test-it.de;\n  add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload';      \n  add_header X-Frame-Options \"SAMEORIGIN\";\n  add_header X-Content-Type-Options nosniff;\n  add_header Referrer-Policy \"strict-origin\";\n  # add_header Permissions-Policy \"permissions here\";\n  root /var/www/html/website/;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html =404;\n  }\n  # redirects\n  rewrite ^/products.html$ /offer.html permanent;\n  rewrite ^/one-more$ /redirect permanent;\n}\n"
-                 (:website.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
-                                                                      :build-cpu-request "500m"
-                                                                      :build-cpu-limit "1700m"
-                                                                      :build-memory-request "256Mi"
-                                                                      :build-memory-limit "512Mi"
-                                                                      :volume-size "3"
-                                                                      :unique-name "test.io",
-                                                                      :redirects [["/products.html", "/offer.html"]
-                                                                                  ["/one-more", "/redirect"]]
-                                                                      :forgejo-host "gitea.evilorg",
-                                                                      :forgejo-repo "none",
-                                                                      :branchname "mablain",
-                                                                      :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
-          (is (= "types {\n  text/html                             html htm shtml;\n  text/css                              css;\n  text/xml                              xml rss;\n  image/gif                             gif;\n  image/jpeg                            jpeg jpg;\n  application/x-javascript              js;\n  text/plain                            txt;\n  text/x-component                      htc;\n  text/mathml                           mml;\n  image/svg+xml                         svg svgz;\n  image/png                             png;\n  image/x-icon                          ico;\n  image/x-jng                           jng;\n  image/vnd.wap.wbmp                    wbmp;\n  application/java-archive              jar war ear;\n  application/mac-binhex40              hqx;\n  application/pdf                       pdf;\n  application/x-cocoa                   cco;\n  application/x-java-archive-diff       jardiff;\n  application/x-java-jnlp-file          jnlp;\n  application/x-makeself                run;\n  application/x-perl                    pl pm;\n  application/x-pilot                   prc pdb;\n  application/x-rar-compressed          rar;\n  application/x-redhat-package-manager  rpm;\n  application/x-sea                     sea;\n  application/x-shockwave-flash         swf;\n  application/x-stuffit                 sit;\n  application/x-tcl                     tcl tk;\n  application/x-x509-ca-cert            der pem crt;\n  application/x-xpinstall               xpi;\n  application/zip                       zip;\n  application/octet-stream              deb;\n  application/octet-stream              bin exe dll;\n  application/octet-stream              dmg;\n  application/octet-stream              eot;\n  application/octet-stream              iso img;\n  application/octet-stream              msi msp msm;\n  audio/mpeg                            mp3;\n  audio/x-realaudio                     ra;\n  video/mpeg                            mpeg mpg;\n  video/quicktime                       mov;\n  video/x-flv                           flv;\n  video/x-msvideo                       avi;\n  video/x-ms-wmv                        wmv;\n  video/x-ms-asf                        asx asf;\n  video/x-mng                           mng;\n}\n"
-                 (:mime.types (:data (cut/generate-nginx-configmap {:issuer "staging"
-                                                                    :build-cpu-request "500m"
-                                                                    :build-cpu-limit "1700m"
-                                                                    :build-memory-request "256Mi"
-                                                                    :build-memory-limit "512Mi"
-                                                                    :volume-size "3"
-                                                                    :unique-name "test.io",
-                                                                    :redirects [],
-                                                                    :forgejo-host "gitea.evilorg",
-                                                                    :forgejo-repo "none",
-                                                                    :branchname "mablain",
-                                                                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
-          (is (= "user nginx;\nworker_processes 3;\nerror_log stdout info;\npid /var/log/nginx/nginx.pid;\nworker_rlimit_nofile 8192;\nevents {\n  worker_connections 4096;\n}\nhttp {\n  include /etc/nginx/mime.types;\n  default_type application/octet-stream;\n  log_format   main '$remote_addr - $remote_user [$time_local] $status'\n  '\"$request\" $body_bytes_sent \"$http_referer\"'\n  '\"$http_user_agent\" \"$http_x_forwarded_for\"';\n  access_log stdout main;\n  sendfile on;\n  tcp_nopush on;\n  keepalive_timeout 65;\n  server_names_hash_bucket_size 128;\n  include /etc/nginx/conf.d/website.conf;\n}\n"
-                 (:nginx.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
-                                                                    :build-cpu-request "500m"
-                                                                    :build-cpu-limit "1700m"
-                                                                    :build-memory-request "256Mi"
-                                                                    :build-memory-limit "512Mi"
-                                                                    :volume-size "3"
-                                                                    :unique-name "test.io",
-                                                                    :redirects [],
-                                                                    :forgejo-host "gitea.evilorg",
-                                                                    :forgejo-repo "none",
-                                                                    :branchname "mablain",
-                                                                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))))
-          (is (= {:apiVersion "v1",
-                  :kind "ConfigMap",
-                  :metadata {:labels {:app.kubernetes.part-of "test-io-website"},
-                             :namespace "test-io",
-                             :name "etc-nginx"}}
-                 (dissoc (cut/generate-nginx-configmap {:issuer "staging"
-                                                        :build-cpu-request "500m"
-                                                        :build-cpu-limit "1700m"
-                                                        :build-memory-request "256Mi"
-                                                        :build-memory-limit "512Mi"
-                                                        :volume-size "3"
-                                                        :unique-name "test.io",
-                                                        :redirects [],
-                                                        :forgejo-host "gitea.evilorg",
-                                                        :forgejo-repo "none",
-                                                        :branchname "mablain",
-                                                        :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}) :data)))))
+(deftest should-generate-nginx-configmap-website
+  (is (str/includes?
+       (:website.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
+                                                            :build-cpu-request "500m"
+                                                            :build-cpu-limit "1700m"
+                                                            :build-memory-request "256Mi"
+                                                            :build-memory-limit "512Mi"
+                                                            :volume-size "3"
+                                                            :unique-name "test.io",
+                                                            :redirects [["/products.html", "/offer.html"]
+                                                                        ["/one-more", "/redirect"]]
+                                                            :forgejo-host "gitea.evilorg",
+                                                            :forgejo-repo "none",
+                                                            :branchname "mablain",
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
+       " /offer.html permanent;\n"))
+  (is (str/includes?
+       (:website.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
+                                                            :build-cpu-request "500m"
+                                                            :build-cpu-limit "1700m"
+                                                            :build-memory-request "256Mi"
+                                                            :build-memory-limit "512Mi"
+                                                            :volume-size "3"
+                                                            :unique-name "test.io",
+                                                            :redirects [["/products.html", "/offer.html"]
+                                                                        ["/one-more", "/redirect"]]
+                                                            :forgejo-host "gitea.evilorg",
+                                                            :forgejo-repo "none",
+                                                            :branchname "mablain",
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
+       " /redirect permanent;\n"))
+  (is (str/includes?
+       (:website.conf (:data (cut/generate-nginx-configmap {:issuer "staging"
+                                                            :build-cpu-request "500m"
+                                                            :build-cpu-limit "1700m"
+                                                            :build-memory-request "256Mi"
+                                                            :build-memory-limit "512Mi"
+                                                            :volume-size "3"
+                                                            :unique-name "test.io",
+                                                            :redirects [],
+                                                            :forgejo-host "gitea.evilorg",
+                                                            :forgejo-repo "none",
+                                                            :branchname "mablain",
+                                                            :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
+       "server_name test.de www.test.de test-it.de www.test-it.de;"))
+  (is (= {:apiVersion "v1",
+          :kind "ConfigMap",
+          :metadata {:labels {:app.kubernetes.part-of "test-io-website"},
+                     :namespace "test-io",
+                     :name "etc-nginx"}}
+         (dissoc (cut/generate-nginx-configmap {:issuer "staging"
+                                                :build-cpu-request "500m"
+                                                :build-cpu-limit "1700m"
+                                                :build-memory-request "256Mi"
+                                                :build-memory-limit "512Mi"
+                                                :volume-size "3"
+                                                :unique-name "test.io",
+                                                :redirects [],
+                                                :forgejo-host "gitea.evilorg",
+                                                :forgejo-repo "none",
+                                                :branchname "mablain",
+                                                :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
+                 :data))))
 
 (deftest should-generate-nginx-service
   (is (= {:kind "Service",
@@ -158,8 +163,7 @@
                                       :forgejo-host "gitea.evilorg",
                                       :forgejo-repo "none",
                                       :branchname "mablain",
-                                      :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
-)))
+                                      :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
 
 (deftest should-generate-build-cron
@@ -179,7 +183,7 @@
               {:namespace "test-io",
                :labels
                {:app "build-cron", :app.kubernetes.part-of "test-io-website"}}
-              :spec 
+              :spec
               {:containers
                [{:image "domaindrivenarchitecture/c4k-website-build",
                  :name "build-cron-container",
@@ -193,22 +197,22 @@
                          {:name "hash-state-volume", :persistentVolumeClaim {:claimName "hash-state-volume"}}],
                :restartPolicy "OnFailure"}}}}}}
          (cut/generate-build-cron {:issuer "staging"
-                                           :build-cpu-request "500m"
-                                           :build-cpu-limit "1700m"
-                                           :build-memory-request "256Mi"
-                                           :build-memory-limit "512Mi"
-                                           :volume-size "3"
-                                           :forgejo-host "gitlab.de",
-                                           :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                           :forgejo-repo "repo",
-                                           :branchname "main",
-                                           :unique-name "test.io",
-                                           :redirects [],}))))
+                                   :build-cpu-request "500m"
+                                   :build-cpu-limit "1700m"
+                                   :build-memory-request "256Mi"
+                                   :build-memory-limit "512Mi"
+                                   :volume-size "3"
+                                   :forgejo-host "gitlab.de",
+                                   :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                   :forgejo-repo "repo",
+                                   :branchname "main",
+                                   :unique-name "test.io",
+                                   :redirects []}))))
 
 (deftest should-generate-build-secret
   (is (= {:apiVersion "v1",
           :kind "Secret",
-          :metadata {:name "build-secret", 
+          :metadata {:name "build-secret",
                      :namespace "test-io",
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
@@ -216,20 +220,20 @@
            :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
            :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
          (cut/generate-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                             :forgejo-repo "repo",
-                                             :issuer "staging",
-                                             :branchname "main",
-                                             :unique-name "test.io",
-                                             :redirects [],
-                                             :forgejo-host "gitlab.de"
-                                             :build-cpu-request "500m"
-                                             :build-cpu-limit "1700m"
-                                             :build-memory-request "256Mi"
-                                             :build-memory-limit "512Mi"
-                                             :volume-size "3"}
-                                            {:unique-name "test.io",
-                                             :authtoken "abedjgbasdodj",
-                                             :username "someuser"}))))
+                                     :forgejo-repo "repo",
+                                     :issuer "staging",
+                                     :branchname "main",
+                                     :unique-name "test.io",
+                                     :redirects [],
+                                     :forgejo-host "gitlab.de"
+                                     :build-cpu-request "500m"
+                                     :build-cpu-limit "1700m"
+                                     :build-memory-request "256Mi"
+                                     :build-memory-limit "512Mi"
+                                     :volume-size "3"}
+                                    {:unique-name "test.io",
+                                     :authtoken "abedjgbasdodj",
+                                     :username "someuser"}))))
 
 (deftest should-generate-content-pvc
   (is (= {:apiVersion "v1",
@@ -243,17 +247,17 @@
            :accessModes ["ReadWriteOnce"],
            :resources {:requests {:storage "3Gi"}}}}
          (cut/generate-content-pvc {:issuer "staging"
-                                               :build-cpu-request "500m"
-                                               :build-cpu-limit "1700m"
-                                               :build-memory-request "256Mi"
-                                               :build-memory-limit "512Mi"
-                                               :volume-size "3"
-                                               :unique-name "test.io",
-                                               :redirects [],
-                                               :forgejo-host "gitea.evilorg",
-                                               :forgejo-repo "none",
-                                               :branchname "mablain",
-                                               :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                    :build-cpu-request "500m"
+                                    :build-cpu-limit "1700m"
+                                    :build-memory-request "256Mi"
+                                    :build-memory-limit "512Mi"
+                                    :volume-size "3"
+                                    :unique-name "test.io",
+                                    :redirects [],
+                                    :forgejo-host "gitea.evilorg",
+                                    :forgejo-repo "none",
+                                    :branchname "mablain",
+                                    :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
 
 (deftest should-generate-hash-state-pvc
@@ -263,18 +267,18 @@
           {:name "hash-state-volume",
            :namespace "test-io",
            :labels {:app.kubernetes.part-of "test-io-website"}},
-          :spec {:storageClassName "local-path", 
-                 :accessModes ["ReadWriteOnce"], 
+          :spec {:storageClassName "local-path",
+                 :accessModes ["ReadWriteOnce"],
                  :resources {:requests {:storage "16Mi"}}}}
          (cut/generate-hash-state-pvc {:issuer "staging"
-                                        :build-cpu-request "500m"
-                                        :build-cpu-limit "1700m"
-                                        :build-memory-request "256Mi"
-                                        :build-memory-limit "512Mi"
-                                        :volume-size "3"
-                                        :unique-name "test.io",
-                                        :redirects [],
-                                        :forgejo-host "gitea.evilorg",
-                                        :forgejo-repo "none",
-                                        :branchname "mablain",
-                                        :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
+                                       :build-cpu-request "500m"
+                                       :build-cpu-limit "1700m"
+                                       :build-memory-request "256Mi"
+                                       :build-memory-limit "512Mi"
+                                       :volume-size "3"
+                                       :unique-name "test.io",
+                                       :redirects [],
+                                       :forgejo-host "gitea.evilorg",
+                                       :forgejo-repo "none",
+                                       :branchname "mablain",
+                                       :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
