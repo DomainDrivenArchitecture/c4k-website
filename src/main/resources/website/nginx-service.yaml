@@ -6,10 +6,9 @@ metadata:
   labels:
     app: NAME
     app.kubernetes.part-of: NAME-website
-spec:    
+spec:
   selector:
     app: nginx
   ports:
     - name: nginx-http
-      port: 80               
-      
+      port: 8080

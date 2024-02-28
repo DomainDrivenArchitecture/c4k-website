@@ -18,40 +18,40 @@ spec:
         app.kubernetes.part-of: NAME-website
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 80
-        volumeMounts:
-        - mountPath: /etc/nginx 
-          readOnly: true
-          name: etc-nginx
-        - mountPath: /var/log/nginx
-          name: log                    
-        - mountPath: /var/www/html/website
-          name: content-volume
-          readOnly: true
+        - name: nginx
+          image: nginx:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /etc/nginx
+              readOnly: true
+              name: etc-nginx
+            - mountPath: /var/log/nginx
+              name: log
+            - mountPath: /var/www/html/website
+              name: content-volume
+              readOnly: true
       initContainers:
-      - image: domaindrivenarchitecture/c4k-website-build
-        name: init-build-container
-        imagePullPolicy: IfNotPresent
-        resources:
-          requests:
-            cpu: BUILD_CPU_REQUEST
-            memory: BUILD_MEMORY_REQUEST
-          limits:
-            cpu: BUILD_CPU_LIMIT
-            memory: BUILD_MEMORY_LIMIT
-        command: ["/entrypoint.sh"]
-        envFrom:
-        - secretRef:
-            name: build-secret
-        volumeMounts:
-        - name: content-volume
-          mountPath: /var/www/html/website
-        - name: hash-state-volume
-          mountPath: /var/hashfile.d
+        - image: domaindrivenarchitecture/c4k-website-build
+          name: init-build-container
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: BUILD_CPU_REQUEST
+              memory: BUILD_MEMORY_REQUEST
+            limits:
+              cpu: BUILD_CPU_LIMIT
+              memory: BUILD_MEMORY_LIMIT
+          command: ["/entrypoint.sh"]
+          envFrom:
+            - secretRef:
+                name: build-secret
+          volumeMounts:
+            - name: content-volume
+              mountPath: /var/www/html/website
+            - name: hash-state-volume
+              mountPath: /var/hashfile.d
       volumes:
         - name: etc-nginx
           configMap:
@@ -62,7 +62,7 @@ spec:
               - key: website.conf
                 path: conf.d/website.conf
               - key: mime.types
-                path: mime.types 
+                path: mime.types
         - name: log
           emptyDir: {}
         - name: content-volume
@@ -71,4 +71,3 @@ spec:
         - name: hash-state-volume
           persistentVolumeClaim:
             claimName: hash-state-volume
-                
