@@ -18,6 +18,7 @@
 (st/instrument `cut/generate-build-cron)
 (st/instrument `cut/generate-nginx-service)
 
+
 (deftest should-generate-redirects
   (is (= "rewrite ^/products.html\\$ /offer.html permanent;\n  rewrite ^/one-more\\$ /redirect permanent;"
          (cut/generate-redirects {:issuer "staging"
