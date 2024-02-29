@@ -49,7 +49,7 @@
         "{:mon-auth 
           {:grafana-cloud-user \"your-user-id\"
            :grafana-cloud-password \"your-cloud-password\"}
-          :auth
+          :websiteauths
           [{:unique-name \"test.io\",
             :username \"someuser\",
             :authtoken \"abedjgbasdodj\"}

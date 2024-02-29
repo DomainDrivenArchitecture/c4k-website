@@ -52,7 +52,7 @@
      :branchname "main"}]})
 
 (def auth1
-  {:auth
+  {:websiteauths
    [{:unique-name "example.io"
      :username "someuser"
      :authtoken "abedjgbasdodj"}
@@ -61,7 +61,7 @@
      :authtoken "abedjgbasdodj"}]})
 
 (def auth2
-  {:auth
+  {:websiteauths
    [{:unique-name "test.io"
      :username "someuser"
      :authtoken "abedjgbasdodj"}

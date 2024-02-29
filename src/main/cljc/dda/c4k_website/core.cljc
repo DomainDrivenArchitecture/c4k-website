@@ -40,14 +40,14 @@
                                      ::build-memory-limit]))
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
-(s/def ::auth (s/coll-of websiteauth?))
+(s/def ::websiteauths (s/coll-of websiteauth?))
 
 (def config? (s/keys :req-un [::websiteconfigs]
                      :opt-un [::issuer
                               ::volume-size
                               ::mon-cfg]))
 
-(def auth? (s/keys :req-un [::auth]
+(def auth? (s/keys :req-un [::websiteauths]
                    :opt-un [::mon-auth]))
 
 (def config-defaults {:issuer "staging"})
@@ -68,9 +68,9 @@
 
 (defn-spec sort-auth map?
   [unsorted-auth auth?]
-  (let [sorted-auth (into [] (sort-by :unique-name (unsorted-auth :auth)))]
+  (let [sorted-auth (into [] (sort-by :unique-name (unsorted-auth :websiteauths)))]
     (-> unsorted-auth
-        (assoc-in [:auth] sorted-auth))))
+        (assoc-in [:websiteauths] sorted-auth))))
 
 (defn-spec flatten-and-reduce-config map?
   [config config?]
@@ -84,7 +84,7 @@
 
 (defn-spec flatten-and-reduce-auth map?
   [auth auth?]
-  (-> auth :auth first))
+  (-> auth :websiteauths first))
 
 (defn-spec generate-ingress seq?
   [config websiteconfig?]
@@ -103,14 +103,14 @@
          sorted-auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :websiteconfigs)) (empty? (sorted-auth :auth)))
+    (if (and (empty? (config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
       result
       (recur (->
               config
               (assoc-in  [:websiteconfigs] (rest (config :websiteconfigs))))
              (->
               auth
-              (assoc-in  [:auth] (rest (sorted-auth :auth))))
+              (assoc-in  [:websiteauths] (rest (sorted-auth :websiteauths))))
              (let [final-config
                    (merge
                     website-config-defaults

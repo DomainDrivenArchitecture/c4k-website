@@ -48,11 +48,11 @@
 
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
 
-(s/def ::auth (s/coll-of websiteauth?))
+(s/def ::websiteauths (s/coll-of websiteauth?))
 
 (def websiteconfigs? (s/keys :req-un [::websiteconfigs]))
 
-(def auth? (s/keys :req-un [::auth]))
+(def auth? (s/keys :req-un [::websiteauths]))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]

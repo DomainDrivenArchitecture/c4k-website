@@ -1,4 +1,4 @@
-auth:
+websiteauths:
 - unique-name: "test.io"
   username: "someuser"
   authtoken: "abedjgbasdodj"
