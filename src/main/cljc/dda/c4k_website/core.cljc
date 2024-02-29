@@ -7,18 +7,58 @@
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.predicate :as cp]
    [dda.c4k-common.monitoring :as mon]
-   [dda.c4k-website.website :as website]))
+   [dda.c4k-common.namespace :as ns]
+   [dda.c4k-common.ingress :as ing]
+   [dda.c4k-website.website.website-internal :as int]))
 
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
+(s/def ::unique-name ::int/unique-name)
+(s/def ::issuer ::int/issuer)
+(s/def ::volume-size ::int/volume-size)
+(s/def ::authtoken ::int/authtoken)
+(s/def ::fqdns ::int/fqdns)
+(s/def ::forgejo-host ::int/forgejo-host)
+(s/def ::forgejo-repo ::int/forgejo-repo)
+(s/def ::branchname ::int/branchname)
+(s/def ::username ::int/username)
+(s/def ::build-cpu-request ::int/build-cpu-request)
+(s/def ::build-memory-request ::int/build-memory-request)
+(s/def ::build-cpu-limit ::int/build-cpu-limit)
+(s/def ::build-memory-limit ::int/build-memory-limit)
 
-(def config? (s/keys :req-un [::website/websites]
-                     :opt-un [::website/issuer 
-                              ::website/volume-size
+(def websiteconfig? (s/keys :req-un [::unique-name
+                                     ::fqdns
+                                     ::forgejo-host
+                                     ::forgejo-repo
+                                     ::branchname]
+                            :opt-un [::issuer
+                                     ::volume-size
+                                     ::build-cpu-request
+                                     ::build-cpu-limit
+                                     ::build-memory-request
+                                     ::build-memory-limit]))
+(def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
+(s/def ::websites (s/coll-of websiteconfig?))
+(s/def ::auth (s/coll-of websiteauth?))
+
+(def config? (s/keys :req-un [::websites]
+                     :opt-un [::issuer
+                              ::volume-size
                               ::mon-cfg]))
 
-(def auth? (s/keys :req-un [::website/auth]
+(def auth? (s/keys :req-un [::auth]
                    :opt-un [::mon-auth]))
+
+(def config-defaults {:issuer "staging"})
+
+
+(def website-config-defaults {:build-cpu-request "500m"
+                              :build-cpu-limit "1700m"
+                              :build-memory-request "256Mi"
+                              :build-memory-limit "512Mi"
+                              :volume-size "3"
+                              :redirects []})
 
 (defn-spec sort-config map?
   [unsorted-config config?]
@@ -37,47 +77,61 @@
   (let
    [first-entry (first (:websites config))]
     (conj first-entry
-           (when (contains? config :issuer)
-             {:issuer (config :issuer)})
-           (when (contains? config :volume-size)
-             {:volume-size (config :volume-size)}))))
+          (when (contains? config :issuer)
+            {:issuer (config :issuer)})
+          (when (contains? config :volume-size)
+            {:volume-size (config :volume-size)}))))
 
 (defn-spec flatten-and-reduce-auth map?
   [auth auth?]
   (-> auth :auth first))
 
+(defn-spec generate-ingress seq?
+  [config websiteconfig?]
+  (let [name (int/replace-dots-by-minus (:unique-name config))
+        final-config (merge website-config-defaults
+                            {:service-name name
+                             :service-port 80
+                             :namespace name}
+                            config)]
+    (ing/generate-simple-ingress final-config)))
+
 (defn-spec generate seq?
   [config config?
    auth auth?]
   (loop [config (sort-config config)
-         auth (sort-auth auth)
+         sorted-auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :websites)) (empty? (auth :auth)))
+    (if (and (empty? (config :websites)) (empty? (sorted-auth :auth)))
       result
       (recur (->
               config
               (assoc-in  [:websites] (rest (config :websites))))
              (->
               auth
-              (assoc-in  [:auth] (rest (auth :auth))))
-             (cm/concat-vec
-              result
-              (website/generate-namespcae (flatten-and-reduce-config config))
-              [(website/generate-nginx-deployment (flatten-and-reduce-config config))
-               (website/generate-nginx-configmap (flatten-and-reduce-config config))
-               (website/generate-nginx-service (flatten-and-reduce-config config))
-               (website/generate-content-pvc (flatten-and-reduce-config config))
-               (website/generate-hash-state-pvc (flatten-and-reduce-config config))
-               (website/generate-build-cron (flatten-and-reduce-config config))
-               (website/generate-build-secret (flatten-and-reduce-config config)
-                                                      (flatten-and-reduce-auth auth))]
-              (website/generate-ingress (flatten-and-reduce-config config))
-              )))))
+              (assoc-in  [:auth] (rest (sorted-auth :auth))))
+             (let [final-config
+                   (merge
+                    website-config-defaults
+                    (flatten-and-reduce-config config))
+                   name (int/replace-dots-by-minus (:unique-name final-config))]
+               (cm/concat-vec
+                result
+                (ns/generate (merge {:namespace name} final-config))
+                [(int/generate-nginx-deployment final-config)
+                 (int/generate-nginx-configmap final-config)
+                 (int/generate-nginx-service final-config)
+                 (int/generate-content-pvc final-config)
+                 (int/generate-hash-state-pvc final-config)
+                 (int/generate-build-cron final-config)
+                 (int/generate-build-secret final-config
+                                            (flatten-and-reduce-auth auth))]
+                (generate-ingress final-config)))))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?
-   auth auth?]  
+   auth auth?]
   (cm/concat-vec
    (map yaml/to-string
         (filter

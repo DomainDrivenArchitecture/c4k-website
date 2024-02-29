@@ -11,6 +11,7 @@
 (st/instrument `cut/sort-config)
 (st/instrument `cut/flattened-and-reduced-config)
 (st/instrument `cut/flatten-and-reduce-auth)
+(st/instrument `cut/generate-ingress)
 (st/instrument `cut/generate)
 
 #?(:cljs
@@ -127,5 +128,63 @@
 
 (deftest test-generate
   (is (= 22
-         (count (cut/generate (yaml/load-as-edn "website-test/valid-config.yaml")
-                              (yaml/load-as-edn "website-test/valid-auth.yaml"))))))
+         (count (cut/generate
+                 (yaml/load-as-edn "website-test/valid-config.yaml")
+                 (yaml/load-as-edn "website-test/valid-auth.yaml"))))))
+
+(deftest should-generate-ingress
+  (is (= [{:host "test.de",
+           :http
+           {:paths
+            [{:pathType "Prefix",
+              :path "/",
+              :backend {:service {:name "test-io", :port {:number 80}}}}]}}
+          {:host "test.org",
+           :http
+           {:paths
+            [{:pathType "Prefix",
+              :path "/",
+              :backend {:service {:name "test-io", :port {:number 80}}}}]}}
+          {:host "www.test.de",
+           :http
+           {:paths
+            [{:pathType "Prefix",
+              :path "/",
+              :backend {:service {:name "test-io", :port {:number 80}}}}]}}
+          {:host "www.test.org",
+           :http
+           {:paths
+            [{:pathType "Prefix",
+              :path "/",
+              :backend {:service {:name "test-io", :port {:number 80}}}}]}}]
+         (get-in
+          (cut/generate-ingress {:forgejo-host "gitlab.de",
+                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                 :forgejo-repo "repo",
+                                 :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                 :issuer "staging",
+                                 :branchname "main",
+                                 :unique-name "test.io"
+                                 :build-cpu-request "500m"
+                                 :build-cpu-limit "1700m"
+                                 :build-memory-request "256Mi"
+                                 :build-memory-limit "512Mi"
+                                 :volume-size "3"
+                                 :redirects []})
+          [2 :spec :rules])))
+  (is (= "test-io"
+         (get-in
+          (cut/generate-ingress {:forgejo-host "gitlab.de",
+                                 :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                 :forgejo-repo "repo",
+                                 :sha256sum-output "123456789ab123cd345de script-file-name.sh",
+                                 :issuer "staging",
+                                 :branchname "main",
+                                 :unique-name "test.io"
+                                 :build-cpu-request "500m"
+                                 :build-cpu-limit "1700m"
+                                 :build-memory-request "256Mi"
+                                 :build-memory-limit "512Mi"
+                                 :volume-size "3"
+                                 :redirects []})
+          [2 :metadata :namespace]))))
