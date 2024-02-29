@@ -5,7 +5,7 @@
             :url "https://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/tools.reader "1.4.0"]                 
-                 [org.domaindrivenarchitecture/c4k-common-clj "6.2.1"]
+                 [org.domaindrivenarchitecture/c4k-common-clj "6.2.2"]
                  [hickory "0.7.1" :exclusions [viebel/codox-klipse-theme]]]
   :target-path "target/%s/"
   :source-paths ["src/main/cljc"
@@ -23,7 +23,7 @@
                        :main dda.c4k-website.uberjar
                        :uberjar-name "c4k-website-standalone.jar"
                        :dependencies [[org.clojure/tools.cli "1.1.230"]
-                                      [ch.qos.logback/logback-classic "1.5.0"
+                                      [ch.qos.logback/logback-classic "1.5.1"
                                        :exclusions [com.sun.mail/javax.mail]]
                                       [org.slf4j/jcl-over-slf4j "2.0.12"]
                                       [com.github.clj-easy/graal-build-time "1.0.5"]]}}
