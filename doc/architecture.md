@@ -24,7 +24,7 @@ For the example configuration
 
 ```yaml
 issuer: "staging"
-websites:
+websiteconfigs:
 - unique-name: "test.io" 
   fqdns: ["test.de", "test.org", "www.test.de", "www.test.org"]
   forgejo-host: "codeberg.org"

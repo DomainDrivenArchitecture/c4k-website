@@ -46,11 +46,11 @@
 
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
 
-(s/def ::websites (s/coll-of websiteconfig?))
+(s/def ::websiteconfigs (s/coll-of websiteconfig?))
 
 (s/def ::auth (s/coll-of websiteauth?))
 
-(def websites? (s/keys :req-un [::websites]))
+(def websiteconfigs? (s/keys :req-un [::websiteconfigs]))
 
 (def auth? (s/keys :req-un [::auth]))
 

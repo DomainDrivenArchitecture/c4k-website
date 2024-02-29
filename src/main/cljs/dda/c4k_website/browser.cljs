@@ -24,8 +24,8 @@
       (br/generate-group
        "website-data"
         (br/generate-text-area
-         "websites" "Contains fqdns, repo infos, an optional sha256sum-output for script execution for each website:"
-         "{ :websites
+         "websiteconfigs" "Contains fqdns, repo infos, an optional sha256sum-output for script execution for each website:"
+         "{ :websiteconfigs
           [{:unique-name \"test.io\",
             :fqdns [\"test.de\" \"www.test.de\"],
             :gitea-host \"githost.de\",
@@ -70,12 +70,12 @@
 
 (defn config-from-document []
   (let [issuer (br/get-content-from-element "issuer" :optional true)
-        websites (br/get-content-from-element "websites" :deserializer edn/read-string)
+        websiteconfigs (br/get-content-from-element "websiteconfigs" :deserializer edn/read-string)
         mon-cluster-name (br/get-content-from-element "mon-cluster-name" :optional true)
         mon-cluster-stage (br/get-content-from-element "mon-cluster-stage" :optional true)
         mon-cloud-url (br/get-content-from-element "mon-cloud-url" :optional true)]
     (merge
-     {:websites websites}
+     {:websiteconfigs websiteconfigs}
      (when (not (st/blank? issuer))
        {:issuer issuer})
      (when (some? mon-cluster-name)
@@ -84,7 +84,7 @@
                   :grafana-cloud-url mon-cloud-url}}))))
 
 (defn validate-all! []
-  (br/validate! "websites" website/websites? :deserializer edn/read-string)
+  (br/validate! "websiteconfigs" website/websiteconfigs? :deserializer edn/read-string)
   (br/validate! "issuer" ::website/issuer :optional true)
   (br/validate! "mon-cluster-name" ::mon/cluster-name :optional true)
   (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true)
@@ -108,7 +108,7 @@
                                    core/config-defaults
                                    core/k8s-objects)
                                   (br/set-output!)))))
-  (add-validate-listener "websites")
+  (add-validate-listener "websiteconfigs")
   (add-validate-listener "issuer")
   (add-validate-listener "mon-cluster-name")
   (add-validate-listener "mon-cluster-stage")

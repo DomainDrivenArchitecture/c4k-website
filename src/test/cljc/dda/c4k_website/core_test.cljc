@@ -26,7 +26,7 @@
   (is (s/valid? cut/auth? (yaml/load-as-edn "website-test/valid-auth.yaml"))))
 
 (def websites1
-  {:websites
+  {:websiteconfigs
    [{:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
      :forgejo-host "finegitehost.net"
@@ -39,7 +39,7 @@
      :branchname "main"}]})
 
 (def websites2
-  {:websites
+  {:websiteconfigs
    [{:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :forgejo-host "gitlab.de"
@@ -83,7 +83,7 @@
 
 (deftest sorts-config
   (is (= {:issuer "staging",
-          :websites
+          :websiteconfigs
           [{:unique-name "example.io",
             :fqdns ["example.org" "www.example.com"],
             :forgejo-host "finegitehost.net",
@@ -98,7 +98,7 @@
           :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}
          (cut/sort-config
           {:issuer "staging",
-           :websites
+           :websiteconfigs
            [{:unique-name "test.io",
              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
              :forgejo-host "gitlab.de",

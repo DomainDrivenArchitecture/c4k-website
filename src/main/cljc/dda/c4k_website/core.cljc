@@ -39,10 +39,10 @@
                                      ::build-memory-request
                                      ::build-memory-limit]))
 (def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
-(s/def ::websites (s/coll-of websiteconfig?))
+(s/def ::websiteconfigs (s/coll-of websiteconfig?))
 (s/def ::auth (s/coll-of websiteauth?))
 
-(def config? (s/keys :req-un [::websites]
+(def config? (s/keys :req-un [::websiteconfigs]
                      :opt-un [::issuer
                               ::volume-size
                               ::mon-cfg]))
@@ -62,9 +62,9 @@
 
 (defn-spec sort-config map?
   [unsorted-config config?]
-  (let [sorted-websites (into [] (sort-by :unique-name (unsorted-config :websites)))]
+  (let [sorted-websiteconfigs (into [] (sort-by :unique-name (unsorted-config :websiteconfigs)))]
     (-> unsorted-config
-        (assoc-in [:websites] sorted-websites))))
+        (assoc-in [:websiteconfigs] sorted-websiteconfigs))))
 
 (defn-spec sort-auth map?
   [unsorted-auth auth?]
@@ -75,7 +75,7 @@
 (defn-spec flatten-and-reduce-config map?
   [config config?]
   (let
-   [first-entry (first (:websites config))]
+   [first-entry (first (:websiteconfigs config))]
     (conj first-entry
           (when (contains? config :issuer)
             {:issuer (config :issuer)})
@@ -103,11 +103,11 @@
          sorted-auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :websites)) (empty? (sorted-auth :auth)))
+    (if (and (empty? (config :websiteconfigs)) (empty? (sorted-auth :auth)))
       result
       (recur (->
               config
-              (assoc-in  [:websites] (rest (config :websites))))
+              (assoc-in  [:websiteconfigs] (rest (config :websiteconfigs))))
              (->
               auth
               (assoc-in  [:auth] (rest (sorted-auth :auth))))
