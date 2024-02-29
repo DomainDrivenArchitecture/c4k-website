@@ -1,4 +1,4 @@
-(ns dda.c4k-website.website.website-internal
+(ns dda.c4k-website.website
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]

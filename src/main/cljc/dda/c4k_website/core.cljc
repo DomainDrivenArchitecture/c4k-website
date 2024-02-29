@@ -9,7 +9,7 @@
    [dda.c4k-common.monitoring :as mon]
    [dda.c4k-common.namespace :as ns]
    [dda.c4k-common.ingress :as ing]
-   [dda.c4k-website.website.website-internal :as int]))
+   [dda.c4k-website.website :as int]))
 
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
