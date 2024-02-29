@@ -9,23 +9,23 @@
    [dda.c4k-common.monitoring :as mon]
    [dda.c4k-common.namespace :as ns]
    [dda.c4k-common.ingress :as ing]
-   [dda.c4k-website.website :as int]))
+   [dda.c4k-website.website :as web]))
 
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
-(s/def ::unique-name ::int/unique-name)
-(s/def ::issuer ::int/issuer)
-(s/def ::volume-size ::int/volume-size)
-(s/def ::authtoken ::int/authtoken)
-(s/def ::fqdns ::int/fqdns)
-(s/def ::forgejo-host ::int/forgejo-host)
-(s/def ::forgejo-repo ::int/forgejo-repo)
-(s/def ::branchname ::int/branchname)
-(s/def ::username ::int/username)
-(s/def ::build-cpu-request ::int/build-cpu-request)
-(s/def ::build-memory-request ::int/build-memory-request)
-(s/def ::build-cpu-limit ::int/build-cpu-limit)
-(s/def ::build-memory-limit ::int/build-memory-limit)
+(s/def ::unique-name ::web/unique-name)
+(s/def ::issuer ::web/issuer)
+(s/def ::volume-size ::web/volume-size)
+(s/def ::authtoken ::web/authtoken)
+(s/def ::fqdns ::web/fqdns)
+(s/def ::forgejo-host ::web/forgejo-host)
+(s/def ::forgejo-repo ::web/forgejo-repo)
+(s/def ::branchname ::web/branchname)
+(s/def ::username ::web/username)
+(s/def ::build-cpu-request ::web/build-cpu-request)
+(s/def ::build-memory-request ::web/build-memory-request)
+(s/def ::build-cpu-limit ::web/build-cpu-limit)
+(s/def ::build-memory-limit ::web/build-memory-limit)
 
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
@@ -88,7 +88,7 @@
 
 (defn-spec generate-ingress seq?
   [config websiteconfig?]
-  (let [name (int/replace-dots-by-minus (:unique-name config))
+  (let [name (web/replace-dots-by-minus (:unique-name config))
         final-config (merge website-config-defaults
                             {:service-name name
                              :service-port 80
@@ -115,17 +115,17 @@
                    (merge
                     website-config-defaults
                     (flatten-and-reduce-config config))
-                   name (int/replace-dots-by-minus (:unique-name final-config))]
+                   name (web/replace-dots-by-minus (:unique-name final-config))]
                (cm/concat-vec
                 result
                 (ns/generate (merge {:namespace name} final-config))
-                [(int/generate-nginx-deployment final-config)
-                 (int/generate-nginx-configmap final-config)
-                 (int/generate-nginx-service final-config)
-                 (int/generate-content-pvc final-config)
-                 (int/generate-hash-state-pvc final-config)
-                 (int/generate-build-cron final-config)
-                 (int/generate-build-secret final-config
+                [(web/generate-nginx-deployment final-config)
+                 (web/generate-nginx-configmap final-config)
+                 (web/generate-nginx-service final-config)
+                 (web/generate-content-pvc final-config)
+                 (web/generate-hash-state-pvc final-config)
+                 (web/generate-build-cron final-config)
+                 (web/generate-build-secret final-config
                                             (flatten-and-reduce-auth auth))]
                 (generate-ingress final-config)))))))
 
