@@ -5,6 +5,9 @@ websiteconfigs:
   forgejo-host: "codeberg.org"
   forgejo-repo: "repo"
   branchname: "main"
+  redirects:
+  - ["/products.html", "/offer.html"]
+  - ["/one-more", "/redirect"]
 - unique-name: "example.io"
   fqdns: ["example.org", "www.example.com"]
   forgejo-host: "fineForgejoHost.net"
