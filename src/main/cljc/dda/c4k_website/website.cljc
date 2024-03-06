@@ -94,7 +94,6 @@
       #(str "rewrite ^" (first %1) "\\$ " (second %1) " permanent;") 
       redirects))))
 
-
 (defn-spec generate-nginx-configmap map?
   [config websiteconfig?]
   (let [{:keys [fqdns unique-name]} config
@@ -114,20 +113,20 @@
                   (generate-redirects config 2)))))))
 
 
-(defn-spec generate-build-secret pred/map-or-seq?
-  [config websiteconfig?
-   auth websiteauth?]
+
+; TODO generate git path without username
+; TODO add test
+(defn-spec generate-build-configmap pred/map-or-seq?
+  [config websiteconfig?]
   (let [{:keys [unique-name
                 forgejo-host
                 forgejo-repo
                 branchname]} config
-        {:keys [authtoken
-                username]} auth
-        name (replace-dots-by-minus unique-name)]
+        name (replace-dots-by-minus unique-name)
+        username "TODO"]
     (->
-     (yaml/load-as-edn "website/build-secret.yaml")
+     (yaml/load-as-edn "website/build-configmap.yaml")
      (replace-all-matching-prefixes "NAME" name)
-     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
      (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
                                                              (generate-gitrepourl
                                                               forgejo-host
@@ -139,6 +138,18 @@
                                                                 forgejo-host
                                                                 forgejo-repo
                                                                 username))))))
+
+(defn-spec generate-build-secret pred/map-or-seq?
+  [config websiteconfig?
+   auth websiteauth?]
+  (let [{:keys [unique-name]} config
+        {:keys [authtoken
+                username]} auth
+        name (replace-dots-by-minus unique-name)]
+    (->
+     (yaml/load-as-edn "website/build-secret.yaml")
+     (replace-all-matching-prefixes "NAME" name)
+     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken)))))
 
 
 (defn-spec generate-content-pvc map?

@@ -217,9 +217,7 @@
                      :namespace "test-io",
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
-          {:AUTHTOKEN "YWJlZGpnYmFzZG9kag==",
-           :GITREPOURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vYXJjaGl2ZS9tYWluLnppcA==",
-           :GITCOMMITURL "aHR0cHM6Ly9naXRsYWIuZGUvYXBpL3YxL3JlcG9zL3NvbWV1c2VyL3JlcG8vZ2l0L2NvbW1pdHMvSEVBRA=="}}
+          {:AUTHTOKEN "YWJlZGpnYmFzZG9kag=="}}
          (cut/generate-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                      :forgejo-repo "repo",
                                      :issuer "staging",
