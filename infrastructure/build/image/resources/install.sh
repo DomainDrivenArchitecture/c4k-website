@@ -6,7 +6,7 @@ function main()
 {
     {
         upgradeSystem
-        apt-get install -qqy unzip rsync jq imagemagick curl
+        apt-get install -qqy unzip rsync jq imagemagick curl hugo
 
         install -d /etc/lein/
         install -m 0700 /tmp/entrypoint.sh /

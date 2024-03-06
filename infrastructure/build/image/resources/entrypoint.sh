@@ -20,6 +20,8 @@ if [[ $currentHash == $newHash ]]
         echo "Nothing to do"
     else
         echo $currentHash > $HASHFILEDIR/$hashfilename
+        echo "Generate .netrc file"
+        generate-netrc-file
         echo "Downloading website data"
         get-website-data $filename
         unzip-website-data $filename

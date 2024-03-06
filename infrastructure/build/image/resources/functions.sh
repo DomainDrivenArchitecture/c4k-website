@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# TODO provide GITHOST
+function generate-netrc-file() {
+    echo "machine $GITHOST password $AUTHTOKEN" > ~/.netrc
+}
+
 function get-website-data() {    
     curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$1 $GITREPOURL
 }
