@@ -22,7 +22,7 @@
 (s/def ::forgejo-host pred/fqdn-string?)
 (s/def ::forgejo-repo string?)
 (s/def ::branchname string?)
-(s/def ::username string?)
+(s/def ::repo-user string?)
 (s/def ::build-cpu-request string?)
 (s/def ::build-memory-request string?)
 (s/def ::build-cpu-limit string?)
@@ -30,10 +30,11 @@
 (s/def ::redirect (s/tuple string? string?))
 (s/def ::redirects (s/coll-of ::redirect))
 
-
+; TODO: is this websiteconfig? & websiteauth? used or the ones in core?
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
+                                     ::repo-user
                                      ::forgejo-repo
                                      ::branchname
                                      ::issuer
@@ -44,7 +45,7 @@
                                      ::build-memory-limit
                                      ::redirects]))
 
-(def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
+(def websiteauth? (s/keys :req-un [::unique-name ::authtoken]))
 
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
 
@@ -112,18 +113,15 @@
                   #"REDIRECTS"
                   (generate-redirects config 2)))))))
 
-
-
-; TODO generate git path without username
 ; TODO add test
 (defn-spec generate-build-configmap pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name
                 forgejo-host
+                repo-user
                 forgejo-repo
                 branchname]} config
-        name (replace-dots-by-minus unique-name)
-        username "TODO"]
+        name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/build-configmap.yaml")
      (replace-all-matching-prefixes "NAME" name)
@@ -131,20 +129,20 @@
                                                              (generate-gitrepourl
                                                               forgejo-host
                                                               forgejo-repo
-                                                              username
+                                                              repo-user
                                                               branchname)))
      (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
                                                                (generate-gitcommiturl
                                                                 forgejo-host
                                                                 forgejo-repo
-                                                                username))))))
-
+                                                                repo-user))))))
+; TODO: remove config
 (defn-spec generate-build-secret pred/map-or-seq?
   [config websiteconfig?
    auth websiteauth?]
   (let [{:keys [unique-name]} config
-        {:keys [authtoken
-                username]} auth
+        {:keys [unique-name
+                authtoken]} auth
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/build-secret.yaml")

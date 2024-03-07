@@ -28,14 +28,16 @@
          "{ :websiteconfigs
           [{:unique-name \"test.io\",
             :fqdns [\"test.de\" \"www.test.de\"],
-            :gitea-host \"githost.de\",
-            :gitea-repo \"repo\",
+            :forgejo-host \"githost.de\",
+            :repo-user \"someuser\",
+            :forgejo-repo \"repo\",
             :branchname \"main\",
             :sha256sum-output \"123456789ab123cd345de script-file-name.sh\"}
            {:unique-name \"example.io \",
             :fqdns [\"example.org\" \"www.example.org\"],
-            :gitea-host \"githost.org\",
-            :gitea-repo \"repo\",
+            :forgejo-host \"githost.org\",
+            :repo-user \"someuser\",
+            :forgejo-repo \"repo\",
             :branchname \"main\",
             :build-cpu-request \"1500m\",
             :build-cpu-limit \"3000m\",
@@ -51,10 +53,8 @@
            :grafana-cloud-password \"your-cloud-password\"}
           :websiteauths
           [{:unique-name \"test.io\",
-            :username \"someuser\",
             :authtoken \"abedjgbasdodj\"}
            {:unique-name \"example.io\",
-            :username \"someuser\",
             :authtoken \"abedjgbasdodj\"}]}"
         "7"))
       [(br/generate-br)]

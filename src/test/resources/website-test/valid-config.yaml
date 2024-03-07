@@ -3,6 +3,7 @@ websiteconfigs:
 - unique-name: "test.io" 
   fqdns: ["test.de", "test.org", "www.test.de", "www.test.org"]
   forgejo-host: "codeberg.org"
+  repo-user: "someuser"
   forgejo-repo: "repo"
   branchname: "main"
   redirects:
@@ -11,6 +12,7 @@ websiteconfigs:
 - unique-name: "example.io"
   fqdns: ["example.org", "www.example.com"]
   forgejo-host: "fineForgejoHost.net"
+  repo-user: "someotheruser"
   forgejo-repo: "repo"
   branchname: "main"
 mon-cfg: 

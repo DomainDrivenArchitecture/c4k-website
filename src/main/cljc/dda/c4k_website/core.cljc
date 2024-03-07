@@ -19,17 +19,20 @@
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
 (s/def ::forgejo-host ::web/forgejo-host)
+(s/def ::repo-user ::web/repo-user)
 (s/def ::forgejo-repo ::web/forgejo-repo)
 (s/def ::branchname ::web/branchname)
-(s/def ::username ::web/username)
 (s/def ::build-cpu-request ::web/build-cpu-request)
 (s/def ::build-memory-request ::web/build-memory-request)
 (s/def ::build-cpu-limit ::web/build-cpu-limit)
 (s/def ::build-memory-limit ::web/build-memory-limit)
+(s/def ::redirect ::web/redirect)
+(s/def ::redirects ::web/redirects)
 
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
+                                     ::repo-user
                                      ::forgejo-repo
                                      ::branchname]
                             :opt-un [::issuer
@@ -37,8 +40,9 @@
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
-                                     ::build-memory-limit]))
-(def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
+                                     ::build-memory-limit
+                                     ::redirects]))
+(def websiteauth? (s/keys :req-un [::unique-name ::authtoken]))
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
 (s/def ::websiteauths (s/coll-of websiteauth?))
 
