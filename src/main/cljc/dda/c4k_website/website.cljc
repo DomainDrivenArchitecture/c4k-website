@@ -30,30 +30,21 @@
 (s/def ::redirect (s/tuple string? string?))
 (s/def ::redirects (s/coll-of ::redirect))
 
-; TODO: is this websiteconfig? & websiteauth? used or the ones in core?
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
                                      ::repo-user
                                      ::forgejo-repo
                                      ::branchname
-                                     ::issuer
-                                     ::volume-size
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
                                      ::build-memory-limit
+                                     ::issuer
+                                     ::volume-size
                                      ::redirects]))
 
 (def websiteauth? (s/keys :req-un [::unique-name ::authtoken]))
-
-(s/def ::websiteconfigs (s/coll-of websiteconfig?))
-
-(s/def ::websiteauths (s/coll-of websiteauth?))
-
-(def websiteconfigs? (s/keys :req-un [::websiteconfigs]))
-
-(def auth? (s/keys :req-un [::websiteauths]))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]

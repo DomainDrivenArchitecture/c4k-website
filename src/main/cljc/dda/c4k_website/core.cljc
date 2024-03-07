@@ -16,6 +16,7 @@
 (s/def ::unique-name ::web/unique-name)
 (s/def ::issuer ::web/issuer)
 (s/def ::volume-size ::web/volume-size)
+
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
 (s/def ::forgejo-host ::web/forgejo-host)
@@ -26,7 +27,6 @@
 (s/def ::build-memory-request ::web/build-memory-request)
 (s/def ::build-cpu-limit ::web/build-cpu-limit)
 (s/def ::build-memory-limit ::web/build-memory-limit)
-(s/def ::redirect ::web/redirect)
 (s/def ::redirects ::web/redirects)
 
 (def websiteconfig? (s/keys :req-un [::unique-name
@@ -42,7 +42,9 @@
                                      ::build-memory-request
                                      ::build-memory-limit
                                      ::redirects]))
-(def websiteauth? (s/keys :req-un [::unique-name ::authtoken]))
+(def websiteauth? web/websiteauth?)
+(def websiteauths? (s/keys :req-un [::websiteauths]))
+
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
 (s/def ::websiteauths (s/coll-of websiteauth?))
 
@@ -76,6 +78,7 @@
     (-> unsorted-auth
         (assoc-in [:websiteauths] sorted-auth))))
 
+; TODO: Replace this with a function that merges defaults into website config
 (defn-spec flatten-and-reduce-config map?
   [config config?]
   (let
@@ -103,22 +106,22 @@
 (defn-spec generate seq?
   [config config?
    auth auth?]
-  (loop [config (sort-config config)
+  (loop [sorted-config (sort-config config)
          sorted-auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
+    (if (and (empty? (sorted-config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
       result
       (recur (->
-              config
-              (assoc-in  [:websiteconfigs] (rest (config :websiteconfigs))))
+              sorted-config
+              (assoc-in  [:websiteconfigs] (rest (sorted-config :websiteconfigs))))
              (->
-              auth
+              sorted-auth
               (assoc-in  [:websiteauths] (rest (sorted-auth :websiteauths))))
              (let [final-config
                    (merge
                     website-config-defaults
-                    (flatten-and-reduce-config config))
+                    (flatten-and-reduce-config sorted-config))
                    name (web/replace-dots-by-minus (:unique-name final-config))]
                (cm/concat-vec
                 result

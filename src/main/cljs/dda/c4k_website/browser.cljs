@@ -84,12 +84,12 @@
                   :grafana-cloud-url mon-cloud-url}}))))
 
 (defn validate-all! []
-  (br/validate! "websiteconfigs" website/websiteconfigs? :deserializer edn/read-string)
-  (br/validate! "issuer" ::website/issuer :optional true)
+  (br/validate! "websiteconfigs" core/websiteconfigs? :deserializer edn/read-string)
+  (br/validate! "issuer" ::core/issuer :optional true)
   (br/validate! "mon-cluster-name" ::mon/cluster-name :optional true)
   (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true)
   (br/validate! "mon-cloud-url" ::mon/grafana-cloud-url :optional true)
-  (br/validate! "auth" website/auth? :deserializer edn/read-string)
+  (br/validate! "auth" core/websiteauths? :deserializer edn/read-string)
   (br/set-form-validated!))
 
 (defn add-validate-listener [name]
