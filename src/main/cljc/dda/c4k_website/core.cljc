@@ -20,8 +20,8 @@
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
 (s/def ::forgejo-host ::web/forgejo-host)
-(s/def ::repo-user ::web/repo-user)
-(s/def ::forgejo-repo ::web/forgejo-repo)
+(s/def ::repo-owner ::web/repo-owner)
+(s/def ::repo-name ::web/repo-name)
 (s/def ::branchname ::web/branchname)
 (s/def ::build-cpu-request ::web/build-cpu-request)
 (s/def ::build-memory-request ::web/build-memory-request)
@@ -32,8 +32,8 @@
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
-                                     ::repo-user
-                                     ::forgejo-repo
+                                     ::repo-owner
+                                     ::repo-name
                                      ::branchname]
                             :opt-un [::issuer
                                      ::volume-size

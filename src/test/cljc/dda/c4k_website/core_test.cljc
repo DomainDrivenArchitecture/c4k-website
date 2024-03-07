@@ -30,14 +30,14 @@
    [{:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
      :forgejo-host "finegitehost.net"
-     :repo-user "someuser"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}
     {:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :forgejo-host "gitlab.de"
-     :repo-user "someuser"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}]})
 
 (def websites2
@@ -45,14 +45,14 @@
    [{:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :forgejo-host "gitlab.de"
-     :repo-user "someuser"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}
     {:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
      :forgejo-host "finegitehost.net"
-     :repo-user "someuser"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}]})
 
 (def auth1
@@ -73,8 +73,8 @@
   {:unique-name "example.io",
    :fqdns ["example.org" "www.example.com"],
    :forgejo-host "finegitehost.net",
-   :repo-user "someuser",
-   :forgejo-repo "repo",
+   :repo-owner "someuser",
+   :repo-name "repo",
    :branchname "main"})
 
 (def flattened-and-reduced-auth
@@ -87,14 +87,14 @@
           [{:unique-name "example.io",
             :fqdns ["example.org" "www.example.com"],
             :forgejo-host "finegitehost.net",
-            :repo-user "someuser",
-            :forgejo-repo "repo",
+            :repo-owner "someuser",
+            :repo-name "repo",
             :branchname "main"},
            {:unique-name "test.io",
             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
             :forgejo-host "gitlab.de",
-            :repo-user "someuser",
-            :forgejo-repo "repo",
+            :repo-owner "someuser",
+            :repo-name "repo",
             :branchname "main",
             :sha256sum-output "123456789ab123cd345de script-file-name.sh"}],
           :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}
@@ -104,15 +104,15 @@
            [{:unique-name "test.io",
              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
              :forgejo-host "gitlab.de",
-             :repo-user "someuser",
-             :forgejo-repo "repo",
+             :repo-owner "someuser",
+             :repo-name "repo",
              :branchname "main",
              :sha256sum-output "123456789ab123cd345de script-file-name.sh"}
             {:unique-name "example.io",
              :fqdns ["example.org" "www.example.com"],
              :forgejo-host "finegitehost.net",
-             :repo-user "someuser",
-             :forgejo-repo "repo",
+             :repo-owner "someuser",
+             :repo-name "repo",
              :branchname "main"}],
            :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}))))
 
@@ -165,8 +165,8 @@
           (cut/generate-ingress {:unique-name "test.io",
                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                  :forgejo-host "gitlab.de",
-                                 :repo-user "someuser",
-                                 :forgejo-repo "repo",
+                                 :repo-owner "someuser",
+                                 :repo-name "repo",
                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                  :issuer "staging",
                                  :branchname "main",
@@ -182,8 +182,8 @@
           (cut/generate-ingress {:unique-name "test.io",
                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
                                  :forgejo-host "gitlab.de",
-                                 :repo-user "someuser",
-                                 :forgejo-repo "repo",
+                                 :repo-owner "someuser",
+                                 :repo-name "repo",
                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                  :issuer "staging",
                                  :branchname "main",

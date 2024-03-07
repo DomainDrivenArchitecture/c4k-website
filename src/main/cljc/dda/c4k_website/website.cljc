@@ -20,9 +20,9 @@
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 (s/def ::forgejo-host pred/fqdn-string?)
-(s/def ::forgejo-repo string?)
+(s/def ::repo-name string?)
 (s/def ::branchname string?)
-(s/def ::repo-user string?)
+(s/def ::repo-owner string?)
 (s/def ::build-cpu-request string?)
 (s/def ::build-memory-request string?)
 (s/def ::build-cpu-limit string?)
@@ -33,8 +33,8 @@
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
-                                     ::repo-user
-                                     ::forgejo-repo
+                                     ::repo-owner
+                                     ::repo-name
                                      ::branchname
                                      ::build-cpu-request
                                      ::build-cpu-limit
@@ -108,8 +108,8 @@
   [config websiteconfig?]
   (let [{:keys [unique-name
                 forgejo-host
-                repo-user
-                forgejo-repo
+                repo-owner
+                repo-name
                 branchname]} config
         name (replace-dots-by-minus unique-name)]
     (->
@@ -118,13 +118,13 @@
      (cm/replace-all-matching-values-by-new-value "GITHOST" forgejo-host)
      (cm/replace-all-matching-values-by-new-value "REPOURL" (generate-gitrepourl
                                                               forgejo-host
-                                                              repo-user
-                                                              forgejo-repo
+                                                              repo-owner
+                                                              repo-name
                                                               branchname))
      (cm/replace-all-matching-values-by-new-value "COMMITURL" (generate-gitcommiturl
                                                                 forgejo-host
-                                                                repo-user
-                                                                forgejo-repo)))))
+                                                                repo-owner
+                                                                repo-name)))))
 
 (defn-spec generate-build-secret pred/map-or-seq?
   [auth websiteauth?]

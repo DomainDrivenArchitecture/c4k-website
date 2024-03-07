@@ -39,8 +39,8 @@
                                   :redirects [["/products.html", "/offer.html"]
                                               ["/one-more", "/redirect"]]
                                   :forgejo-host "gitea.evilorg",
-                                  :repo-user "someuser",
-                                  :forgejo-repo "none",
+                                  :repo-owner "someuser",
+                                  :repo-name "none",
                                   :branchname "mablain",
                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}
                                  2)))
@@ -54,8 +54,8 @@
                                   :unique-name "test.io",
                                   :redirects []
                                   :forgejo-host "gitea.evilorg",
-                                  :repo-user "someuser",
-                                  :forgejo-repo "none",
+                                  :repo-owner "someuser",
+                                  :repo-name "none",
                                   :branchname "mablain",
                                   :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}
                                  0))))
@@ -64,9 +64,9 @@
 (deftest should-generate-resource-requests
   (is (= {:requests {:cpu "1500m", :memory "512Mi"}, :limits {:cpu "3000m", :memory "1024Mi"}}
          (-> (cut/generate-nginx-deployment {:forgejo-host "gitlab.de",
-                                             :repo-user "someuser",
+                                             :repo-owner "someuser",
                                              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                             :forgejo-repo "repo",
+                                             :repo-name "repo",
                                              :issuer "staging",
                                              :branchname "main",
                                              :unique-name "test.io",
@@ -79,9 +79,9 @@
              :spec :template :spec :initContainers first :resources)))
   (is (= "test-io"
          (-> (cut/generate-nginx-deployment {:forgejo-host "gitlab.de",
-                                             :repo-user "someuser",
+                                             :repo-owner "someuser",
                                              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                             :forgejo-repo "repo",
+                                             :repo-name "repo",
                                              :issuer "staging",
                                              :branchname "main",
                                              :unique-name "test.io",
@@ -104,8 +104,8 @@
                                                             :redirects [["/products.html", "/offer.html"]
                                                                         ["/one-more", "/redirect"]]
                                                             :forgejo-host "gitea.evilorg",
-                                                            :repo-user "someuser",
-                                                            :forgejo-repo "none",
+                                                            :repo-owner "someuser",
+                                                            :repo-name "none",
                                                             :branchname "mablain",
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
        " /offer.html permanent;\n"))
@@ -120,8 +120,8 @@
                                                             :redirects [["/products.html", "/offer.html"]
                                                                         ["/one-more", "/redirect"]]
                                                             :forgejo-host "gitea.evilorg",
-                                                            :repo-user "someuser",
-                                                            :forgejo-repo "none",
+                                                            :repo-owner "someuser",
+                                                            :repo-name "none",
                                                             :branchname "mablain",
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
        " /redirect permanent;\n"))
@@ -135,8 +135,8 @@
                                                             :unique-name "test.io",
                                                             :redirects [],
                                                             :forgejo-host "gitea.evilorg",
-                                                            :repo-user "someuser",
-                                                            :forgejo-repo "none",
+                                                            :repo-owner "someuser",
+                                                            :repo-name "none",
                                                             :branchname "mablain",
                                                             :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})))
        "server_name test.de www.test.de test-it.de www.test-it.de;"))
@@ -154,8 +154,8 @@
                                                 :unique-name "test.io",
                                                 :redirects [],
                                                 :forgejo-host "gitea.evilorg",
-                                                :repo-user "someuser",
-                                                :forgejo-repo "none",
+                                                :repo-owner "someuser",
+                                                :repo-name "none",
                                                 :branchname "mablain",
                                                 :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]})
                  :data))))
@@ -178,8 +178,8 @@
                                       :unique-name "test.io",
                                       :redirects [],
                                       :forgejo-host "gitea.evilorg",
-                                      :repo-user "someuser",
-                                      :forgejo-repo "none",
+                                      :repo-owner "someuser",
+                                      :repo-name "none",
                                       :branchname "mablain",
                                       :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
@@ -222,9 +222,9 @@
                                    :build-memory-limit "512Mi"
                                    :volume-size "3"
                                    :forgejo-host "gitlab.de",
-                                   :repo-user "someuser",
+                                   :repo-owner "someuser",
                                    :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                   :forgejo-repo "repo",
+                                   :repo-name "repo",
                                    :branchname "main",
                                    :unique-name "test.io",
                                    :redirects []}))))
@@ -246,9 +246,9 @@
                                         :build-memory-limit "512Mi"
                                         :volume-size "3"
                                         :forgejo-host "mygit.de",
-                                        :repo-user "someuser",
+                                        :repo-owner "someuser",
                                         :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                        :forgejo-repo "repo",
+                                        :repo-name "repo",
                                         :branchname "main",
                                         :unique-name "test.io",
                                         :redirects []}))))
@@ -284,8 +284,8 @@
                                     :unique-name "test.io",
                                     :redirects [],
                                     :forgejo-host "gitea.evilorg",
-                                    :repo-user "someuser",
-                                    :forgejo-repo "none",
+                                    :repo-owner "someuser",
+                                    :repo-name "none",
                                     :branchname "mablain",
                                     :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
 
@@ -309,7 +309,7 @@
                                        :unique-name "test.io",
                                        :redirects [],
                                        :forgejo-host "gitea.evilorg",
-                                       :repo-user "someuser",
-                                       :forgejo-repo "none",
+                                       :repo-owner "someuser",
+                                       :repo-name "none",
                                        :branchname "mablain",
                                        :fqdns ["test.de" "www.test.de" "test-it.de" "www.test-it.de"]}))))
