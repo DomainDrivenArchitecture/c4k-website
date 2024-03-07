@@ -115,6 +115,7 @@
     (->
      (yaml/load-as-edn "website/build-configmap.yaml")
      (replace-all-matching-prefixes "NAME" name)
+     (cm/replace-all-matching-values-by-new-value "GITHOST" forgejo-host)
      (cm/replace-all-matching-values-by-new-value "REPOURL" (generate-gitrepourl
                                                               forgejo-host
                                                               repo-user

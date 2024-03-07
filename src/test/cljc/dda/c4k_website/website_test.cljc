@@ -236,7 +236,8 @@
                      :namespace "test-io",
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
-          {:GITREPOURL "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
+          {:GIT_HOST "mygit.de"
+           :GITREPOURL "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
            :GITCOMMITURL "https://mygit.de/api/v1/repos/someuser/repo/git/commits/HEAD"}}
          (cut/generate-build-configmap {:issuer "staging"
                                         :build-cpu-request "500m"

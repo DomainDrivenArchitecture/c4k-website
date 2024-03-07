@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# TODO provide GITHOST
 function generate-netrc-file() {
-    echo "machine $GITHOST password $AUTHTOKEN" > ~/.netrc
+    echo "machine $GIT_HOST password $AUTHTOKEN" > ~/.netrc
 }
 
 function get-website-data() {    

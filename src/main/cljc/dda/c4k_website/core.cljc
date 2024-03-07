@@ -78,7 +78,6 @@
     (-> unsorted-auth
         (assoc-in [:websiteauths] sorted-auth))))
 
-; TODO: Replace this with a function that merges defaults into website config
 (defn-spec flatten-and-reduce-config map?
   [config config?]
   (let
