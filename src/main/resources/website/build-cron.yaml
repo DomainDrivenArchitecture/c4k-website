@@ -31,6 +31,8 @@ spec:
                 memory: BUILD_MEMORY_LIMIT
             command: ["/entrypoint.sh"]
             envFrom:
+            - configMapRef:
+                name: build-configmap
             - secretRef:
                 name: build-secret
             volumeMounts:

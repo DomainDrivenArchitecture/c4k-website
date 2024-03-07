@@ -208,7 +208,8 @@
                  :imagePullPolicy "IfNotPresent",
                  :resources {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}},
                  :command ["/entrypoint.sh"],
-                 :envFrom [{:secretRef {:name "build-secret"}}],
+                 :envFrom [{:configMapRef {:name "build-configmap"}}
+                           {:secretRef {:name "build-secret"}}],
                  :volumeMounts [{:name "content-volume", :mountPath "/var/www/html/website"}
                                 {:name "hash-state-volume", :mountPath "/var/hashfile.d"}]}],
                :volumes [{:name "content-volume", :persistentVolumeClaim {:claimName "content-volume"}}

@@ -104,7 +104,6 @@
                   #"REDIRECTS"
                   (generate-redirects config 2)))))))
 
-; TODO add to build-cron env
 (defn-spec generate-build-configmap pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name
