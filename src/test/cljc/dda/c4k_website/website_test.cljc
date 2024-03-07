@@ -19,6 +19,14 @@
 (st/instrument `cut/generate-nginx-service)
 
 
+(deftest should-generate-gitrepourl
+  (is (= "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
+         (cut/generate-gitrepourl "mygit.de" "someuser" "repo" "main"))))
+
+(deftest should-generate-gitcommiturl
+  (is (= "https://mygit.de/api/v1/repos/someuser/repo/git/commits/HEAD"
+         (cut/generate-gitcommiturl "mygit.de" "someuser" "repo"))))
+
 (deftest should-generate-redirects
   (is (= "rewrite ^/products.html\\$ /offer.html permanent;\n  rewrite ^/one-more\\$ /redirect permanent;"
          (cut/generate-redirects {:issuer "staging"
@@ -219,6 +227,29 @@
                                    :branchname "main",
                                    :unique-name "test.io",
                                    :redirects []}))))
+
+(deftest should-generate-build-configmap
+  (is (= {:apiVersion "v1",
+          :kind "ConfigMap",
+          :metadata {:name "build-configmap",
+                     :namespace "test-io",
+                     :labels {:app.kubernetes.part-of "test-io-website"}},
+          :data
+          {:GITREPOURL "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
+           :GITCOMMITURL "https://mygit.de/api/v1/repos/someuser/repo/git/commits/HEAD"}}
+         (cut/generate-build-configmap {:issuer "staging"
+                                        :build-cpu-request "500m"
+                                        :build-cpu-limit "1700m"
+                                        :build-memory-request "256Mi"
+                                        :build-memory-limit "512Mi"
+                                        :volume-size "3"
+                                        :forgejo-host "mygit.de",
+                                        :repo-user "someuser",
+                                        :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
+                                        :forgejo-repo "repo",
+                                        :branchname "main",
+                                        :unique-name "test.io",
+                                        :redirects []}))))
 
 (deftest should-generate-build-secret
   (is (= {:apiVersion "v1",

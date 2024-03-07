@@ -53,17 +53,17 @@
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branch>.zip
 (defn-spec generate-gitrepourl string?
   [host pred/fqdn-string?
+   owner string?
    repo string?
-   user string?
    branch string?]
-  (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
+  (str "https://" host "/api/v1/repos/" owner "/" repo "/archive/" branch ".zip"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/git/commits/HEAD
 (defn-spec generate-gitcommiturl string?
   [host pred/fqdn-string?
-   repo string?
-   user string?]
-  (str "https://" host "/api/v1/repos/" user "/" repo "/git/" "commits/" "HEAD"))
+   owner string?
+   repo string?]
+  (str "https://" host "/api/v1/repos/" owner "/" repo "/git/" "commits/" "HEAD"))
 
 
 (defn-spec replace-all-matching-prefixes map?
@@ -104,7 +104,7 @@
                   #"REDIRECTS"
                   (generate-redirects config 2)))))))
 
-; TODO add test & add to build-cron env
+; TODO add to build-cron env
 (defn-spec generate-build-configmap pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name
@@ -116,17 +116,15 @@
     (->
      (yaml/load-as-edn "website/build-configmap.yaml")
      (replace-all-matching-prefixes "NAME" name)
-     (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
-                                                             (generate-gitrepourl
+     (cm/replace-all-matching-values-by-new-value "REPOURL" (generate-gitrepourl
                                                               forgejo-host
-                                                              forgejo-repo
                                                               repo-user
-                                                              branchname)))
-     (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
-                                                               (generate-gitcommiturl
+                                                              forgejo-repo
+                                                              branchname))
+     (cm/replace-all-matching-values-by-new-value "COMMITURL" (generate-gitcommiturl
                                                                 forgejo-host
-                                                                forgejo-repo
-                                                                repo-user))))))
+                                                                repo-user
+                                                                forgejo-repo)))))
 
 (defn-spec generate-build-secret pred/map-or-seq?
   [auth websiteauth?]
