@@ -228,20 +228,7 @@
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
           {:AUTHTOKEN "YWJlZGpnYmFzZG9kag=="}}
-         (cut/generate-build-secret {:fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                     :forgejo-repo "repo",
-                                     :issuer "staging",
-                                     :branchname "main",
-                                     :unique-name "test.io",
-                                     :redirects [],
-                                     :forgejo-host "gitlab.de"
-                                     :repo-user "someuser",
-                                     :build-cpu-request "500m"
-                                     :build-cpu-limit "1700m"
-                                     :build-memory-request "256Mi"
-                                     :build-memory-limit "512Mi"
-                                     :volume-size "3"}
-                                    {:unique-name "test.io",
+         (cut/generate-build-secret {:unique-name "test.io",
                                      :authtoken "abedjgbasdodj"}))))
 
 (deftest should-generate-content-pvc

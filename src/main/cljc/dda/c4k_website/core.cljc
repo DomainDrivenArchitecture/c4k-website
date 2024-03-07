@@ -118,23 +118,23 @@
              (->
               sorted-auth
               (assoc-in  [:websiteauths] (rest (sorted-auth :websiteauths))))
-             (let [final-config
+             (let [curr-flat-websiteconfig
                    (merge
                     website-config-defaults
                     (flatten-and-reduce-config sorted-config))
-                   name (web/replace-dots-by-minus (:unique-name final-config))]
+                   name (web/replace-dots-by-minus (:unique-name curr-flat-websiteconfig))]
                (cm/concat-vec
                 result
-                (ns/generate (merge {:namespace name} final-config))
-                [(web/generate-nginx-deployment final-config)
-                 (web/generate-nginx-configmap final-config)
-                 (web/generate-nginx-service final-config)
-                 (web/generate-content-pvc final-config)
-                 (web/generate-hash-state-pvc final-config)
-                 (web/generate-build-cron final-config)
-                 (web/generate-build-secret final-config
-                                            (flatten-and-reduce-auth auth))]
-                (generate-ingress final-config)))))))
+                (ns/generate (merge {:namespace name} curr-flat-websiteconfig))
+                [(web/generate-nginx-deployment curr-flat-websiteconfig)
+                 (web/generate-nginx-configmap curr-flat-websiteconfig)
+                 (web/generate-nginx-service curr-flat-websiteconfig)
+                 (web/generate-content-pvc curr-flat-websiteconfig)
+                 (web/generate-hash-state-pvc curr-flat-websiteconfig)
+                 (web/generate-build-cron curr-flat-websiteconfig)
+                 (web/generate-build-configmap curr-flat-websiteconfig)
+                 (web/generate-build-secret (flatten-and-reduce-auth auth))]
+                (generate-ingress curr-flat-websiteconfig)))))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?

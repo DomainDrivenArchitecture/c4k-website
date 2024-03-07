@@ -104,7 +104,7 @@
                   #"REDIRECTS"
                   (generate-redirects config 2)))))))
 
-; TODO add test
+; TODO add test & add to build-cron env
 (defn-spec generate-build-configmap pred/map-or-seq?
   [config websiteconfig?]
   (let [{:keys [unique-name
@@ -127,12 +127,10 @@
                                                                 forgejo-host
                                                                 forgejo-repo
                                                                 repo-user))))))
-; TODO: remove config
+
 (defn-spec generate-build-secret pred/map-or-seq?
-  [config websiteconfig?
-   auth websiteauth?]
-  (let [{:keys [unique-name]} config
-        {:keys [unique-name
+  [auth websiteauth?]
+  (let [{:keys [unique-name
                 authtoken]} auth
         name (replace-dots-by-minus unique-name)]
     (->

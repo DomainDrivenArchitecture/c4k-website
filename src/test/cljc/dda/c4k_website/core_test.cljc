@@ -131,7 +131,7 @@
          (cut/flatten-and-reduce-auth (cut/sort-auth auth2)))))
 
 (deftest test-generate
-  (is (= 22
+  (is (= 24
          (count (cut/generate
                  (yaml/load-as-edn "website-test/valid-config.yaml")
                  (yaml/load-as-edn "website-test/valid-auth.yaml"))))))
