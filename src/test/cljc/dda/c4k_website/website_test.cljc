@@ -237,8 +237,8 @@
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
           {:GIT_HOST "mygit.de"
-           :GITREPOURL "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
-           :GITCOMMITURL "https://mygit.de/api/v1/repos/someuser/repo/git/commits/HEAD"}}
+           :GIT_REPO_URL "https://mygit.de/api/v1/repos/someuser/repo/archive/main.zip"
+           :GIT_COMMIT_URL "https://mygit.de/api/v1/repos/someuser/repo/git/commits/HEAD"}}
          (cut/generate-build-configmap {:issuer "staging"
                                         :build-cpu-request "500m"
                                         :build-cpu-limit "1700m"
@@ -260,7 +260,7 @@
                      :namespace "test-io",
                      :labels {:app.kubernetes.part-of "test-io-website"}},
           :data
-          {:AUTHTOKEN "YWJlZGpnYmFzZG9kag=="}}
+          {:AUTH_TOKEN "YWJlZGpnYmFzZG9kag=="}}
          (cut/generate-build-secret {:unique-name "test.io",
                                      :authtoken "abedjgbasdodj"}))))
 
