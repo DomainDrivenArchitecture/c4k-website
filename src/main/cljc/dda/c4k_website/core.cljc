@@ -132,7 +132,7 @@
                  (web/generate-hash-state-pvc curr-flat-websiteconfig)
                  (web/generate-build-cron curr-flat-websiteconfig)
                  (web/generate-build-configmap curr-flat-websiteconfig)
-                 (web/generate-build-secret (flatten-and-reduce-auth auth))]
+                 (web/generate-build-secret (flatten-and-reduce-auth sorted-auth))]
                 (generate-ingress curr-flat-websiteconfig)))))))
 
 (defn-spec k8s-objects cp/map-or-seq?
