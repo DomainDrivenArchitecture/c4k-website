@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir $BUILD_DIR
-mkdir $SOURCE_DIR
+mkdir $BUILDDIR
+mkdir $SOURCEDIR
 
 set -euo pipefail
 
@@ -11,15 +11,15 @@ filename="website.zip"
 hashfilename="hashfile"
 
 echo "Check for new content"
-touch $HASHFILE_DIR/$hashfilename
-currentHash=$( cat $HASHFILE_DIR/$hashfilename )
+touch $HASHFILEDIR/$hashfilename
+currentHash=$( cat $HASHFILEDIR/$hashfilename )
 newHash=$( get-hash-data )
 
 if [[ $currentHash == $newHash ]]
     then
         echo "Nothing to do"
     else
-        echo $currentHash > $HASHFILE_DIR/$hashfilename
+        echo $currentHash > $HASHFILEDIR/$hashfilename
         echo "Generate .netrc file"
         generate-netrc-file
         echo "Downloading website data"

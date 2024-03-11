@@ -1,29 +1,29 @@
 #!/bin/bash
 
 function generate-netrc-file() {
-    echo "machine $GIT_HOST password $AUTH_TOKEN" > ~/.netrc
+    echo "machine $GITHOST password $AUTHTOKEN" > ~/.netrc
 }
 
 function get-website-data() {    
-    curl -H "Authorization: token $AUTH_TOKEN" -o $SOURCE_DIR/$1 $GIT_REPO_URL
+    curl -H "Authorization: token $AUTHTOKEN" -o $SOURCEDIR/$1 $GITREPOURL
 }
 
 function get-hash-data() {
-    curl -s -H "Authorization: token $AUTH_TOKEN" $GIT_COMMIT_URL | jq '.sha'
+    curl -s -H "Authorization: token $AUTHTOKEN" $GITCOMMITURL | jq '.sha'
 }
 
 function write-hash-data() {
-    echo $1 > $HASHFILE_DIR/$2
+    echo $1 > $HASHFILEDIR/$2
 }
 
 function unzip-website-data() {
-    unzip $SOURCE_DIR/$1 -d $BUILD_DIR
+    unzip $SOURCEDIR/$1 -d $BUILDDIR
 }
 
 function build-website() {
-    (cd $BUILD_DIR; dir=$(ls); cd $dir; ./generate.sh;)
+    (cd $BUILDDIR; dir=$(ls); cd $dir; ./generate.sh;)
 }
 
 function move-website-files-to-target() {
-    (cd $BUILD_DIR; dir=$(ls); cd $dir; rsync -ru --exclude-from "/etc/exclude.pattern" --delete target/html/* $WEBSITE_ROOT;)
+    (cd $BUILDDIR; dir=$(ls); cd $dir; rsync -ru --exclude-from "/etc/exclude.pattern" --delete target/html/* $WEBSITE_ROOT;)
 }

@@ -6,6 +6,6 @@ metadata:
   labels:
     app.kubernetes.part-of: NAME-website
 data:
-  GIT_HOST: GITHOST
-  GIT_REPO_URL: REPOURL
-  GIT_COMMIT_URL: COMMITURL
+  GITHOST: GITHOST
+  GITREPOURL: REPOURL
+  GITCOMMITURL: COMMITURL
