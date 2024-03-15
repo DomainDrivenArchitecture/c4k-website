@@ -25,5 +25,5 @@ function build-website() {
 }
 
 function move-website-files-to-target() {
-    (cd $BUILDDIR; dir=$(ls); cd $dir; rsync -ru --exclude-from "/etc/exclude.pattern" --delete target/html/* $WEBSITE_ROOT;)
+    (cd $BUILDDIR; dir=$(ls); cd $dir; rsync -ru --exclude-from "/etc/exclude.pattern" --delete target/html/* $WEBSITEROOT;)
 }

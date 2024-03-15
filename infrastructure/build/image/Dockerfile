@@ -5,7 +5,7 @@ ADD resources /tmp
 
 ENV BUILDDIR="/etc/website"
 ENV SOURCEDIR="/etc/websitesource"
-ENV WEBSITE_ROOT="/var/www/html/website/"
+ENV WEBSITEROOT="/var/www/html/website/"
 ENV HASHFILEDIR="/var/hashfile.d"
 
 RUN /tmp/install.sh
