@@ -69,8 +69,8 @@
                               :build-memory-limit "512Mi"
                               :volume-size "3"
                               :redirects []
-                              :average-rate 50
-                              :burst-rate 30})
+                              :average-rate 20
+                              :burst-rate 40})
 
 (defn-spec sort-config map?
   [unsorted-config config?]
