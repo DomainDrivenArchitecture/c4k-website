@@ -16,6 +16,8 @@
 (s/def ::unique-name ::web/unique-name)
 (s/def ::issuer ::web/issuer)
 (s/def ::volume-size ::web/volume-size)
+(s/def ::average-rate ::ing/average-rate)
+(s/def ::burst-rate ::ing/burst-rate)
 
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
@@ -51,7 +53,9 @@
 (def config? (s/keys :req-un [::websiteconfigs]
                      :opt-un [::issuer
                               ::volume-size
-                              ::mon-cfg]))
+                              ::mon-cfg
+                              ::average-rate
+                              ::burst-rate]))
 
 (def auth? (s/keys :req-un [::websiteauths]
                    :opt-un [::mon-auth]))
@@ -64,7 +68,9 @@
                               :build-memory-request "256Mi"
                               :build-memory-limit "512Mi"
                               :volume-size "3"
-                              :redirects []})
+                              :redirects []
+                              :average-rate 50
+                              :burst-rate 30})
 
 (defn-spec sort-config map?
   [unsorted-config config?]
@@ -86,7 +92,11 @@
           (when (contains? config :issuer)
             {:issuer (config :issuer)})
           (when (contains? config :volume-size)
-            {:volume-size (config :volume-size)}))))
+            {:volume-size (config :volume-size)})
+          (when (contains? config :average-rate)
+            {:average-rate (config :average-rate)})
+          (when (contains? config :burst-rate)
+            {:burst-rate (config :burst-rate)}))))
 
 (defn-spec flatten-and-reduce-auth map?
   [auth auth?]

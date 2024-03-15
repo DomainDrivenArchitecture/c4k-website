@@ -19,3 +19,4 @@ mon-cfg:
   grafana-cloud-url: "url-for-your-prom-remote-write-endpoint"
   cluster-name: "website"
   cluster-stage: "test"
+average-rate: 50
