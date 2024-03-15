@@ -20,9 +20,9 @@
 (s/def ::authtoken pred/bash-env-string?)
 (s/def ::fqdns (s/coll-of pred/fqdn-string?))
 (s/def ::forgejo-host pred/fqdn-string?)
-(s/def ::forgejo-repo string?)
+(s/def ::repo-name string?)
 (s/def ::branchname string?)
-(s/def ::username string?)
+(s/def ::repo-owner string?)
 (s/def ::build-cpu-request string?)
 (s/def ::build-memory-request string?)
 (s/def ::build-cpu-limit string?)
@@ -30,29 +30,21 @@
 (s/def ::redirect (s/tuple string? string?))
 (s/def ::redirects (s/coll-of ::redirect))
 
-
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
-                                     ::forgejo-repo
+                                     ::repo-owner
+                                     ::repo-name
                                      ::branchname
-                                     ::issuer
-                                     ::volume-size
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
                                      ::build-memory-limit
+                                     ::issuer
+                                     ::volume-size
                                      ::redirects]))
 
-(def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
-
-(s/def ::websiteconfigs (s/coll-of websiteconfig?))
-
-(s/def ::websiteauths (s/coll-of websiteauth?))
-
-(def websiteconfigs? (s/keys :req-un [::websiteconfigs]))
-
-(def auth? (s/keys :req-un [::websiteauths]))
+(def websiteauth? (s/keys :req-un [::unique-name ::authtoken]))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn pred/fqdn-string?]
@@ -61,17 +53,17 @@
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/archive/<branch>.zip
 (defn-spec generate-gitrepourl string?
   [host pred/fqdn-string?
+   owner string?
    repo string?
-   user string?
    branch string?]
-  (str "https://" host "/api/v1/repos/" user "/" repo "/archive/" branch ".zip"))
+  (str "https://" host "/api/v1/repos/" owner "/" repo "/archive/" branch ".zip"))
 
 ; https://your.gitea.host/api/v1/repos/<owner>/<repo>/git/commits/HEAD
 (defn-spec generate-gitcommiturl string?
   [host pred/fqdn-string?
-   repo string?
-   user string?]
-  (str "https://" host "/api/v1/repos/" user "/" repo "/git/" "commits/" "HEAD"))
+   owner string?
+   repo string?]
+  (str "https://" host "/api/v1/repos/" owner "/" repo "/git/" "commits/" "HEAD"))
 
 
 (defn-spec replace-all-matching-prefixes map?
@@ -94,7 +86,6 @@
       #(str "rewrite ^" (first %1) "\\$ " (second %1) " permanent;") 
       redirects))))
 
-
 (defn-spec generate-nginx-configmap map?
   [config websiteconfig?]
   (let [{:keys [fqdns unique-name]} config
@@ -113,32 +104,37 @@
                   #"REDIRECTS"
                   (generate-redirects config 2)))))))
 
-
-(defn-spec generate-build-secret pred/map-or-seq?
-  [config websiteconfig?
-   auth websiteauth?]
+(defn-spec generate-build-configmap pred/map-or-seq?
+  [config websiteconfig?]
   (let [{:keys [unique-name
                 forgejo-host
-                forgejo-repo
+                repo-owner
+                repo-name
                 branchname]} config
-        {:keys [authtoken
-                username]} auth
+        name (replace-dots-by-minus unique-name)]
+    (->
+     (yaml/load-as-edn "website/build-configmap.yaml")
+     (replace-all-matching-prefixes "NAME" name)
+     (cm/replace-all-matching-values-by-new-value "GITHOST" forgejo-host)
+     (cm/replace-all-matching-values-by-new-value "REPOURL" (generate-gitrepourl
+                                                              forgejo-host
+                                                              repo-owner
+                                                              repo-name
+                                                              branchname))
+     (cm/replace-all-matching-values-by-new-value "COMMITURL" (generate-gitcommiturl
+                                                                forgejo-host
+                                                                repo-owner
+                                                                repo-name)))))
+
+(defn-spec generate-build-secret pred/map-or-seq?
+  [auth websiteauth?]
+  (let [{:keys [unique-name
+                authtoken]} auth
         name (replace-dots-by-minus unique-name)]
     (->
      (yaml/load-as-edn "website/build-secret.yaml")
      (replace-all-matching-prefixes "NAME" name)
-     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken))
-     (cm/replace-all-matching-values-by-new-value "REPOURL" (b64/encode
-                                                             (generate-gitrepourl
-                                                              forgejo-host
-                                                              forgejo-repo
-                                                              username
-                                                              branchname)))
-     (cm/replace-all-matching-values-by-new-value "COMMITURL" (b64/encode
-                                                               (generate-gitcommiturl
-                                                                forgejo-host
-                                                                forgejo-repo
-                                                                username))))))
+     (cm/replace-all-matching-values-by-new-value "TOKEN" (b64/encode authtoken)))))
 
 
 (defn-spec generate-content-pvc map?

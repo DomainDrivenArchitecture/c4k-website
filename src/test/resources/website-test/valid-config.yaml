@@ -3,7 +3,8 @@ websiteconfigs:
 - unique-name: "test.io" 
   fqdns: ["test.de", "test.org", "www.test.de", "www.test.org"]
   forgejo-host: "codeberg.org"
-  forgejo-repo: "repo"
+  repo-owner: "someuser"
+  repo-name: "repo"
   branchname: "main"
   redirects:
   - ["/products.html", "/offer.html"]
@@ -11,9 +12,11 @@ websiteconfigs:
 - unique-name: "example.io"
   fqdns: ["example.org", "www.example.com"]
   forgejo-host: "fineForgejoHost.net"
-  forgejo-repo: "repo"
+  repo-owner: "someotheruser"
+  repo-name: "repo"
   branchname: "main"
 mon-cfg: 
   grafana-cloud-url: "url-for-your-prom-remote-write-endpoint"
   cluster-name: "website"
   cluster-stage: "test"
+average-rate: 50

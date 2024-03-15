@@ -28,12 +28,12 @@ websiteconfigs:
 - unique-name: "test.io" 
   fqdns: ["test.de", "test.org", "www.test.de", "www.test.org"]
   forgejo-host: "codeberg.org"
-  forgejo-repo: "repo"
+  repo-name: "repo"
   branchname: "main"
 - unique-name: "example.io"
   fqdns: ["example.org", "www.example.com"]
   forgejo-host: "fineForgejoHost.net"
-  forgejo-repo: "repo"
+  repo-name: "repo"
   branchname: "main"
 mon-cfg: 
   grafana-cloud-url: "url-for-your-prom-remote-write-endpoint"

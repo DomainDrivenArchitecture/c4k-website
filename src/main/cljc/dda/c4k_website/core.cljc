@@ -16,36 +16,46 @@
 (s/def ::unique-name ::web/unique-name)
 (s/def ::issuer ::web/issuer)
 (s/def ::volume-size ::web/volume-size)
+(s/def ::average-rate ::ing/average-rate)
+(s/def ::burst-rate ::ing/burst-rate)
+
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
 (s/def ::forgejo-host ::web/forgejo-host)
-(s/def ::forgejo-repo ::web/forgejo-repo)
+(s/def ::repo-owner ::web/repo-owner)
+(s/def ::repo-name ::web/repo-name)
 (s/def ::branchname ::web/branchname)
-(s/def ::username ::web/username)
 (s/def ::build-cpu-request ::web/build-cpu-request)
 (s/def ::build-memory-request ::web/build-memory-request)
 (s/def ::build-cpu-limit ::web/build-cpu-limit)
 (s/def ::build-memory-limit ::web/build-memory-limit)
+(s/def ::redirects ::web/redirects)
 
 (def websiteconfig? (s/keys :req-un [::unique-name
                                      ::fqdns
                                      ::forgejo-host
-                                     ::forgejo-repo
+                                     ::repo-owner
+                                     ::repo-name
                                      ::branchname]
                             :opt-un [::issuer
                                      ::volume-size
                                      ::build-cpu-request
                                      ::build-cpu-limit
                                      ::build-memory-request
-                                     ::build-memory-limit]))
-(def websiteauth? (s/keys :req-un [::unique-name ::username ::authtoken]))
+                                     ::build-memory-limit
+                                     ::redirects]))
+(def websiteauth? web/websiteauth?)
+(def websiteauths? (s/keys :req-un [::websiteauths]))
+
 (s/def ::websiteconfigs (s/coll-of websiteconfig?))
 (s/def ::websiteauths (s/coll-of websiteauth?))
 
 (def config? (s/keys :req-un [::websiteconfigs]
                      :opt-un [::issuer
                               ::volume-size
-                              ::mon-cfg]))
+                              ::mon-cfg
+                              ::average-rate
+                              ::burst-rate]))
 
 (def auth? (s/keys :req-un [::websiteauths]
                    :opt-un [::mon-auth]))
@@ -58,7 +68,9 @@
                               :build-memory-request "256Mi"
                               :build-memory-limit "512Mi"
                               :volume-size "3"
-                              :redirects []})
+                              :redirects []
+                              :average-rate 20
+                              :burst-rate 40})
 
 (defn-spec sort-config map?
   [unsorted-config config?]
@@ -80,7 +92,11 @@
           (when (contains? config :issuer)
             {:issuer (config :issuer)})
           (when (contains? config :volume-size)
-            {:volume-size (config :volume-size)}))))
+            {:volume-size (config :volume-size)})
+          (when (contains? config :average-rate)
+            {:average-rate (config :average-rate)})
+          (when (contains? config :burst-rate)
+            {:burst-rate (config :burst-rate)}))))
 
 (defn-spec flatten-and-reduce-auth map?
   [auth auth?]
@@ -99,35 +115,35 @@
 (defn-spec generate seq?
   [config config?
    auth auth?]
-  (loop [config (sort-config config)
+  (loop [sorted-config (sort-config config)
          sorted-auth (sort-auth auth)
          result []]
 
-    (if (and (empty? (config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
+    (if (and (empty? (sorted-config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
       result
       (recur (->
-              config
-              (assoc-in  [:websiteconfigs] (rest (config :websiteconfigs))))
+              sorted-config
+              (assoc-in  [:websiteconfigs] (rest (sorted-config :websiteconfigs))))
              (->
-              auth
+              sorted-auth
               (assoc-in  [:websiteauths] (rest (sorted-auth :websiteauths))))
-             (let [final-config
+             (let [curr-flat-websiteconfig
                    (merge
                     website-config-defaults
-                    (flatten-and-reduce-config config))
-                   name (web/replace-dots-by-minus (:unique-name final-config))]
+                    (flatten-and-reduce-config sorted-config))
+                   name (web/replace-dots-by-minus (:unique-name curr-flat-websiteconfig))]
                (cm/concat-vec
                 result
-                (ns/generate (merge {:namespace name} final-config))
-                [(web/generate-nginx-deployment final-config)
-                 (web/generate-nginx-configmap final-config)
-                 (web/generate-nginx-service final-config)
-                 (web/generate-content-pvc final-config)
-                 (web/generate-hash-state-pvc final-config)
-                 (web/generate-build-cron final-config)
-                 (web/generate-build-secret final-config
-                                            (flatten-and-reduce-auth auth))]
-                (generate-ingress final-config)))))))
+                (ns/generate (merge {:namespace name} curr-flat-websiteconfig))
+                [(web/generate-nginx-deployment curr-flat-websiteconfig)
+                 (web/generate-nginx-configmap curr-flat-websiteconfig)
+                 (web/generate-nginx-service curr-flat-websiteconfig)
+                 (web/generate-content-pvc curr-flat-websiteconfig)
+                 (web/generate-hash-state-pvc curr-flat-websiteconfig)
+                 (web/generate-build-cron curr-flat-websiteconfig)
+                 (web/generate-build-configmap curr-flat-websiteconfig)
+                 (web/generate-build-secret (flatten-and-reduce-auth sorted-auth))]
+                (generate-ingress curr-flat-websiteconfig)))))))
 
 (defn-spec k8s-objects cp/map-or-seq?
   [config config?

@@ -30,12 +30,14 @@
    [{:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
      :forgejo-host "finegitehost.net"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}
     {:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :forgejo-host "gitlab.de"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}]})
 
 (def websites2
@@ -43,42 +45,40 @@
    [{:unique-name "test.io"
      :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"]
      :forgejo-host "gitlab.de"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}
     {:unique-name "example.io"
      :fqdns ["example.org", "www.example.com"]
      :forgejo-host "finegitehost.net"
-     :forgejo-repo "repo"
+     :repo-owner "someuser"
+     :repo-name "repo"
      :branchname "main"}]})
 
 (def auth1
   {:websiteauths
    [{:unique-name "example.io"
-     :username "someuser"
      :authtoken "abedjgbasdodj"}
     {:unique-name "test.io"
-     :username "someuser"
      :authtoken "abedjgbasdodj"}]})
 
 (def auth2
   {:websiteauths
    [{:unique-name "test.io"
-     :username "someuser"
      :authtoken "abedjgbasdodj"}
     {:unique-name "example.io"
-     :username "someuser"
      :authtoken "abedjgbasdodj"}]})
 
 (def flattened-and-reduced-config
   {:unique-name "example.io",
    :fqdns ["example.org" "www.example.com"],
    :forgejo-host "finegitehost.net",
-   :forgejo-repo "repo",
+   :repo-owner "someuser",
+   :repo-name "repo",
    :branchname "main"})
 
 (def flattened-and-reduced-auth
   {:unique-name "example.io",
-   :username "someuser",
    :authtoken "abedjgbasdodj"})
 
 (deftest sorts-config
@@ -87,12 +87,14 @@
           [{:unique-name "example.io",
             :fqdns ["example.org" "www.example.com"],
             :forgejo-host "finegitehost.net",
-            :forgejo-repo "repo",
+            :repo-owner "someuser",
+            :repo-name "repo",
             :branchname "main"},
            {:unique-name "test.io",
             :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
             :forgejo-host "gitlab.de",
-            :forgejo-repo "repo",
+            :repo-owner "someuser",
+            :repo-name "repo",
             :branchname "main",
             :sha256sum-output "123456789ab123cd345de script-file-name.sh"}],
           :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}
@@ -102,13 +104,15 @@
            [{:unique-name "test.io",
              :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
              :forgejo-host "gitlab.de",
-             :forgejo-repo "repo",
+             :repo-owner "someuser",
+             :repo-name "repo",
              :branchname "main",
              :sha256sum-output "123456789ab123cd345de script-file-name.sh"}
             {:unique-name "example.io",
              :fqdns ["example.org" "www.example.com"],
              :forgejo-host "finegitehost.net",
-             :forgejo-repo "repo",
+             :repo-owner "someuser",
+             :repo-name "repo",
              :branchname "main"}],
            :mon-cfg {:grafana-cloud-url "url-for-your-prom-remote-write-endpoint", :cluster-name "jitsi", :cluster-stage "test"}}))))
 
@@ -127,7 +131,7 @@
          (cut/flatten-and-reduce-auth (cut/sort-auth auth2)))))
 
 (deftest test-generate
-  (is (= 22
+  (is (= 24
          (count (cut/generate
                  (yaml/load-as-edn "website-test/valid-config.yaml")
                  (yaml/load-as-edn "website-test/valid-auth.yaml"))))))
@@ -158,13 +162,14 @@
               :path "/",
               :backend {:service {:name "test-io", :port {:number 80}}}}]}}]
          (get-in
-          (cut/generate-ingress {:forgejo-host "gitlab.de",
+          (cut/generate-ingress {:unique-name "test.io",
                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                 :forgejo-repo "repo",
+                                 :forgejo-host "gitlab.de",
+                                 :repo-owner "someuser",
+                                 :repo-name "repo",
                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                  :issuer "staging",
                                  :branchname "main",
-                                 :unique-name "test.io"
                                  :build-cpu-request "500m"
                                  :build-cpu-limit "1700m"
                                  :build-memory-request "256Mi"
@@ -174,13 +179,14 @@
           [2 :spec :rules])))
   (is (= "test-io"
          (get-in
-          (cut/generate-ingress {:forgejo-host "gitlab.de",
+          (cut/generate-ingress {:unique-name "test.io",
                                  :fqdns ["test.de" "test.org" "www.test.de" "www.test.org"],
-                                 :forgejo-repo "repo",
+                                 :forgejo-host "gitlab.de",
+                                 :repo-owner "someuser",
+                                 :repo-name "repo",
                                  :sha256sum-output "123456789ab123cd345de script-file-name.sh",
                                  :issuer "staging",
                                  :branchname "main",
-                                 :unique-name "test.io"
                                  :build-cpu-request "500m"
                                  :build-cpu-limit "1700m"
                                  :build-memory-request "256Mi"

@@ -33,4 +33,16 @@
                   ["vcs" "commit"]
                   ["vcs" "tag" "v" "--no-sign"]
                   ["change" "version" "leiningen.release/bump-version"]]
+  :aliases {"native" ["shell"
+                      "native-image"
+                      "--report-unsupported-elements-at-runtime"
+                      "--initialize-at-build-time"
+                      "-jar" "target/uberjar/c4k-website-standalone.jar"
+                      "-H:ResourceConfigurationFiles=graalvm-resource-config.json"
+                      "-H:Log=registerResource"
+                      "-H:Name=target/graalvm/${:name}"]
+            "inst" ["shell"
+                    "sh"
+                    "-c"
+                    "lein uberjar && sudo install -m=755 target/uberjar/c4k-website-standalone.jar /usr/local/bin/c4k-website-standalone.jar"]}
   )

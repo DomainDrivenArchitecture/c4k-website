@@ -28,14 +28,16 @@
          "{ :websiteconfigs
           [{:unique-name \"test.io\",
             :fqdns [\"test.de\" \"www.test.de\"],
-            :gitea-host \"githost.de\",
-            :gitea-repo \"repo\",
+            :forgejo-host \"githost.de\",
+            :repo-owner \"someuser\",
+            :repo-name \"repo\",
             :branchname \"main\",
             :sha256sum-output \"123456789ab123cd345de script-file-name.sh\"}
            {:unique-name \"example.io \",
             :fqdns [\"example.org\" \"www.example.org\"],
-            :gitea-host \"githost.org\",
-            :gitea-repo \"repo\",
+            :forgejo-host \"githost.org\",
+            :repo-owner \"someuser\",
+            :repo-name \"repo\",
             :branchname \"main\",
             :build-cpu-request \"1500m\",
             :build-cpu-limit \"3000m\",
@@ -51,10 +53,8 @@
            :grafana-cloud-password \"your-cloud-password\"}
           :websiteauths
           [{:unique-name \"test.io\",
-            :username \"someuser\",
             :authtoken \"abedjgbasdodj\"}
            {:unique-name \"example.io\",
-            :username \"someuser\",
             :authtoken \"abedjgbasdodj\"}]}"
         "7"))
       [(br/generate-br)]
@@ -84,12 +84,12 @@
                   :grafana-cloud-url mon-cloud-url}}))))
 
 (defn validate-all! []
-  (br/validate! "websiteconfigs" website/websiteconfigs? :deserializer edn/read-string)
-  (br/validate! "issuer" ::website/issuer :optional true)
+  (br/validate! "websiteconfigs" core/websiteconfigs? :deserializer edn/read-string)
+  (br/validate! "issuer" ::core/issuer :optional true)
   (br/validate! "mon-cluster-name" ::mon/cluster-name :optional true)
   (br/validate! "mon-cluster-stage" ::mon/cluster-stage :optional true)
   (br/validate! "mon-cloud-url" ::mon/grafana-cloud-url :optional true)
-  (br/validate! "auth" website/auth? :deserializer edn/read-string)
+  (br/validate! "auth" core/websiteauths? :deserializer edn/read-string)
   (br/set-form-validated!))
 
 (defn add-validate-listener [name]
