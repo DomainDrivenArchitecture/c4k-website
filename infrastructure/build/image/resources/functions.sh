@@ -21,7 +21,7 @@ function unzip-website-data() {
 }
 
 function build-website() {
-    (cd $BUILDDIR; dir=$(ls); cd $dir; ./generate.sh;)
+    (cd $BUILDDIR; dir=$(ls); cd $dir; bash generate.sh;)
 }
 
 function move-website-files-to-target() {
