@@ -33,6 +33,7 @@
                   ["vcs" "commit"]
                   ["vcs" "tag" "v" "--no-sign"]
                   ["change" "version" "leiningen.release/bump-version"]]
+  ;; TODO: das ist intentionally nach pyb gewandert und muss hier raus!
   :aliases {"native" ["shell"
                       "native-image"
                       "--report-unsupported-elements-at-runtime"
