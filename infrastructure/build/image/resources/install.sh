@@ -6,7 +6,7 @@ function main()
 {
     {
         upgradeSystem
-        apt-get install -qqy unzip rsync jq imagemagick curl
+        apt-get install -qqy unzip rsync jq imagemagick curl git
         install-hugo-from-deb
         install-go-from-tar
 
