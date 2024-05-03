@@ -1,4 +1,4 @@
-(defproject org.domaindrivenarchitecture/c4k-website "2.0.2"
+(defproject org.domaindrivenarchitecture/c4k-website "2.0.3-SNAPSHOT"
   :description "website c4k-installation package"
   :url "https://domaindrivenarchitecture.org"
   :license {:name "Apache License, Version 2.0"
