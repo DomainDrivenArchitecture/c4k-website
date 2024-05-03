@@ -8,6 +8,7 @@ function main()
         upgradeSystem
         apt-get install -qqy unzip rsync jq imagemagick curl
         install-hugo-from-deb
+        install-go-from-tar
 
         install -d /etc/lein/
         install -m 0700 /tmp/entrypoint.sh /

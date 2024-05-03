@@ -47,5 +47,23 @@ function install-hugo-from-deb() {
     echo "Clean up"
     rm hugo_extended_${HUGO_VERSION}_linux-amd64.deb
     rm checksums.txt
+}
 
+function install-go-from-tar() {
+    curl -L "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o go_linux-amd64.tar.gz
+    EXPECTED_CHECKSUM="4643d4c29c55f53fa0349367d7f1bb5ca554ea6ef528c146825b0f8464e2e668  go_linux-amd64.tar.gz"
+    ACTUAL_CHECKSUM="$(sha256sum go_linux-amd64.tar.gz)"
+    if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
+    then
+        >&2 echo 'ERROR: Invalid installer checksum'
+        rm go_linux-amd64.tar.gz
+        exit 1
+    fi
+
+    echo "Installing go"
+    echo
+    tar -C /usr/local -xzf go_linux-amd64.tar.gz
+
+    echo "Clean up"
+    rm go_linux-amd64.tar.gz
 }
