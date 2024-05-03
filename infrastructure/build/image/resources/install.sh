@@ -6,7 +6,8 @@ function main()
 {
     {
         upgradeSystem
-        apt-get install -qqy unzip rsync jq imagemagick curl hugo
+        apt-get install -qqy unzip rsync jq imagemagick curl
+        install-hugo-from-deb
 
         install -d /etc/lein/
         install -m 0700 /tmp/entrypoint.sh /
@@ -22,4 +23,5 @@ function main()
 }
 
 source /tmp/install_functions_debian.sh
+source /tmp/functions.sh
 DEBIAN_FRONTEND=noninteractive DEBCONF_NOWARNINGS=yes main
