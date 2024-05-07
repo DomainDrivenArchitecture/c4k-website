@@ -6,12 +6,12 @@ metadata:
   labels:
     app.kubernetes.part-of: NAME-website 
 spec:
-  schedule: "10/7 * * * *"
+  schedule: "0/7 * * * *"
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
-      activeDeadlineSeconds: 4150
+      activeDeadlineSeconds: 415
       template:
         metadata:
           namespace: NAME

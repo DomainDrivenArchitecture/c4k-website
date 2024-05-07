@@ -196,7 +196,8 @@
            :failedJobsHistoryLimit 1,
            :jobTemplate
            {:spec
-            {:template
+            {:activeDeadlineSeconds 415,
+             :template
              {:metadata
               {:namespace "test-io",
                :labels
