@@ -29,7 +29,6 @@
 (s/def ::build-memory-request ::web/build-memory-request)
 (s/def ::build-cpu-limit ::web/build-cpu-limit)
 (s/def ::build-memory-limit ::web/build-memory-limit)
-;; TODO: Redirect fehlt!
 (s/def ::redirects ::web/redirects)
 
 (def websiteconfig? (s/keys :req-un [::unique-name
