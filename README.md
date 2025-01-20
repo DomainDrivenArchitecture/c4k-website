@@ -92,6 +92,7 @@ Development happens at: https://repo.prod.meissa.de/meissa/c4k-website
 
 Mirrors are:
 
+* https://codeberg.org/meissa/c4k-website.git
 * https://gitlab.com/domaindrivenarchitecture/c4k-website (issues and PR, CI)
 * https://github.com/DomainDrivenArchitecture/c4k-website
 
