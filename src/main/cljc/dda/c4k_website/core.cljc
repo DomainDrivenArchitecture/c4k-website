@@ -3,21 +3,18 @@
    [clojure.spec.alpha :as s]
    #?(:clj [orchestra.core :refer [defn-spec]]
       :cljs [orchestra.core :refer-macros [defn-spec]])
-   [dda.c4k-common.yaml :as yaml]
    [dda.c4k-common.common :as cm]
-   [dda.c4k-common.predicate :as cp]
    [dda.c4k-common.monitoring :as mon]
    [dda.c4k-common.namespace :as ns]
-   [dda.c4k-common.ingress :as ing]
-   [dda.c4k-website.website :as web]))
+   [dda.c4k-common.predicate :as cp]
+   [dda.c4k-website.website :as web]
+   [dda.c4k-common.yaml :as yaml]))
 
 (s/def ::mon-cfg ::mon/mon-cfg)
 (s/def ::mon-auth ::mon/mon-auth)
 (s/def ::unique-name ::web/unique-name)
 (s/def ::issuer ::web/issuer)
 (s/def ::volume-size ::web/volume-size)
-(s/def ::average-rate ::ing/average-rate)
-(s/def ::burst-rate ::ing/burst-rate)
 
 (s/def ::authtoken ::web/authtoken)
 (s/def ::fqdns ::web/fqdns)
@@ -60,17 +57,8 @@
 (def auth? (s/keys :req-un [::websiteauths]
                    :opt-un [::mon-auth]))
 
-(def config-defaults {:issuer "staging"})
-
-
-(def website-config-defaults {:build-cpu-request "500m"
-                              :build-cpu-limit "1700m"
-                              :build-memory-request "256Mi"
-                              :build-memory-limit "512Mi"
-                              :volume-size "3"
-                              :redirects []
-                              :average-rate 20
-                              :burst-rate 40})
+(def config-defaults {:namespace "web"
+                      :issuer "staging"})
 
 (defn-spec sort-config map?
   [unsorted-config config?]
@@ -102,57 +90,33 @@
   [auth auth?]
   (-> auth :websiteauths first))
 
-(defn-spec generate-ingress seq?
-  [config websiteconfig?]
-  (let [name (web/replace-dots-by-minus (:unique-name config))
-        final-config (merge website-config-defaults
-                            {:service-name name
-                             :service-port 80
-                             :namespace name}
-                            config)]
-    (ing/generate-simple-ingress final-config)))
+(defn-spec config-objects cp/map-or-seq?
+  [config config?]
+  (let [resolved-config (merge config-defaults config)]
+    (map yaml/to-string
+         (filter
+          #(not (nil? %))
+          (cm/concat-vec
+           (ns/generate resolved-config)
+           [(web/generate-content-pvc resolved-config)
+            (web/generate-nginx-deployment resolved-config)
+            (web/generate-nginx-configmap resolved-config)
+            (web/generate-nginx-service resolved-config)
+            (web/generate-content-pvc resolved-config)
+            (web/generate-hash-state-pvc resolved-config)
+            (web/generate-build-cron resolved-config)
+            (web/generate-build-configmap resolved-config)]
+           (web/generate-ingress resolved-config)
+           (when (:contains? resolved-config :mon-cfg)
+             (mon/generate-config)))))))
 
-(defn-spec generate seq?
-  [config config?
-   auth auth?]
-  (loop [sorted-config (sort-config config)
-         sorted-auth (sort-auth auth)
-         result []]
-
-    (if (and (empty? (sorted-config :websiteconfigs)) (empty? (sorted-auth :websiteauths)))
-      result
-      (recur (->
-              sorted-config
-              (assoc-in  [:websiteconfigs] (rest (sorted-config :websiteconfigs))))
-             (->
-              sorted-auth
-              (assoc-in  [:websiteauths] (rest (sorted-auth :websiteauths))))
-             (let [curr-flat-websiteconfig
-                   (merge
-                    website-config-defaults
-                    (flatten-and-reduce-config sorted-config))
-                   name (web/replace-dots-by-minus (:unique-name curr-flat-websiteconfig))]
-               (cm/concat-vec
-                result
-                (ns/generate (merge {:namespace name} curr-flat-websiteconfig))
-                [(web/generate-nginx-deployment curr-flat-websiteconfig)
-                 (web/generate-nginx-configmap curr-flat-websiteconfig)
-                 (web/generate-nginx-service curr-flat-websiteconfig)
-                 (web/generate-content-pvc curr-flat-websiteconfig)
-                 (web/generate-hash-state-pvc curr-flat-websiteconfig)
-                 (web/generate-build-cron curr-flat-websiteconfig)
-                 (web/generate-build-configmap curr-flat-websiteconfig)
-                 (web/generate-build-secret (flatten-and-reduce-auth sorted-auth))]
-                (generate-ingress curr-flat-websiteconfig)))))))
-
-(defn-spec k8s-objects cp/map-or-seq?
+(defn-spec auth-objects cp/map-or-seq?
   [config config?
    auth auth?]
   (cm/concat-vec
    (map yaml/to-string
-        (filter
-         #(not (nil? %))
-         (cm/concat-vec
-          (generate config auth)
-          (when (:contains? config :mon-cfg)
-            (mon/generate (:mon-cfg config) (:mon-auth auth))))))))
+        (filter #(not (nil? %))
+                (cm/concat-vec
+                 (ns/generate config auth)
+                 (when (:contains? config :mon-cfg)
+                   (mon/generate-auth (:mon-cfg config) (:mon-auth auth))))))))
