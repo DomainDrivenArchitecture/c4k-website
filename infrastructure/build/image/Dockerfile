@@ -3,8 +3,8 @@ FROM clojure:lein
 # Prepare Entrypoint Script
 ADD resources /tmp
 
-ENV HUGO_VERSION="0.138.0"
-ENV GO_VERSION="1.22.6"
+ENV HUGO_VERSION="0.145.0"
+ENV GO_VERSION="1.24.1"
 ENV BUILDDIR="/etc/website"
 ENV SOURCEDIR="/etc/websitesource"
 ENV WEBSITEROOT="/var/www/html/website/"
