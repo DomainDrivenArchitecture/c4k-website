@@ -51,7 +51,7 @@ function install-hugo-from-deb() {
 
 function install-go-from-tar() {
     curl -L "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -o go_linux-amd64.tar.gz
-    EXPECTED_CHECKSUM="4643d4c29c55f53fa0349367d7f1bb5ca554ea6ef528c146825b0f8464e2e668  go_linux-amd64.tar.gz"
+    EXPECTED_CHECKSUM="cb2396bae64183cdccf81a9a6df0aea3bce9511fc21469fb89a0c00470088073  go_linux-amd64.tar.gz"
     ACTUAL_CHECKSUM="$(sha256sum go_linux-amd64.tar.gz)"
     if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
     then
