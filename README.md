@@ -98,6 +98,16 @@ Mirrors are:
 
 For more details about our repository model see: https://repo.prod.meissa.de/meissa/federate-your-repos
 
+### Create a new version of docker image "c4k-website-build"
+
+Go to folder `infrastructure/build/` and create an image with `pyb image`. 
+After you have tagged the image and pushed it to "docker.io" it can be used by c4k-website. (TODO: document how to tag and push.)  
+To use the new image, update the image's version in line  
+`- image: domaindrivenarchitecture/c4k-website-build:2.0.6`   
+in file: [build-cron.yaml](src/main/resources/website/build-cron.yaml)  
+Then (re-)deploy the c4k-website to the server or - alternatively - update the version of the image manually on the server 
+in the corresponding cronJob-Deployment to automatically pull and use the new image on the server. 
+
 ## License
 
 Copyright © 2022, 2023, 2024 meissa GmbH
