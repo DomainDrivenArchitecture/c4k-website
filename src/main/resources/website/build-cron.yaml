@@ -20,7 +20,7 @@ spec:
             app.kubernetes.part-of: NAME-website
         spec:
           containers:
-          - image: domaindrivenarchitecture/c4k-website-build:2.0.6
+          - image: domaindrivenarchitecture/c4k-website-build
             name: build-cron-container
             imagePullPolicy: IfNotPresent
             resources:
