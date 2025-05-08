@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: NAME
-  namespace: default
+  namespace: NAMESPACE
   labels:
     app: NAME
     app.kubernetes.part-of: NAME-website

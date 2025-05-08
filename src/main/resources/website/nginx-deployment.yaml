@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  namespace: NAME
+  namespace: NAMESPACE
   labels:
     app.kubernetes.part-of: NAME-website
 spec:
