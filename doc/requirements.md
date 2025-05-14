@@ -64,12 +64,6 @@ Geht bei beiden.
 ### Rückwärtskompatibilität
 Als Website-Betreiber möchte ich, dass alte Websites (bspw Informatikbüro Jerger) mit c4k-website weiterhin funktionieren, ohne bei ihnen Anpassungen machen zu müssen (wir brauchen eine Wartungsperspektive für 3 weitere bestehende Websites).
 
-Todos sind:
-* lein als build-aufruf muss einheitlicher werden
-* c4k-website müsste evtl. mit einem weitern flavor "hugo" umgehen können
-* Migrationspfad für bestehende Websites (Anleitung für Navigation / bisherige Content-Struktur)
-* POC: der die wesentlichen Features für dda.io abbildet (Navigation, Migration für Seiten&Bilder, Blog, partials)
-
 ## 008
 ### Website soll statisch sein
 Als Website-Betreiber möchte ich eine statische Website ausliefern, damit der Website Betrieb nicht so komplex wird. Der Website betreiber muss sich zudem bei statischen Websites nicht so sehr um die Sicherheit von Credentials, Assets und ähnliches kümmern.
