@@ -194,7 +194,7 @@
   (let [{:keys [unique-name]} config
         name (replace-dots-by-minus unique-name)]
     (cm/concat-vec
-     (ns/generate (merge {:namespace name} config))
+     (ns/generate (merge config {:namespace name}))
      [(generate-nginx-deployment config)
       (generate-nginx-configmap config)
       (generate-nginx-service config)

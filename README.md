@@ -26,6 +26,7 @@ c4k-website is an example how to create k8s manifests for OneShotDeployments wit
   - [Try out](#try-out)
   - [Usage](#usage)
   - [Development \& mirrors](#development--mirrors)
+    - [Create a new version of docker image "c4k-website-build"](#create-a-new-version-of-docker-image-c4k-website-build)
   - [License](#license)
 
 ### Serving multiple websites
@@ -110,7 +111,7 @@ in the corresponding cronJob-Deployment to automatically pull and use the new im
 
 ## License
 
-Copyright © 2022, 2023, 2024 meissa GmbH
+Copyright © 2022 - 2025 meissa GmbH
 Licensed under the [Apache License, Version 2.0](LICENSE) (the "License")
 Pls. find licenses of our subcomponents [here](doc/SUBCOMPONENT_LICENSE)
 

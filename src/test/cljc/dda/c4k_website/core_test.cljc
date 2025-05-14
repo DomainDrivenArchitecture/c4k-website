@@ -44,7 +44,9 @@
    [{:unique-name "example.io"
      :authtoken "abedjgbasdodj"}
     {:unique-name "test.io"
-     :authtoken "abedjgbasdodj"}]})
+     :authtoken "abedjgbasdodj"}]
+   :mon-auth {:grafana-cloud-user "123"
+              :grafana-cloud-password "pwd"}})
 
 (deftest mapize-config
   (is (=
