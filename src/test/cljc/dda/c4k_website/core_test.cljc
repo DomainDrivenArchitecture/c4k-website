@@ -61,10 +61,8 @@
          :redirects [],
          :average-rate 20,
          :build-cpu-limit "1700m",
-         :build-cpu-request "500m",
          :burst-rate 40,
-         :build-memory-limit "512Mi",
-         :build-memory-request "256Mi",
+         :build-memory-limit "1024Mi",
          :namespace "default",
          :volume-size "3"}
         "test.io"
@@ -78,10 +76,8 @@
          :redirects [],
          :average-rate 20,
          :build-cpu-limit "1700m",
-         :build-cpu-request "500m",
          :burst-rate 40,
-         :build-memory-limit "512Mi",
-         :build-memory-request "256Mi",
+         :build-memory-limit "1024Mi",
          :namespace "default",
          :volume-size "3"}}
        (cut/mapize-config config))))

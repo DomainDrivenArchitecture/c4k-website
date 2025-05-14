@@ -20,8 +20,6 @@
 (s/def ::repo-name string?)
 (s/def ::branchname string?)
 (s/def ::repo-owner string?)
-(s/def ::build-cpu-request string?)
-(s/def ::build-memory-request string?)
 (s/def ::build-cpu-limit string?)
 (s/def ::build-memory-limit string?)
 (s/def ::redirect (s/tuple string? string?))
@@ -34,9 +32,7 @@
                                      ::repo-owner
                                      ::repo-name
                                      ::branchname
-                                     ::build-cpu-request
                                      ::build-cpu-limit
-                                     ::build-memory-request
                                      ::build-memory-limit
                                      ::volume-size
                                      ::redirects]))
@@ -155,28 +151,23 @@
 
 (defn-spec generate-nginx-deployment map?
   [config websiteconfig?]
-  (let [{:keys [unique-name build-cpu-request build-cpu-limit
-                build-memory-request build-memory-limit]} config
+  (let [{:keys [unique-name build-cpu-limit build-memory-limit]} config
         name (replace-dots-by-minus unique-name)]
     (->
      (ns/load-and-adjust-namespace "website/nginx-deployment.yaml" name)
      (replace-all-matching-prefixes "NAME" name)
-     (cm/replace-all-matching "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching "BUILD_CPU_LIMIT" build-cpu-limit)
-     (cm/replace-all-matching "BUILD_MEMORY_REQUEST" build-memory-request)
      (cm/replace-all-matching "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 (defn-spec generate-build-cron map?
   [config websiteconfig?]
-  (let [{:keys [unique-name build-cpu-request build-cpu-limit build-memory-request
+  (let [{:keys [unique-name  build-cpu-limit 
                 build-memory-limit]} config
         name (replace-dots-by-minus unique-name)]
     (->
      (ns/load-and-adjust-namespace "website/build-cron.yaml" name)
      (replace-all-matching-prefixes "NAME" name)
-     (cm/replace-all-matching "BUILD_CPU_REQUEST" build-cpu-request)
      (cm/replace-all-matching "BUILD_CPU_LIMIT" build-cpu-limit)
-     (cm/replace-all-matching "BUILD_MEMORY_REQUEST" build-memory-request)
      (cm/replace-all-matching "BUILD_MEMORY_LIMIT" build-memory-limit))))
 
 

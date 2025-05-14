@@ -41,10 +41,8 @@
 (def config-defaults {:issuer "staging"})
 
 (def website-config-defaults (merge ing/default-config
-                                    {:build-cpu-request "500m"
-                                     :build-cpu-limit "1700m"
-                                     :build-memory-request "256Mi"
-                                     :build-memory-limit "512Mi"
+                                    {:build-cpu-limit "1700m"
+                                     :build-memory-limit "1024Mi"
                                      :volume-size "3"
                                      :redirects []
                                      :average-rate 20

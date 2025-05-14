@@ -24,9 +24,6 @@ spec:
             name: build-cron-container
             imagePullPolicy: IfNotPresent
             resources:
-              requests:
-                cpu: BUILD_CPU_REQUEST
-                memory: BUILD_MEMORY_REQUEST
               limits:
                 cpu: BUILD_CPU_LIMIT
                 memory: BUILD_MEMORY_LIMIT

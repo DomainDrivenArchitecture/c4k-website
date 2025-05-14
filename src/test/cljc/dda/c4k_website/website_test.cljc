@@ -19,9 +19,7 @@
 (st/instrument `cut/generate-nginx-service)
 
 (def test-config {:issuer "staging"
-                  :build-cpu-request "500m"
                   :build-cpu-limit "1700m"
-                  :build-memory-request "256Mi"
                   :build-memory-limit "512Mi"
                   :volume-size "3"
                   :unique-name "test.io",
@@ -50,16 +48,12 @@
 
 
 (deftest should-generate-resource-requests
-  (is (= {:requests {:cpu "1500m", :memory "512Mi"}, :limits {:cpu "3000m", :memory "1024Mi"}}
-         (-> (cut/generate-nginx-deployment (merge test-config {:build-cpu-request "1500m"
-                                                                :build-cpu-limit "3000m"
-                                                                :build-memory-request "512Mi"
+  (is (= {:limits {:cpu "3000m", :memory "1024Mi"}}
+         (-> (cut/generate-nginx-deployment (merge test-config {:build-cpu-limit "3000m"
                                                                 :build-memory-limit "1024Mi"}))
              :spec :template :spec :initContainers first :resources)))
   (is (= "test-io"
-         (-> (cut/generate-nginx-deployment (merge test-config {:build-cpu-request "1500m"
-                                                                :build-cpu-limit "3000m"
-                                                                :build-memory-request "512Mi"
+         (-> (cut/generate-nginx-deployment (merge test-config {:build-cpu-limit "3000m"
                                                                 :build-memory-limit "1024Mi"}))
              :metadata :namespace))))
 
@@ -141,8 +135,7 @@
           :labels {:app.kubernetes.part-of "test-io-website"}}
          (get-in (cut/generate-nginx-deployment test-config)
                  [:metadata])))
-  (is (= {:requests {:cpu "500m", :memory "256Mi"},
-          :limits {:cpu "1700m", :memory "512Mi"}}
+  (is (= {:limits {:cpu "1700m", :memory "512Mi"}}
          (get-in (cut/generate-nginx-deployment test-config)
                  [:spec :template :spec :initContainers 0 :resources]))))
 
@@ -152,6 +145,6 @@
           :labels {:app.kubernetes.part-of "test-io-website"}},
          (get-in (cut/generate-build-cron test-config)
                  [:metadata])))
-  (is (= {:requests {:cpu "500m", :memory "256Mi"}, :limits {:cpu "1700m", :memory "512Mi"}}
+  (is (= {:limits {:cpu "1700m", :memory "512Mi"}}
          (get-in (cut/generate-build-cron test-config)
                  [:spec :jobTemplate :spec :template :spec :containers 0 :resources]))))
