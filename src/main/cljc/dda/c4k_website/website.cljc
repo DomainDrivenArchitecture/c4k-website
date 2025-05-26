@@ -167,6 +167,8 @@
     (->
      (ns/load-and-adjust-namespace "website/build-cron.yaml" name)
      (replace-all-matching-prefixes "NAME" name)
+     (assoc-in [:spec :jobTemplate :spec :template :spec :initContainers 0 :args] 
+               [(str "while [ $(curl -sw '%{http_code}' http://" name ":80 -o /dev/null) -ne 200 ]; do sleep 5; echo 'Waiting for the ngingx...'; done")])
      (cm/replace-all-matching "BUILD_CPU_LIMIT" build-cpu-limit)
      (cm/replace-all-matching "BUILD_MEMORY_LIMIT" build-memory-limit))))
 

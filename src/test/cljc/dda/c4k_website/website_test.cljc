@@ -145,6 +145,9 @@
           :labels {:app.kubernetes.part-of "test-io-website"}},
          (get-in (cut/generate-build-cron test-config)
                  [:metadata])))
+   (is (= ["while [ $(curl -sw '%{http_code}' http://test-io:80 -o /dev/null) -ne 200 ]; do sleep 5; echo 'Waiting for the ngingx...'; done"]
+         (get-in (cut/generate-build-cron test-config)
+                 [:spec :jobTemplate :spec :template :spec :initContainers 0 :args])))
   (is (= {:limits {:cpu "1700m", :memory "512Mi"}}
          (get-in (cut/generate-build-cron test-config)
                  [:spec :jobTemplate :spec :template :spec :containers 0 :resources]))))

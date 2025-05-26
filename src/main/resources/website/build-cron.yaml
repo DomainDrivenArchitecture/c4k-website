@@ -21,9 +21,14 @@ spec:
             app.kubernetes.part-of: NAME-website
         spec:
           restartPolicy: Never
+          initContainers:
+          - name: wait-for-nginx
+            image: curlimages/curl:latest
+            command: ["/bin/sh","-c"]
+            args: REPLACEME
           containers:
-          - image: domaindrivenarchitecture/c4k-website-build
-            name: build-cron-container
+          - name: build-cron-container
+            image: domaindrivenarchitecture/c4k-website-build
             imagePullPolicy: IfNotPresent
             resources:
               limits:
