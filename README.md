@@ -23,7 +23,6 @@ c4k-website is an example how to create k8s manifests for OneShotDeployments wit
     - [Monitoring](#monitoring)
     - [GitOps your Websites](#gitops-your-websites)
     - [Support Hugo and Cryogene](#support-hugo-and-cryogene)
-  - [Try out](#try-out)
   - [Usage](#usage)
   - [Development \& mirrors](#development--mirrors)
     - [Create a new version of docker image "c4k-website-build"](#create-a-new-version-of-docker-image-c4k-website-build)
@@ -64,19 +63,6 @@ If there is new content we generate the new static html & serve it.
 
 For static html generation we support cryogen & hugo.
 
-## Try out
-
-Click on the image to try out in your browser:
-
-[![Try it out](doc/tryItOut.png "Try out yourself")](https://domaindrivenarchitecture.org/pages/dda-provision/c4k-website/)
-
-Your input will stay in your browser. No server interaction is required.
-
-You will also be able to try out on cli:
-```
-c4k-website src/test/resources/valid-config.yaml src/test/resources/valid-auth.yaml
-```
-
 ## Usage
 
 Prerequisites:
@@ -85,7 +71,6 @@ Prerequisites:
 * A git repository with your hugo / cryogene website
   * the project provides a `generate.sh` (maybe your generatoin needs some preprocessing)
   * `generate.sh` deliver its static generated html to `target/html`
-
 
 ## Development & mirrors
 
