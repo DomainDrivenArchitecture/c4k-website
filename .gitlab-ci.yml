@@ -47,15 +47,6 @@ test-schema:
     paths:
       - target/uberjar
 
-package-frontend:
-  <<: *cljs
-  stage: package
-  script:
-    - pyb package_frontend
-  artifacts:
-    paths:
-      - target/frontend-build
-
 package-uberjar:
   <<: *clj
   stage: package
