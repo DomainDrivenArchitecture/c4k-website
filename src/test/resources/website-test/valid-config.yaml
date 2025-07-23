@@ -16,7 +16,7 @@ websiteconfigs:
   repo-name: "repo"
   branchname: "main"
 mon-cfg: 
-  grafana-cloud-url: "url-for-your-prom-remote-write-endpoint"
+  remote-write-url: "url-for-your-prom-remote-write-endpoint"
   cluster-name: "website"
   cluster-stage: "test"
 average-rate: 50
