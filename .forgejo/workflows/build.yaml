@@ -11,6 +11,8 @@ jobs:
     container:
       image: 'domaindrivenarchitecture/c4k-website-build:latest'
     steps:
+      - name: get-code
+        uses: https://data.forgejo.org/actions/checkout@v4
       - name: build-test
         run: |
           echo "Hello World!"
