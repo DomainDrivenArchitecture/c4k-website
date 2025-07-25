@@ -1,0 +1,16 @@
+name: build-website
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-site:
+    runs-on: ubuntu-latest
+    container:
+      image: 'domaindrivenarchitecture/c4k-website-build:latest'
+    steps:
+      - name: build-test
+        run: |
+          echo "Hello World!"
