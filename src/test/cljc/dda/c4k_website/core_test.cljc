@@ -1,8 +1,6 @@
 (ns dda.c4k-website.core-test
   (:require
-   #?(:cljs [shadow.resource :as rc])
-   #?(:clj [clojure.test :refer [deftest is are testing run-tests]]
-      :cljs [cljs.test :refer-macros [deftest is are testing run-tests]])
+   [clojure.test :refer [deftest is are testing run-tests]]
    [clojure.spec.alpha :as s]
    [clojure.spec.test.alpha :as st]
    [dda.c4k-common.yaml :as yaml]
@@ -11,16 +9,9 @@
 (st/instrument `cut/mapize-config)
 (st/instrument `cut/generate)
 
-#?(:cljs
-   (defmethod yaml/load-resource :website-test [resource-name]
-     (case resource-name
-       "website-test/valid-auth.yaml"   (rc/inline "website-test/valid-auth.yaml")
-       "website-test/valid-config.yaml" (rc/inline "website-test/valid-config.yaml")
-       (throw (js/Error. "Undefined Resource!")))))
-
 (deftest validate-valid-resources
-  (is (s/valid? cut/config? (yaml/load-as-edn "website-test/valid-config.yaml")))
-  (is (s/valid? cut/auth? (yaml/load-as-edn "website-test/valid-auth.yaml"))))
+  (is (s/valid? ::cut/config (yaml/load-as-edn "website-test/valid-config.yaml")))
+  (is (s/valid? ::cut/auth (yaml/load-as-edn "website-test/valid-auth.yaml"))))
 
 (def config
   {:issuer "prod"
@@ -94,8 +85,8 @@
 
 (deftest test-config-objects
   (is (= 22
-         (count (cut/config-objects config)))))
+         (count (cut/config-objects [] config)))))
 
 (deftest test-auth-objects
   (is (= 2
-         (count (cut/auth-objects config auth)))))
+         (count (cut/auth-objects [] config auth)))))

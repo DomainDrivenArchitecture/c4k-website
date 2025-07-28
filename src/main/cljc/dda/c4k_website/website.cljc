@@ -2,10 +2,7 @@
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as str]
-   #?(:clj [orchestra.core :refer [defn-spec]]
-      :cljs [orchestra.core :refer-macros [defn-spec]])
-   #?(:cljs [dda.c4k-common.macros :refer-macros [inline-resources]])
-   [dda.c4k-common.yaml :as yaml]
+   [orchestra.core :refer [defn-spec]]
    [dda.c4k-common.common :as cm]
    [dda.c4k-common.base64 :as b64]
    [dda.c4k-common.predicate :as cp]
@@ -38,11 +35,6 @@
                                      ::redirects]))
 
 (def websiteauth? (s/keys :req-un [::authtoken]))
-
-
-#?(:cljs
-   (defmethod yaml/load-resource :website [resource-name]
-     (get (inline-resources "website") resource-name)))
 
 (defn-spec replace-dots-by-minus string?
   [fqdn cp/fqdn-string?]
@@ -184,7 +176,7 @@
 
 (defn-spec config-objects seq?
   [config websiteconfig?]
-  (let [{:keys [unique-name]} config
+  (let [{:keys [unique-name average-rate burst-rate]} config
         name (replace-dots-by-minus unique-name)]
     (cm/concat-vec
      (ns/generate (merge config {:namespace name}))
@@ -195,10 +187,13 @@
       (generate-hash-state-pvc config)
       (generate-build-cron config)
       (generate-build-configmap config)
-      (ing/generate-simple-ingress (merge config
-                                          {:service-name name
-                                           :service-port 80
-                                           :namespace name}))])))
+      (ing/config-objects (merge
+                           config
+                           {:service-name name
+                            :service-port 80
+                            :average-rate average-rate
+                            :burst-rate burst-rate
+                            :namespace name}))])))
 
 (defn-spec auth-objects seq?
   [config websiteconfig?
